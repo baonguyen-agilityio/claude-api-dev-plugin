@@ -4,8 +4,7 @@
 Repo for the `api-dev` Claude Code plugin: skills, rules, an agent, a template API and evals for building one standalone REST API on Cloudflare Workers. Design lives in `docs/`; the plugin in `plugins/api-dev/`. Everything in source is English: code, comments, docs, commit messages.
 
 ## Commands
-- `node --test .claude/hooks/*.test.mjs` — repo hook tests
-- Plugin lint and template gates are added as the plugin lands; keep this list current.
+- No commands yet. Plugin lint and template gates are added as the plugin lands; keep this list current.
 
 ## Conventions
 - Branches: `feat/<short-desc>`, `docs/<short-desc>`, `chore/<short-desc>`. One branch per pull request, one topic per branch; squash-merge, then delete the branch.
@@ -15,6 +14,6 @@ Repo for the `api-dev` Claude Code plugin: skills, rules, an agent, a template A
 
 ## Never
 - Never commit secrets, `.dev.vars`, service-account files or tokens; read them from env vars or Wrangler secrets.
-- Never push to `main` directly; a PreToolUse hook blocks it. Use `--force-with-lease` only on your own branch.
+- Never push to `main` directly; `.claude/settings.json` denies `git push … main` for Claude, and a bare `git push` while on `main` is on you. This private repo has no server-side protection. Use `--force-with-lease` only on your own branch.
 - Never add AI-attribution lines to commits or pull requests.
 - Never put unrelated material (course notes, quiz pages, personal files) in this repo.
