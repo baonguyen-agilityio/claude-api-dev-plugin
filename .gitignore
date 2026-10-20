@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+service-account*.json
+coverage/
+.claude/checkpoints/
+.DS_Store
