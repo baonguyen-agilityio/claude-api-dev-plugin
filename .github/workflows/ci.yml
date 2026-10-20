@@ -14,6 +14,7 @@ jobs:
         with:
           node-version: 22
       - run: node plugins/api-dev/scripts/check-plugin.mjs
+      - run: node --test plugins/api-dev/hooks/*.test.mjs
 
   template-gates:
     runs-on: ubuntu-24.04
