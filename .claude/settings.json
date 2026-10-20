@@ -10,5 +10,11 @@
       "Bash(git -C * push *:main)",
       "Bash(git -C * push *:main *)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "bao-plugins": { "source": { "source": "directory", "path": "." } }
+  },
+  "enabledPlugins": {
+    "api-dev@bao-plugins": true
   }
 }

@@ -1,0 +1,9 @@
+{
+  "name": "api-dev",
+  "version": "0.1.0",
+  "description": "Build one standalone REST API on Cloudflare Workers — Hono + hono-openapi, Effect programs and Effect Schema, Firestore over REST, Firebase ID-token auth, vitest — from a documented architecture. Skills: new-api, add-endpoint, debug-endpoint, probe-endpoint, release-api. For one Worker repo, not a monorepo.",
+  "author": { "name": "baonguyen-agilityio" },
+  "repository": "https://github.com/baonguyen-agilityio/claude-api-dev-plugin",
+  "license": "MIT",
+  "keywords": ["cloudflare-workers", "hono", "effect", "firestore", "rest-api", "openapi"]
+}

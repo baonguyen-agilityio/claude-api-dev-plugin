@@ -6,6 +6,15 @@ on:
   pull_request:
 
 jobs:
+  plugin-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: node plugins/api-dev/scripts/check-plugin.mjs
+
   template-gates:
     runs-on: ubuntu-24.04
     steps:

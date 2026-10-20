@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "bao-plugins",
+  "owner": { "name": "baonguyen-agilityio" },
+  "plugins": [
+    {
+      "name": "api-dev",
+      "source": "./plugins/api-dev",
+      "version": "0.1.0",
+      "description": "Build one standalone REST API on Cloudflare Workers (Hono, Effect, Firestore REST, Firebase auth, vitest) from a documented design: scaffold, add endpoints, debug, probe with curl, release.",
+      "author": { "name": "baonguyen-agilityio" }
+    }
+  ]
+}

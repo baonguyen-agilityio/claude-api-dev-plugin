@@ -1,0 +1,24 @@
+---
+name: new-api
+description: Create a new standalone REST API project on Cloudflare Workers from this plugin's template — Hono + hono-openapi, Effect programs and Effect Schema, Firestore over REST, Firebase ID-token auth, vitest, feature modules. Use whenever the user wants to start, bootstrap, scaffold or set up a new API, backend, REST service or Worker in an empty folder — also phrased like "tạo project API mới", "dựng backend mới", "khởi tạo API từ template". Use it BEFORE writing package.json or wrangler.toml by hand: the template already decides auth, envelopes, pagination and tests. Not for adding to an API that already exists (use add-endpoint) and not for a pnpm/turbo monorepo such as space-api.
+---
+
+# New API
+
+Create a working API from `${CLAUDE_PLUGIN_ROOT}/templates/` and prove it runs before anything is built on it. The design it implements: `${CLAUDE_PLUGIN_ROOT}/references/architecture.md`.
+
+## Before copying
+- Target folder: ask if not given. It must be empty or new; list it first, never overwrite without asking.
+- Names: Worker name (kebab-case, also the `*.workers.dev` subdomain) and the Firebase project id per env. Unknown ids stay as placeholders and go under **Not done**; never invent one.
+- `node -v` ≥ 22.
+
+## Steps
+1. Copy, including dotfiles: `mkdir -p <dir> && cp -R ${CLAUDE_PLUGIN_ROOT}/templates/. <dir>/ && cd <dir> && npm install && cp .dev.vars.example .dev.vars`
+2. Rename: `name` and each `[env.*].name` in `wrangler.toml`; `FIREBASE_PROJECT_ID` and `CORS_ORIGINS` in every vars block (real browser origins, never `*`); the `ratelimits` `namespace_id`s (unique per account); `name` in `package.json`; `info.title` in `src/core/openapi.ts`.
+3. Gates on the untouched skeleton, so a later failure is yours: `npm run typecheck && npm test && npm run check`.
+4. Optional local run with real credentials in `.dev.vars`: `npm run dev`, then `curl -s http://localhost:8787/api/v1/health` → `{"data":{"ok":true}}`; docs at `/api/v1/docs`.
+5. First real module: hand over to **add-endpoint**. The `items` sample can be removed once a real module exists; the generator copies from the plugin, not from the project.
+6. `git init` if needed; confirm `git status` shows no `.dev.vars`; commit.
+
+## Report
+`## Result` per `${CLAUDE_PLUGIN_ROOT}/rules/result-block.md`: folder, the three gate outputs, names still placeholders.
