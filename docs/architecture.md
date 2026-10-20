@@ -130,7 +130,9 @@ Any other transition fails with `409 CONFLICT`. Only `pending` requests may be e
 | `GET /items` | all, by id | none (collection list) |
 | `GET /timeOffRequests` as user | `ownerId == me` ordered `createdAt desc` | composite (`ownerId` asc, `createdAt` desc) |
 | `GET /timeOffRequests` as admin | optional `status ==`, ordered `createdAt desc` | composite (`status` asc, `createdAt` desc) |
-| `GET /timeOffRequests?from=&to=` | `from >= a AND from <= b` (one range field; Firestore allows one) plus `ownerId` or `status` equality | composite (`ownerId` asc, `from` asc), (`status` asc, `from` asc) |
+| `GET /timeOffRequests?from=&to=` | `from >= a AND from <= b` plus `ownerId` or `status` equality; ordered by `from asc` because Firestore requires the first `orderBy` to be the range field | composite (`ownerId` asc, `from` asc), (`status` asc, `from` asc) |
+
+Firestore allows range filters on one field per query, and that field must lead the `orderBy`. A list with a date range is therefore ordered by `from`, not `createdAt`; the response documents which order applies.
 
 Indexes live in `firestore.indexes.json` in the template and are deployed with `firebase deploy --only firestore:indexes` (or created from the console link Firestore prints on the first failing query). A query that needs an index the file does not declare is a bug.
 
