@@ -28,7 +28,7 @@ Bodies come from `api.http` or the schema `examples`; add new ones to `api.http`
 
 ## 4. Diff against the spec
 ```bash
-curl -s "$BASE/openapi.json" | jq '.paths["/api/v1/timeOffRequests"].get.responses["200"].content["application/json"].schema'
+curl -s "$BASE/openapi.json" | jq '.paths["/api/v1/timeOffRequests"].get.responses["200"].content["application/json"].schema'   # spec path: the one app.ts or the repo CLAUDE.md declares (/openapi.json in the template; some apps serve /openapi)
 curl -s "$BASE/timeOffRequests" -H "Authorization: Bearer $TOKEN" | jq -S '.data[0] | keys'
 ```
 A spec that disagrees with the response is the bug even when the response is right.
