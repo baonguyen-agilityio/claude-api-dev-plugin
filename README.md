@@ -30,6 +30,18 @@ Or from a clone: `claude plugin marketplace add ./` then `claude plugin install 
 
 Skills: `new-api`, `add-endpoint`, `debug-endpoint`, `probe-endpoint`, `release-api`; agent `api-dev:api-dev`. Say the job in plain words (Vietnamese works); you do not need to name a skill.
 
+## Install
+
+In Claude Code 2.1.275 or later:
+
+```
+/plugin install api-dev --marketplace baonguyen-agilityio/claude-api-dev-plugin
+```
+
+Or from a clone: `claude plugin marketplace add ./` then `claude plugin install api-dev@bao-plugins`. In this repo the plugin is already enabled through `.claude/settings.json`.
+
+Skills: `new-api`, `add-endpoint`, `debug-endpoint`, `probe-endpoint`, `release-api`; agent `api-dev:api-dev`. Say the job in plain words (Vietnamese works); you do not need to name a skill.
+
 ## Layout
 
 - `plugins/api-dev/` — the plugin (skills, rules, agent, template, evals, hooks)
