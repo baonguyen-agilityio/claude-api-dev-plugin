@@ -90,11 +90,11 @@ if (existsSync(hooksFile)) {
 // evals: every skill needs a case that expects it, and there must be negatives
 const evalDir = join(ROOT, "evals");
 if (existsSync(evalDir)) {
-  const cases = walk(evalDir).filter((f) => /case\.ya?ml$/.test(f) && !f.includes("/results/"));
-  const text = cases.map(read).join("\n");
+  const graders = walk(evalDir).filter((f) => /\/graders\/[^/]+\.md$/.test(f) && !f.includes("/results/"));
+  const text = graders.map(read).join("\n");
   for (const name of skills)
-    if (!new RegExp(`${manifest.name}:${name}\\b`).test(text)) err(evalDir, `no eval case mentions ${manifest.name}:${name}`);
-  if (!/negative|should-not|not_fire|none/i.test(text)) err(evalDir, "no negative (near-miss) case found");
+    if (!new RegExp(`\\b${name}\\b`).test(text)) err(evalDir, `no eval grader expects skill ${name}`);
+  if (!/min:\s*0[\s\S]*max:\s*0/.test(text)) err(evalDir, "no negative (near-miss) case: a tool_used grader with min: 0 and max: 0");
 }
 
 if (problems.length) {
