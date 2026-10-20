@@ -1,0 +1,4 @@
+# Copy to .dev.vars (git-ignored). Values come from the Firebase service-account JSON.
+CORS_ORIGINS="http://localhost:3000"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxx@your-firebase-project-id.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
