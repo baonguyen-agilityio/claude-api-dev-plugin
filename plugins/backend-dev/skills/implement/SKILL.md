@@ -1,12 +1,12 @@
 ---
 name: implement
-description: Implements features in a Cloudflare Workers API on Hono, Effect and Firestore the way the template does it: scaffolds a new project, generates modules, writes models, schemas, services, controllers, routes and both test layers, and runs the gates. Use when code has to be written or changed in such an API, from an empty folder to a new field or endpoint, even if the user only says build it or add it.
+description: "Implements features in a Cloudflare Workers API on Hono, Effect and Firestore the way the template does it: scaffolds a new project, generates modules, writes models, schemas, services, controllers, routes and both test layers, and runs the gates. Use when code has to be written or changed in such an API, from an empty folder to a new field or endpoint, even if the user only says build it or add it."
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(node * scaffold.mjs *), Bash(node * new-module.mjs *), Bash(npm install*), Bash(npm ci*), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(git status*), Bash(git diff*)
 ---
 
 # Implement
 
-Scope: stage 4 of the backend process. The contract (api-contract) and the data design (data-model) come first; when they are missing, state the assumed contract in the Result and keep it minimal. Not for proving it live (live-verify) or for a defect in production (incident).
+Problem this solves: writing or changing code in this stack so it matches the existing modules (layers, DTOs without server fields, tagged errors, tests in the order that catches access bugs) and passes the three gates. When no contract or data design exists yet, the assumed contract is stated in the Result and kept minimal. Works on its own or as a step of the process.
 
 The design the code follows: `${CLAUDE_PLUGIN_ROOT}/references/architecture.md`. Code shapes with the template's own snippets: `references/patterns.md`. Scripts: `${CLAUDE_PLUGIN_ROOT}/scripts/scaffold.mjs` (new project), `${CLAUDE_PLUGIN_ROOT}/scripts/new-module.mjs` (new module from `items`).
 
@@ -21,7 +21,7 @@ The design the code follows: `${CLAUDE_PLUGIN_ROOT}/references/architecture.md`.
 7. **Data:** a new filtered or ordered query needs its composite in `firestore.indexes.json` in the same commit; anything beyond `list/query/get/create/update/remove` goes into the `Firestore` tag, `FirestoreLive`, the fake and an adapter test together.
 8. **Tests, 403/404 first:** route test cases in order: the guard or ownership status, 400 naming the field, 404, 409 with the `CONFLICT` code, the success envelope, a body carrying `ownerId`/`status` ignored; service tests for each tagged error and "nothing written on failure". Add the requests to `api.http`.
 9. **Gates after each layer, output shown:** `npm run typecheck && npm test && npm run check`. `check` is `wrangler deploy --dry-run`: a Node built-in or a missing binding fails here, not in vitest.
-10. **Hand the endpoint to live-verify.** Green tests are not proof; the Result says what was driven with curl or "not verified".
+10. **Prove it live or say so.** Green tests are not proof; drive the endpoint with curl against `wrangler dev` (the live-verify skill has the token flow and the status list) or write "not verified" in the Result.
 
 ## Gotchas seen on this stack
 
@@ -45,7 +45,7 @@ The design the code follows: `${CLAUDE_PLUGIN_ROOT}/references/architecture.md`.
 **Data:** <collections, indexes added; adapter changes with their tests>
 **Tests:** <both files by path; cases incl. the 403/404, 400, 409 and ignored-field cases>
 **Gates:** <typecheck / test / check output, pasted>
-**Verified live:** <what live-verify drove, or "not verified">
+**Verified live:** <what was driven with curl, or "not verified">
 **Not done / Blocked by / Next**
 ```
 
