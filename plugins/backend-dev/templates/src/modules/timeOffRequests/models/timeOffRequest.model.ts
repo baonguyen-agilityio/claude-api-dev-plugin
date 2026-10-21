@@ -23,7 +23,7 @@ export const TimeOffRequestServerFields = {
   decidedAt: Schema.NullOr(Schema.DateFromString),
 };
 
-// Field names a list query may filter or order by; the adapter never takes these from the caller (rules/security.md).
+// Field names a list query may filter or order by; the adapter never takes these from the caller (architecture §5).
 export const QUERY_FIELDS = ["ownerId", "status", "from", "createdAt"] as const;
 
 export const TimeOffRequest = Schema.Struct({ ...ServerFields, ...TimeOffRequestFields, ...TimeOffRequestServerFields }).annotations({ identifier: "TimeOffRequest" });

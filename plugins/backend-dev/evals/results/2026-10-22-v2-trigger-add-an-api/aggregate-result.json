@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.306",
+  "startedAt": "2026-10-21T17:07:10.906Z",
+  "durationSeconds": 28,
+  "costUsd": 0.19637500000000002,
+  "partial": false,
+  "suite": {
+    "root": "/Users/baonguyen/Desktop/trainings/claude-api-dev-plugin/plugins/backend-dev",
+    "ablation": "none",
+    "modelOverride": "sonnet",
+    "caseFilter": "ac-add-an-api",
+    "threshold": 1,
+    "concurrency": 3,
+    "plugins": [
+      {
+        "name": "backend-dev",
+        "version": "0.1.0",
+        "path": "/Users/baonguyen/Desktop/trainings/claude-api-dev-plugin/plugins/backend-dev"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "ac-add-an-api",
+      "dir": "evals/ac-add-an-api",
+      "source": "prose",
+      "promptMarkdown": "add an API for suppliers to our worker api (hono + effect + firestore)",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?(?:api-contract|implement)\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.08102780000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 28,
+            "startedAt": "2026-10-21T17:07:10.965Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-anepaA/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0607781,
+            "judgeCostUsd": 0,
+            "durationSeconds": 16,
+            "startedAt": "2026-10-21T17:07:10.965Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-FI3Urb/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.0545691,
+            "judgeCostUsd": 0,
+            "durationSeconds": 14,
+            "startedAt": "2026-10-21T17:07:10.965Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-bWFi1L/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}

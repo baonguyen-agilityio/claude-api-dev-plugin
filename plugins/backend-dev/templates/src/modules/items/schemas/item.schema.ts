@@ -2,7 +2,7 @@ import { Schema } from "effect";
 import { PageQuery } from "@/core/pagination";
 import { ItemFields } from "../models/item.model";
 
-// DTOs: what clients may send. Excess fields are stripped; server-owned fields are not here (rules/security.md).
+// DTOs: what clients may send. Excess fields are stripped; server-owned fields are not here (architecture §4).
 export const NewItem = Schema.Struct(ItemFields).annotations({ identifier: "NewItem", examples: [{ name: "pen", qty: 3 }] });
 export type NewItem = typeof NewItem.Type;
 

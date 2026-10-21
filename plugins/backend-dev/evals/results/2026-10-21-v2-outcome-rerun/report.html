@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eval report — backend-dev v0.1.0</title>
+</head>
+<body>
+<style>
+:root{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}}
+:root[data-theme="dark"]{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}
+:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);
+  font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:880px;margin:0 auto;padding:40px 24px 64px;display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+header h1{margin:2px 0 0;font-size:24px;font-weight:600;line-height:1.25;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;color:var(--ink-2);font-size:13px}
+.meta .num{font-variant-numeric:tabular-nums lining-nums}
+.banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;
+  border:1px solid var(--hairline);background:var(--surface);font-size:13px}
+.banner .chip-warn{color:var(--warning);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:14px 16px;
+  display:flex;flex-direction:column;gap:4px}
+.tile .label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tile .value{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums lining-nums;line-height:1.1}
+.tile.hero .value{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:48px}
+.tile .sub{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tile .value.delta-pos{color:var(--delta-good)}
+.tile .value.delta-neg{color:var(--critical)}
+.toolbar{display:flex;gap:8px;justify-content:flex-end}
+.toolbar button{font:12px system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--hairline);border-radius:6px;padding:4px 10px;cursor:pointer}
+.toolbar button:hover{color:var(--ink)}
+.toolbar button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.case{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:10px}
+.case-regressed{border-left:3px solid var(--critical)}
+.verdict{margin:6px 0 0;font-size:15px}
+.verdict .delta{font-size:15px}
+.flag{font-size:11px;font-weight:600;color:var(--warning);white-space:nowrap}
+.star{color:var(--warning);font-size:.45em;vertical-align:super;line-height:0;cursor:help}
+.legend summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.legend-list{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--ink-2)}
+.case-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.case-head h2{margin:0;font-size:16px;font-weight:600}
+.case-head .spacer{flex:1}
+.case-score{font-size:15px;font-weight:600}
+.mono{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.muted{color:var(--ink-3);font-size:12px}
+.meter{display:inline-block;position:relative;width:120px;height:6px;border-radius:4px;background:var(--grid);
+  vertical-align:middle}
+.meter>span{display:block;height:100%;border-radius:4px;max-width:100%}
+.meter .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink-3);border-radius:1px}
+.m-accent>span{background:var(--accent)}
+.m-base>span{background:var(--base-fill)}
+.delta{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.delta-pos{color:var(--delta-good)}
+.delta-neg{color:var(--critical)}
+.delta-zero{color:var(--ink-3)}
+details.section{border-top:1px solid var(--grid);padding-top:10px}
+details.section>summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-2);list-style-position:outside;margin-left:2px}
+details.section>summary:hover{color:var(--ink)}
+details.section[open]>summary{margin-bottom:8px}
+.md{display:flex;flex-direction:column;gap:8px;background:var(--inset);border-radius:8px;
+  padding:12px 14px;overflow-wrap:break-word}
+.md>:first-child{margin-top:0}
+.md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:4px 0 0;font-size:1em;font-weight:600;line-height:1.3}
+.md p,.md ul,.md ol,.md blockquote,.md table,.md pre,.md hr{margin:0}
+.md ul,.md ol{display:flex;flex-direction:column;gap:4px;padding-left:20px}
+.md blockquote{border-left:2px solid var(--hairline);padding-left:10px;color:var(--ink-2)}
+.md :not(pre)>code{background:var(--inset);padding:1px 4px;border-radius:4px;
+  font:.92em "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre{background:var(--inset);border:1px solid var(--hairline);padding:10px 12px;border-radius:6px;
+  overflow-x:auto;font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre code{background:none;padding:0;font:inherit}
+.md table{width:100%;border-collapse:collapse}
+.md th,.md td{padding:5px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--grid)}
+.md th{font-weight:600;color:var(--ink-2)}
+.md a{color:var(--accent);text-decoration:none}
+.md a:hover{text-decoration:underline}
+.grader-def{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+.grader-def+.grader-def{border-top:1px solid var(--grid)}
+.grader-def-head{display:flex;align-items:baseline;gap:8px}
+.grader-name{font:13px "SF Mono",ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+.badge{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--hairline);border-radius:999px;padding:1px 8px}
+.config{display:flex;flex-direction:column;gap:2px;background:var(--inset);border-radius:8px;padding:10px 14px}
+.config code{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere}
+.arm{display:flex;flex-direction:column;gap:8px;padding:6px 0}
+.arm+.arm{border-top:1px dashed var(--grid);margin-top:4px;padding-top:12px}
+.arm-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.arm-label{font-size:13px;font-weight:600}
+.run{border:1px solid var(--grid);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.run-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.run-title{font-size:12px;font-weight:600;color:var(--ink-2)}
+.run-error .explanation{color:var(--ink-2)}
+.note{font-size:12px;color:var(--ink-2)}
+.graders{display:flex;flex-direction:column;gap:4px}
+details.grader{border-radius:6px}
+details.grader>summary{cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:3px 4px;
+  border-radius:6px;list-style:none}
+details.grader>summary::-webkit-details-marker{display:none}
+details.grader>summary::before{content:'▸';font-size:10px;color:var(--ink-3);flex:none;
+  transition:transform .12s ease}
+details.grader[open]>summary::before{transform:rotate(90deg)}
+details.grader>summary:hover{background:var(--inset)}
+details.grader>summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grader-body{padding:6px 8px 8px 24px;display:flex;flex-direction:column;gap:6px}
+.chip{font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.chip-pass{color:var(--good);border:1px solid currentColor}
+.chip-fail{color:var(--critical);border:1px solid currentColor}
+.chip.chip-warn{color:var(--warning);border:1px solid currentColor}
+.explanation{margin:0;font-size:13px;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:break-word}
+.kv{display:flex;gap:8px;font-size:12px;color:var(--ink-3)}
+.votes{font-variant-numeric:tabular-nums;letter-spacing:.1em}
+pre.evidence{margin:0;background:var(--inset);border:1px solid var(--hairline);border-radius:6px;
+  padding:8px 10px;overflow-x:auto;max-height:320px;
+  font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:break-word}
+footer{color:var(--ink-3);font-size:12px;text-align:center;padding-top:8px}
+@media (prefers-reduced-motion:no-preference){
+  details.grader>summary,.toolbar button{transition:background .12s ease,color .12s ease}
+}
+@media (prefers-reduced-motion:reduce){
+  details.grader>summary::before{transition:none}
+}
+@media print{
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+  body{background:#fff}
+  .toolbar{display:none}
+  .case,.run,.grader-def{break-inside:avoid}
+  pre.evidence{max-height:none}
+}
+</style>
+<div class="wrap">
+<header>
+<div class="eyebrow">Plugin eval report</div>
+<h1>backend-dev v0.1.0</h1>
+<p class="verdict">Plugin effect: <span class="delta delta-pos">↑ +100.0 pts</span> vs baseline — improved 1 · flat 0 · regressed 0 of 1 case.</p>
+<div class="meta">
+<span class="mono">.</span>
+<span>Claude Code v2.1.306</span>
+<span class="num">2026-10-21 17:00 UTC</span>
+<span class="num">3m 20s</span>
+<span class="num">$0.72</span>
+<span class="num">2 runs</span>
+<span class="num">2 in flight</span>
+
+<span>model sonnet</span>
+<span>judge sonnet</span>
+<span class="num">threshold 100%</span>
+<span>filtered: --case outcome-data-model</span>
+</div>
+</header>
+
+<section class="tiles">
+<div class="tile hero"><span class="label">Suite score · with plugin</span><span class="value">100%</span><span class="sub">mean of per-case scores</span></div>
+<div class="tile"><span class="label">Ablation Δ</span><span class="value num delta-pos">↑ +100.0</span><span class="sub">score points vs baseline, 1 of 1 case</span></div>
+<div class="tile"><span class="label">Baseline score</span><span class="value num">0%</span><span class="sub">without the plugin</span></div>
+<div class="tile"><span class="label">Cases</span><span class="value num">1</span><span class="sub">1 of 1 ≥ 100% threshold</span></div>
+<div class="tile"><span class="label">Perfect runs</span><span class="value num">100%</span><span class="sub">runs where every grader passed</span></div>
+</section>
+<details class="section legend">
+<summary>How to read this report</summary>
+<ul class="legend-list">
+<li>A run's score is the weighted fraction of its graders that passed; a "perfect" run passed every grader.</li>
+<li>A case's score is the mean of its runs; a case passes when its score is at or above the 100% threshold (the tick on each case bar).</li>
+<li>The suite score is the mean of the per-case scores.</li>
+<li>Judge votes are independent samples of the LLM judge; the majority decides pass or fail.</li>
+<li>"With plugin" and "Baseline" runs are identical except for the plugin being loaded; Δ is the with-plugin score minus the baseline score.</li>
+
+</ul>
+</details>
+<div class="toolbar"><button type="button" data-act="expand">Expand all</button><button type="button" data-act="collapse">Collapse all</button></div>
+<article class="case" id="case-1">
+<div class="case-head">
+<h2>outcome-data-model</h2>
+<span class="muted mono">evals/outcome-data-model</span>
+<span class="spacer"></span>
+
+<span class="delta delta-pos">↑ +100.0 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">20 turns · $0.47 · 17:00:27 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">data-design-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I couldn&apos;t write `firestore.indexes.json` because the Write tool is disabled in this session, so the file on disk is unchanged. The full file is under Queries and indexes below. I also couldn&apos;t open the plugin&apos;s `rules/checkpoints.md`, so I didn&apos;t tick the phase entry in the checkpoint file.
+
+I read `src/core/firestore.ts`, `pagination.ts`, the timeOffRequests model, schema and service, the fake Firestore and the current index file.
+
+## Collections
+
+### timeOffRequests/{autoId} (existing, extended)
+The existing fields stay as they are: `ownerId`, `type` (annual/sick/unpaid), `from` and `to` (timestamps at 00:00 UTC), `reason`, `status` (pending/approved/rejected/cancelled), `decidedBy`, `decidedAt`, `createdAt`, `updatedAt`.
+
+| New field | Type | Owner | Rule |
+|---|---|---|---|
+| `deductedDays` | int or null | server | Snapshot written on approve: `(to−from)/day + 1`. Cancel refunds exactly this. Null or absent means never charged, so the refund is 0. |
+| `balanceId` | string or null | server | Id of the balance charged. Null for untracked types and legacy rows. |
+| `schemaVersion` | int | server | Absent means legacy. 2 means backfilled or written by the new code. |
+
+`decidedBy` and `decidedAt` stay as copies of the approve or reject event. Cancel does not overwrite them.
+
+### leaveBalances/{ownerId}_{year}_{type} (new, natural key)
+The suffix is a 4-digit year plus an enum value with no underscore, so the id is unambiguous even if a uid contains `_`.
+
+| Field | Type | Owner | Rule |
+|---|---|---|---|
+| `ownerId` | string | admin-supplied on create | The employee. It is not the caller, because an admin sets it. |
+| `year` | int | admin-supplied on create | Part of the key. |
+| `type` | annual or sick | admin-supplied on create | Part of the key. |
+| `entitledDays` | int ≥ 0 | admin | Changed only through the same commit path as approve. |
+| `usedDays` | int ≥ 0 | server | Moved only by approve, cancel of an approved request, and reconcile. |
+| `updatedBy` | string | server | Actor of the last change. |
+| `createdAt`, `updatedAt`, `schemaVersion` | | server | |
+
+Remaining days are computed as `entitledDays − usedDays` on read and not stored, so two copies can&apos;t drift.
+
+Invariant: `0 ≤ usedDays ≤ entitledDays`.
+
+### timeOffApprovals/{requestId}_{action} (new, top-level, append-only)
+The adapter&apos;s `query` runs on the database root, so it can&apos;t read a subcollection. A top-level collection with `requestId` works today. The deterministic id means each transition can happen once per request.
+
+| Field | Type | Owner | Rule |
+|---|---|---|---|
+| `requestId` | string | server | |
+| `ownerId` | string | server | Copied from the request, so access follows the same rule as requests. |
+| `action` | approved, rejected or cancelled | server | |
+| `fromStatus`, `toStatus` | string | server | |
+| `actorId` | string | server | Who, from the token. |
+| `actorRole` | admin or owner | server | |
+| `comment` | string ≤ 500 | client, optional | New field on the approve, reject and cancel bodies. |
+| `balanceDelta` | int or null | server | −n on approve, +n on cancel of an approved request. |
+| `source` | api or backfill | server | |
+| `createdAt` | timestamp | server | When. |
+
+There is no update or delete route for this collection.
+
+## Queries and indexes
+
+| # | Actor | Filter | Order | Index |
+|---|---|---|---|---|
+| 1 | user | `ownerId == me` | createdAt desc | exists |
+| 2 | user | `ownerId == me`, `from` range | from asc | exists |
+| 3 | admin | none | createdAt desc | automatic single-field |
+| 4 | admin | `status == s` | createdAt desc | exists |
+| 5 | admin | `status == s`, `from` range | from asc | exists |
+| 6 | admin | `ownerId == X` (new param) | createdAt desc | exists |
+| 7 | admin | `ownerId == X`, `from` range | from asc | exists |
+| 8 | any | `requestId == r` | createdAt asc | new |
+| 9 | user or admin | balances: `ownerId` and optional `year` equalities | `__name__` | automatic, at most about 6 documents |
+
+Your two admin filters (status + range, employee + range) are already served by indexes #4 and #3 in the current file. Only the history query adds an index.
+
+```json
+{
+  &quot;indexes&quot;: [
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffApprovals&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;requestId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] }
+  ],
+  &quot;fieldOverrides&quot;: []
+}
+```
+
+**Cursor rules**
+- The cursor is base64url of the last row&apos;s raw order-by values plus its document name. The adapter copies raw `timestampValue`s, so microsecond timestamps round-trip.
+- **Gap to fix:** today the only check is `values.length === order.length`. A cursor from the createdAt-desc query is accepted by the from-asc query, and one from `ownerId=A` is accepted under `ownerId=B`. Both have 2 values, so the next page silently skips or repeats rows.
+- **Fix:** encode `{f, v}`, where `f` is the first 12 characters of the SHA-256 of the canonical JSON of the filters, their values and the order directions. `limit` is excluded from `f`.
+- A mismatched fingerprint or an unparseable cursor returns `400 Invalid cursor`.
+- Cursors already in flight at deploy become invalid once.
+- A cursor is not a snapshot. Rows inserted before the position are not returned. `from` can be edited while a request is pending, so a row can move between pages.
+- History and balances have no cursor. History is at most 3 rows per request.
+
+**Not queryable as asked**
+- `status` together with `ownerId`: return 400. Supporting it needs two more composites, `(ownerId, status, createdAt desc)` and `(ownerId, status, from asc)`.
+- Overlap ranges (requests that start before the range but run into it): not offered. The range filters on `from`, as it does today.
+- A non-admin passing `ownerId` or `status`: ignored, as `status` is today.
+
+## Consistency
+
+The existing `decide` and `cancel` are `get` followed by an unconditioned `update`. Two approvals, or an approve racing a reject, both succeed today. The edit path has the same hole: an edit can land after an approve and change `from`, `to` and `type` under a snapshot. All three need preconditions.
+
+**Mechanism:** one atomic `:commit` where every document that was read carries `currentDocument.updateTime`.
+- **Approve:** the writes are the request update, the balance update and a history create (`exists=false`).
+- **Cancel an approved request:** the same three writes.
+- **Cancel a pending request, or reject:** request update plus history create.
+- **Entitlement change:** balance update, checked so `entitled ≥ used`.
+- **Balance creation:** create with `exists=false`.
+
+If any precondition fails, nothing is written. I chose this over `:beginTransaction` because every document read is also preconditioned. It takes one round trip instead of begin, batchGet and commit, it has no lock waits, and the invariant still holds. A transaction would be a drop-in alternative.
+
+**Race example:** 5 days remain and requests A and B need 3 each. Both read the balance at revision U1. A commits and the balance moves to U2. B&apos;s commit fails on the stale precondition and writes nothing. B re-reads, sees 3 used + 3 &gt; 5, and gets 409 &quot;insufficient balance&quot;.
+
+**Loser behaviour**
+- Firestore returns HTTP 400 with `error.status = FAILED_PRECONDITION`, or 409 for ABORTED or ALREADY_EXISTS. The adapter must read the body status, not the HTTP code. Today `invalidCursor` would turn any 400 into &quot;Invalid cursor&quot;.
+- The service retries up to 3 times with 20–100 ms jitter. Each attempt re-reads and re-validates.
+- A deterministic loser gets 409 right away: request no longer pending, or insufficient balance.
+- If retries run out, the loser gets 409 &quot;concurrent update, retry&quot;, and the client retries.
+- I did not use `increment` (no condition, so the balance could go negative) or sharding (volume is far below 1 write/s).
+
+**What the adapter must gain (implementation work):**
+1. `Doc` must expose Firestore&apos;s raw `updateTime`, for example as `revision`. The app&apos;s `updatedAt` is a millisecond value and can&apos;t serve as a precondition.
+2. A `commit(writes[])` method on the `Firestore` tag. Each write is an update with a mask or a create, with a precondition of `updateTime` or `exists`. It sets `updatedAt` and `createdAt` itself, and maps the precondition and abort errors to a retryable tagged error added in `errors.ts` and `run.ts`.
+3. An optional `revision` precondition on `update`, for the edit path.
+4. The fake must give each document a revision counter and make `commit` all-or-nothing. That lets tests force a stale revision to simulate two admins.
+5. The cursor fingerprint described above.
+
+## Rollout
+
+1. **Pre-check (read-only):** count documents with missing or non-timestamp `from`, `to` or `createdAt`, and any unknown `type` or `status`. A mixed type breaks every range.
+2. **Export:** `gcloud firestore export gs://&lt;bucket&gt;/pre-leave-balance-2026-10-22 --collection-ids=timeOffRequests`.
+3. **Indexes:** compare the console against the file, then run `firebase firestore:indexes` and `firebase deploy --only firestore:indexes` without `--force`. Wait for READY on `timeOffApprovals`. The four existing indexes stay. The new fields are neither filtered nor ordered on, so no document becomes invisible.
+4. **Deploy code with `LEAVE_BALANCE_ENFORCE=off`:**
+   - Readers tolerate absent `deductedDays`, `balanceId` and `schemaVersion`.
+   - Decide, cancel and edit use preconditions. With the flag off they behave as today, except that they also write the history event and the `deductedDays` snapshot, and they never touch balances.
+5. **Backfill requests:**
+   - Run it from a local script with the service account. It is idempotent: skip documents with `schemaVersion ≥ 2`.
+   - Each patch uses an `updateMask` of `deductedDays`, `balanceId` and `schemaVersion` only. It leaves `updatedAt` alone, and it carries the read&apos;s `updateTime` as a precondition.
+   - Approved requests in the seeded years of a tracked type get the day count and `balanceId`. All others get null.
+6. **Backfill history:** one event per legacy approved or rejected request, with id `{requestId}_{status}`, `actorId = decidedBy`, `createdAt = decidedAt`, `source: &quot;backfill&quot;` and an empty comment. Create it with `exists=false` so reruns skip. Legacy cancellations get no event, because the actor was never recorded.
+7. **Seed balances** from the HR sheet of entitlements, using `exists=false`.
+   - `usedDays` is the sum of `deductedDays` over approved requests for that year and type.
+   - If the sum exceeds the entitlement, skip that balance and report it to HR. Do not auto-create a balance that violates the invariant.
+8. **Flip** `LEAVE_BALANCE_ENFORCE=on`, then run reconcile at once.
+   - Reconcile recomputes `used` from the requests and reports drift. It fixes drift only with a preconditioned write, and only when the result is still ≤ entitled.
+   - The drift window is approvals made between the seed read and the flip.
+   - Then run reconcile on a schedule, daily or weekly.
+9. **Rollback:** `wrangler rollback`, or redeploy with the flag off. The fields are additive and old code ignores them.
+   - Run reconcile before re-enabling.
+   - Two things break rollback: an unmasked PATCH (it would wipe the new fields) and a strict decoder meeting a new enum value. I add no status values, and the adapter always masks.
+
+## Data classification
+- **Comments and reasons:**
+  - Free text, and sick-leave reasons can be health data. Don&apos;t log them and don&apos;t export them.
+  - Keep them out of list rows. History is fetched by request id.
+  - The employee sees the decision comment and the deciding admin&apos;s uid.
+- **Retention:** history is append-only and kept until HR or legal sets a rule. If a TTL is wanted later, it needs a new field. Erasure works because every collection carries `ownerId`.
+- **Admin exposure:** admin lists cross owners, and the `ownerId` filter makes a per-employee dump a single call. It stays behind the existing `isAdmin` check. Admin reads are not audited today.
+- **Typos:** nothing validates that a balance&apos;s `ownerId` is a real user, so an admin typo creates an orphan balance.
+
+## Assumptions (defaults applied)
+- Days are counted as calendar days, inclusive, with no weekend or holiday exclusion, and whole days only.
+- A request is charged to the year of `from`. One that spans New Year is charged entirely to the starting year.
+- Tracked types are annual and sick. Unpaid has no balance and `deductedDays` 0.
+- Pending requests reserve nothing. The balance is checked only at approve.
+- Entitlements are set by admins. A tracked type with no balance document returns 409 on approve.
+- The date range filters on `from`, as it does today.
+- The comment is optional, at most 500 characters, and visible to the owner.
+- A started approved request still can&apos;t be cancelled.
+- Uids contain no `/`.
+
+## Open questions
+Nothing blocks the design. Please confirm the day-counting rule and the year-crossing rule with HR before the seed, because they change the numbers employees will see.</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">11 turns · $0.25 · 17:00:27 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">data-design-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I read the module, the Firestore adapter, the pagination code and `firestore.indexes.json`, but I haven&apos;t run or changed anything. The design needs two adapter changes: transactions, and a stronger cursor. The existing indexes already cover both admin filters.
+
+## Decisions I assumed
+Tell me if any is wrong, because each changes the data.
+- **Unit:** whole days, counted as inclusive calendar days (`to − from + 1`). If you have working days or holidays, only the `days` computation changes.
+- **Tracked types:** `annual` and `sick` have balances. `unpaid` has none, so approving it deducts 0.
+- **Year:** a request is charged wholly to the UTC year of `from`. A request that crosses 31 Dec is not split. Splitting would put a per-year map on the request and write two balance docs per approval.
+- **Reservation:** a pending request reserves nothing. Approval is the only place the balance is checked.
+
+## Collections
+
+**`timeOffRequests/{id}`** (existing). New fields, all server-owned and absent from `TimeOffRequestFields`:
+
+| Field | Type | Written by |
+|---|---|---|
+| `days` | int | Computed on create and on every edit of a pending request. |
+| `deductedDays` | int or null | Set on approve (0 for `unpaid`). Cleared to null on refund. |
+
+Refunds use `deductedDays`, not a recomputed value, so a later change to the day-counting rule can&apos;t unbalance an old request. Existing server-owned fields (`ownerId`, `status`, `decidedBy`, `decidedAt`, `createdAt`, `updatedAt`) stay as they are. The client still writes only `type`, `from`, `to` and `reason`.
+
+**`leaveBalances/{ownerId}_{type}_{year}`** has a deterministic id, so you can read it with `get` and there&apos;s one doc per employee, type and year.
+
+| Field | Owner |
+|---|---|
+| `ownerId`, `type`, `year` | Server. They are redundant with the id, kept for queries. |
+| `entitled` (int) | Admin, through the grant endpoint only. |
+| `used` (int) | Server only, only inside approve and cancel transactions. |
+| `createdAt`, `updatedAt` | Server. |
+
+- **Invariant:** `0 ≤ used ≤ entitled`. &quot;Remaining&quot; is computed in responses and never stored.
+- **Lowering `entitled`:** this runs in a transaction and is rejected with 409 if the new value is below `used`.
+
+**`timeOffRequestHistory/{requestId}_{action}`** is a top-level collection, not a subcollection. It fits the existing `db.query` adapter, which only queries root collections, and it leaves room for audit queries later.
+
+| Field | Notes |
+|---|---|
+| `requestId` | The request this event belongs to. |
+| `ownerId` | The request owner. This is what the visibility check uses. |
+| `action` | `created`, `approved`, `rejected` or `cancelled`. |
+| `fromStatus`, `toStatus` | The status change. |
+| `actorId`, `actorRole` | Who did it. Always the verified `AuthUser`. |
+| `at` | Server clock. |
+| `comment` | The only client-supplied field. Optional, max 500 characters, taken from the body of approve, reject and cancel. |
+| `balanceDelta` | Negative on approve, positive on refund, otherwise 0. |
+| `backfilled` | True for events synthesized during the rollout. |
+
+- **Idempotency:** each action happens at most once per request, because a request can&apos;t be reopened. The deterministic id plus a create-only write (`exists:false`) means a retry can&apos;t duplicate an event.
+- **Reopening:** if you ever allow reopening, the id needs a sequence number.
+
+New endpoints:
+- `GET /timeOffRequests/:id/history`, visible to the owner or an admin, otherwise 404 like the rest of the module.
+- `GET /leave-balances/me?year=`
+- `GET /leave-balances?employeeId=&amp;year=` (admin)
+- `PUT /leave-balances/:employeeId/:type/:year` with `{entitled}` (admin)
+
+Clients get read-only access to all three data sets. The service account bypasses Firestore rules. If any client SDK exists, deny it on `leaveBalances` and `timeOffRequestHistory`.
+
+## Admin filters and `firestore.indexes.json`
+Add an admin-only `employeeId` query param, mapped to `ownerId ==`. For non-admins it is ignored, as `status` is today. `status` and `employeeId` together return 400. The two filters you asked for are separate, and allowing both would need two more composite indexes.
+
+| Query | Index used |
+|---|---|
+| status, no range (createdAt desc) | existing `(status, createdAt desc)` |
+| status + range (ordered by `from` asc) | existing `(status, from asc)` |
+| employee, no range | existing `(ownerId, createdAt desc)` |
+| employee + range | existing `(ownerId, from asc)` |
+| history for one request | **new** `(requestId, at asc)` |
+
+The range filters on `from` (requests that start in the window). It isn&apos;t an overlap test. Overlap would need inequalities on two fields.
+
+The only new index is on history. `leaveBalances` queries are equality-only (`ownerId`, `year`), so single-field indexes cover them.
+
+```json
+{
+  &quot;indexes&quot;: [
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequestHistory&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;requestId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;at&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] }
+  ],
+  &quot;fieldOverrides&quot;: []
+}
+```
+
+Deploy the index and wait for it to finish building before shipping the history endpoint.
+
+## Cursor rules
+The existing keyset cursor (order values plus `__name__`, `limit+1` lookahead) is sound. It has one gap: it checks only the array length. A cursor from a different filter set of the same shape silently returns wrong rows.
+
+1. **Envelope.** `{v:1, h, k:[…values, name]}`, base64url. `h` is a truncated SHA-256 of the collection, the filters (field, op, value) and the order-by. A mismatch returns 400 &quot;cursor does not match this query&quot;.
+2. **Security.** The hash is not a secret. Security comes from the server-forced `ownerId` filter, which is part of `h`. A cursor from one user is rejected for another.
+3. **Type check.** Values are checked against the order fields (timestamps for `from`, `createdAt` and `at`), and the last value must be a document path under the same collection. Otherwise 400.
+4. **Tie-break.** `__name__` is always last, in the same direction as the last order field. There are no skips or duplicates on ties.
+5. **What may change between pages.** `limit` may change. Filters and range may not, because the hash differs. Adding or removing a date range switches the order from `createdAt desc` to `from asc`, so the client must restart from page one.
+6. **Next cursor.** One is returned only when more rows exist.
+7. **Lifetime.** Cursors don&apos;t expire and a deleted last row is fine. Pages are not a snapshot, so a status change mid-pagination can make a row appear or vanish from a status-filtered list. There are no total counts.
+8. **Compatibility.** Accept the old bare-array cursor for one release, then drop it.
+
+## Concurrency
+Today `decide` and `cancel` read, check, then write with no guard, so two admins can both approve one request. The adapter has no transactions, so add them. I&apos;d use Firestore REST `beginTransaction`, then reads with `?transaction=` or `batchGet`, then one atomic `commit` that carries the writes. I&apos;d not use `updateTime` preconditions, because `Doc` exposes only a millisecond `Date` while Firestore&apos;s `updateTime` has microsecond precision.
+
+Add `db.transact(fn)` to the `Firestore` tag. It retries the whole function on 409 `ABORTED`, up to 5 times with jitter, then fails with a retryable error. The fake Firestore needs the same semantics: a version check at commit.
+
+**Approve**, inside one transaction:
+1. Read the request and the balance.
+2. Require `status == pending`.
+3. For tracked types, require the balance doc to exist (409 if it doesn&apos;t) and `used + days ≤ entitled`. If not, return 409 with the remaining days.
+4. Commit atomically:
+   - the request update (`status`, `decidedBy`, `decidedAt`, `deductedDays`);
+   - the balance update (`used`);
+   - a create-only history event.
+
+**Cancel an approved request.** Check that `from` is still in the future, using the server clock inside the transaction. Then set `used -= deductedDays`, clear `deductedDays`, set the status, and write the history event. If `used` would go below 0, fail loudly and log it. That means the data is corrupt.
+
+**Reject and cancel of a pending request.** These also go through a transaction, so the status race is closed. They write the request plus the history event and don&apos;t touch the balance.
+
+The balance doc is part of every approval&apos;s read set. Two concurrent approvals for the same employee, type and year conflict, and the loser re-reads the new `used`. Approvals for different balances don&apos;t contend.
+
+I didn&apos;t use `FieldTransform.increment`. It can&apos;t enforce the `used ≤ entitled` guard without a read.
+
+A scheduled reconcile job recomputes `used` as the sum of `deductedDays` over approved requests per balance. It reports mismatches and doesn&apos;t fix them silently. It&apos;s a safety net, not the enforcement.
+
+## Rollout for existing documents
+Existing requests have no `days`, no balance docs and no history. They keep working the whole time, because every new field is optional on read.
+
+1. **Index.** Deploy `firestore.indexes.json` and wait for the build.
+2. **Code, flag off.** Ship the transactional paths with `LEAVE_BALANCE=off`. In this mode they record `days`, `deductedDays` and history, but don&apos;t read or write balances. Anything approved from now on is already accounted for.
+3. **Backfill.** Run an idempotent script, dry-run first, with a report:
+   - set `days` on every request;
+   - set `deductedDays = days` on currently approved tracked requests, and 0 for `unpaid`;
+   - create `leaveBalances` for each employee, tracked type and year, with `entitled` from your policy and `used = sum(deductedDays)` of approved requests in that year;
+   - synthesize history from the existing fields: `created` from `createdAt`, `approved` or `rejected` from `decidedBy` and `decidedAt`, all with `backfilled: true` and `comment: null`;
+   - for `cancelled` requests, write a `cancelled` event with `actorId: null` and `at = updatedAt`, since the old code never recorded who cancelled.
+4. **Historic overdrafts.** If an employee&apos;s approved days already exceed the policy entitlement, set `entitled = max(policy, used)` so the invariant holds. List those employees for HR to review.
+5. **Flip the flag on.** Then run the reconcile job immediately. It catches any approval that landed between the backfill and the flip, and its `used` repairs are applied by an admin.
+6. **Rollback.** Turn the flag off. Balances stop updating and go stale, so run reconcile before turning it back on.
+
+## Questions
+1. What are the entitlements per type, and where do they come from (a flat number, or per employee from HR)?
+2. Is inclusive calendar days right, or do weekends and holidays count differently?
+3. Is year-of-`from` charging acceptable for requests that cross 31 Dec?
+4. Should `sick` be capped, or tracked only?
+
+Once you confirm, I can implement it in the order above: adapter transactions and cursor, then models and services, then tests against the fake Firestore.</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>Our worker api (hono + effect + firestore, files are here) already has timeOffRequests in production. Add: a leave balance per employee and leave type that must never go negative (approve deducts, cancelling an approved request refunds), an approval history with who/when/comment, and admin filters by status plus date range and by employee plus date range. Give me the data design: collections and fields with what the server owns, the exact firestore.indexes.json, cursor rules, how the balance stays correct under concurrent approvals, and the rollout for the existing documents.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">data-design-quality</span><span class="badge">llm</span></div>
+<div class="md"><p>PASS if the final message does all of the following: (1) uses the field names that exist in the repo (ownerId, from and to as timestamps) or flags a rename as a migration; (2) gives the composite indexes for the admin queries (status plus a from range, ownerId plus a from range) in firestore.indexes.json form, with the range field after the equality field; (3) protects the balance with a transaction (beginTransaction/commit) or a documented precondition scheme rather than a plain read-then-update, and says the loser gets a 409 or retries; (4) says the current REST adapter lacks that primitive and must gain it; (5) gives a rollout for the existing documents that includes an export or backup, a re-runnable backfill using updateMask, and a rollback.
+FAIL only if one of those five is missing. Do not fail for the indexes file not being written to disk when the JSON is in the message, nor for extra content.</p>
+</div>
+</div>
+</details>
+</article>
+<footer>Generated by <code>claude plugin eval</code> · schema v1 · scores are not comparable across different suites</footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var bar=document.querySelector('.toolbar');
+  if(!bar)return;
+  bar.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest('button');
+    if(!b)return;
+    var open=b.dataset.act==='expand';
+    document.querySelectorAll('details.section, details.grader').forEach(function(d){d.open=open});
+  });
+});
+// Collapsed details vanish from print/PDF; these pages are share artifacts.
+window.addEventListener('beforeprint',function(){
+  document.querySelectorAll('details').forEach(function(d){
+    if(!d.open){d.dataset.printOpened='1';d.open=true}
+  });
+});
+window.addEventListener('afterprint',function(){
+  document.querySelectorAll('details[data-print-opened]').forEach(function(d){
+    d.open=false;delete d.dataset.printOpened;
+  });
+});
+</script>
+</body>
+</html>

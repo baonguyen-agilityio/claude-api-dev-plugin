@@ -5,7 +5,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { errorBody } from "./errors";
 import type { AppEnv } from "./run";
 
-// Security plumbing composed in app.ts (architecture §1; rules/security.md).
+// Security plumbing composed in app.ts (architecture §1).
 export const MAX_BODY_BYTES = 1024 * 1024;
 
 // One JSON line per security event. Never the token, headers or body.

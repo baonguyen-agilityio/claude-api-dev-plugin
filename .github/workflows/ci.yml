@@ -15,6 +15,11 @@ jobs:
           node-version: 22
       - run: node plugins/backend-dev/scripts/check-plugin.mjs
       - run: node --test plugins/backend-dev/hooks/*.test.mjs
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - run: go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@latest
+      - run: for s in plugins/backend-dev/skills/*/; do "$(go env GOPATH)/bin/skill-validator" check "$s" --strict -o compact; done
 
   template-gates:
     runs-on: ubuntu-24.04

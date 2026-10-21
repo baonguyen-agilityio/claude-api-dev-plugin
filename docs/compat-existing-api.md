@@ -1,4 +1,4 @@
-# Compatibility check: backend-dev process skills on an existing API
+# Compatibility check: backend-dev skills on an existing API
 
 Date: 2026-10-21. Plugin: `backend-dev` at the `feat/plugin-hooks` tip. Target: an existing internal API that does not follow this plugin's template. In this run it is a pnpm + turbo monorepo with several apps; the Worker under test (`apps/<app>`) shares the wire contract with this plugin's design but not its internal shape (a shared `@packages/core` package, a permission matrix inside the request handler, class-based services).
 
@@ -72,3 +72,21 @@ cp -n apps/<app>/.dev.vars.sample apps/<app>/.dev.vars
 claude --plugin-dir <this repo>/plugins/backend-dev
 ```
 Full transcripts of both runs (stream-json) were kept outside the repo; the quoted Result blocks above are verbatim apart from the anonymised paths.
+
+
+## Re-run with the v2 skills (2026-10-21 23:40, `docs/v2-readiness` tip)
+
+Same target, same local `CLAUDE.md`, plan mode (read-only), Sonnet, `--setting-sources project` so only the repo's own configuration and the plugin load. Two prompts per skill under test, `live-verify` and `incident`, then one pair with a mitigation.
+
+| Prompt | Skill expected | Fired | Answer quality |
+|---|---|---|---|
+| verify the public surface without a token (docs, 401 paths, CORS with an evil origin); nothing running | live-verify | no | correct curl plan from the code: public routes, basic-auth areas, middleware order; asked for the deployed URL instead of inventing one |
+| security scan says ACAO `*`; find the cause, read-only | incident | no | cause at `app.use('*', cors())`, severity reasoned (bearer auth, no credentials), fix with an env allow-list, the `?token=` query-string weakness noticed |
+| we just deployed stag, check it works before QA | live-verify | no | asked for the stag URL (not in `wrangler.toml` or `CLAUDE.md`); refused to call the unauthenticated `tools/*` routes on stag |
+| security scan, broken right? find the cause and fix it (plan only) | incident | no | same cause, same fix |
+| the two first prompts again after one `CLAUDE.md` section naming the plugin's skills per stage | live-verify / incident | live-verify yes, incident no | unchanged |
+
+Findings:
+1. **Trigger gap on a foreign repo (open):** on this monorepo none of the four prompts fired a skill, against 2/2 on the template for the same two stages. The answers were still right because the model reads the repo and `CLAUDE.md`. The descriptions name "a Cloudflare Workers + Firestore API"; the repo is one, inside a pnpm monorepo with its own shared package, which is enough for Sonnet to answer directly. A `CLAUDE.md` section that names the skills per stage made `live-verify` fire (1/2); it is the mitigation to ship with the plugin's install notes, not a fix in the descriptions.
+2. **Open CORS (unchanged since the first run):** `cors()` with no options on every route; low severity with bearer auth and no credentials, still a scanner finding. Reported, not changed.
+3. **Read-only discipline:** plan mode kept both skills from writing; the incident answer wrote its plan to a user-level plan file, as the template runs did. The Result template in the skill asks for the reply to carry the whole answer.

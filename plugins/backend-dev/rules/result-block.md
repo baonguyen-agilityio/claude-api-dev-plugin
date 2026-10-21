@@ -4,7 +4,7 @@ Every skill ends with this block. The reader was not in the session; separate wh
 
 ```markdown
 ## Result
-**Verdict:** DONE | DONE-WITH-GAPS | BLOCKED   (probe-endpoint: VERIFIED | PARTIAL | UNVERIFIED)
+**Verdict:** DONE | DONE-WITH-GAPS | BLOCKED   (live-verify: VERIFIED | PARTIAL | UNVERIFIED; incident: FIXED | MITIGATED | NOT REPRODUCED)
 **Did:** commands run, files touched, requests sent
 **Saw:** observed output, failures included, verbatim where short
 **Not done:** anything in scope that was skipped, and why

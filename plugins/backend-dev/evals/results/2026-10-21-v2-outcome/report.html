@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eval report — backend-dev v0.1.0</title>
+</head>
+<body>
+<style>
+:root{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}}
+:root[data-theme="dark"]{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}
+:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);
+  font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:880px;margin:0 auto;padding:40px 24px 64px;display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+header h1{margin:2px 0 0;font-size:24px;font-weight:600;line-height:1.25;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;color:var(--ink-2);font-size:13px}
+.meta .num{font-variant-numeric:tabular-nums lining-nums}
+.banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;
+  border:1px solid var(--hairline);background:var(--surface);font-size:13px}
+.banner .chip-warn{color:var(--warning);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:14px 16px;
+  display:flex;flex-direction:column;gap:4px}
+.tile .label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tile .value{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums lining-nums;line-height:1.1}
+.tile.hero .value{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:48px}
+.tile .sub{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tile .value.delta-pos{color:var(--delta-good)}
+.tile .value.delta-neg{color:var(--critical)}
+.toolbar{display:flex;gap:8px;justify-content:flex-end}
+.toolbar button{font:12px system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--hairline);border-radius:6px;padding:4px 10px;cursor:pointer}
+.toolbar button:hover{color:var(--ink)}
+.toolbar button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.case{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:10px}
+.case-regressed{border-left:3px solid var(--critical)}
+.verdict{margin:6px 0 0;font-size:15px}
+.verdict .delta{font-size:15px}
+.flag{font-size:11px;font-weight:600;color:var(--warning);white-space:nowrap}
+.star{color:var(--warning);font-size:.45em;vertical-align:super;line-height:0;cursor:help}
+.legend summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.legend-list{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--ink-2)}
+.case-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.case-head h2{margin:0;font-size:16px;font-weight:600}
+.case-head .spacer{flex:1}
+.case-score{font-size:15px;font-weight:600}
+.mono{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.muted{color:var(--ink-3);font-size:12px}
+.meter{display:inline-block;position:relative;width:120px;height:6px;border-radius:4px;background:var(--grid);
+  vertical-align:middle}
+.meter>span{display:block;height:100%;border-radius:4px;max-width:100%}
+.meter .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink-3);border-radius:1px}
+.m-accent>span{background:var(--accent)}
+.m-base>span{background:var(--base-fill)}
+.delta{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.delta-pos{color:var(--delta-good)}
+.delta-neg{color:var(--critical)}
+.delta-zero{color:var(--ink-3)}
+details.section{border-top:1px solid var(--grid);padding-top:10px}
+details.section>summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-2);list-style-position:outside;margin-left:2px}
+details.section>summary:hover{color:var(--ink)}
+details.section[open]>summary{margin-bottom:8px}
+.md{display:flex;flex-direction:column;gap:8px;background:var(--inset);border-radius:8px;
+  padding:12px 14px;overflow-wrap:break-word}
+.md>:first-child{margin-top:0}
+.md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:4px 0 0;font-size:1em;font-weight:600;line-height:1.3}
+.md p,.md ul,.md ol,.md blockquote,.md table,.md pre,.md hr{margin:0}
+.md ul,.md ol{display:flex;flex-direction:column;gap:4px;padding-left:20px}
+.md blockquote{border-left:2px solid var(--hairline);padding-left:10px;color:var(--ink-2)}
+.md :not(pre)>code{background:var(--inset);padding:1px 4px;border-radius:4px;
+  font:.92em "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre{background:var(--inset);border:1px solid var(--hairline);padding:10px 12px;border-radius:6px;
+  overflow-x:auto;font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre code{background:none;padding:0;font:inherit}
+.md table{width:100%;border-collapse:collapse}
+.md th,.md td{padding:5px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--grid)}
+.md th{font-weight:600;color:var(--ink-2)}
+.md a{color:var(--accent);text-decoration:none}
+.md a:hover{text-decoration:underline}
+.grader-def{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+.grader-def+.grader-def{border-top:1px solid var(--grid)}
+.grader-def-head{display:flex;align-items:baseline;gap:8px}
+.grader-name{font:13px "SF Mono",ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+.badge{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--hairline);border-radius:999px;padding:1px 8px}
+.config{display:flex;flex-direction:column;gap:2px;background:var(--inset);border-radius:8px;padding:10px 14px}
+.config code{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere}
+.arm{display:flex;flex-direction:column;gap:8px;padding:6px 0}
+.arm+.arm{border-top:1px dashed var(--grid);margin-top:4px;padding-top:12px}
+.arm-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.arm-label{font-size:13px;font-weight:600}
+.run{border:1px solid var(--grid);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.run-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.run-title{font-size:12px;font-weight:600;color:var(--ink-2)}
+.run-error .explanation{color:var(--ink-2)}
+.note{font-size:12px;color:var(--ink-2)}
+.graders{display:flex;flex-direction:column;gap:4px}
+details.grader{border-radius:6px}
+details.grader>summary{cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:3px 4px;
+  border-radius:6px;list-style:none}
+details.grader>summary::-webkit-details-marker{display:none}
+details.grader>summary::before{content:'▸';font-size:10px;color:var(--ink-3);flex:none;
+  transition:transform .12s ease}
+details.grader[open]>summary::before{transform:rotate(90deg)}
+details.grader>summary:hover{background:var(--inset)}
+details.grader>summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grader-body{padding:6px 8px 8px 24px;display:flex;flex-direction:column;gap:6px}
+.chip{font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.chip-pass{color:var(--good);border:1px solid currentColor}
+.chip-fail{color:var(--critical);border:1px solid currentColor}
+.chip.chip-warn{color:var(--warning);border:1px solid currentColor}
+.explanation{margin:0;font-size:13px;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:break-word}
+.kv{display:flex;gap:8px;font-size:12px;color:var(--ink-3)}
+.votes{font-variant-numeric:tabular-nums;letter-spacing:.1em}
+pre.evidence{margin:0;background:var(--inset);border:1px solid var(--hairline);border-radius:6px;
+  padding:8px 10px;overflow-x:auto;max-height:320px;
+  font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:break-word}
+footer{color:var(--ink-3);font-size:12px;text-align:center;padding-top:8px}
+@media (prefers-reduced-motion:no-preference){
+  details.grader>summary,.toolbar button{transition:background .12s ease,color .12s ease}
+}
+@media (prefers-reduced-motion:reduce){
+  details.grader>summary::before{transition:none}
+}
+@media print{
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+  body{background:#fff}
+  .toolbar{display:none}
+  .case,.run,.grader-def{break-inside:avoid}
+  pre.evidence{max-height:none}
+}
+</style>
+<div class="wrap">
+<header>
+<div class="eyebrow">Plugin eval report</div>
+<h1>backend-dev v0.1.0</h1>
+<p class="verdict">Plugin effect: <span class="delta delta-pos">↑ +50.0 pts</span> vs baseline — improved 2 · flat 2 · regressed 0 of 4 cases.</p>
+<div class="meta">
+<span class="mono">.</span>
+<span>Claude Code v2.1.306</span>
+<span class="num">2026-10-21 16:45 UTC</span>
+<span class="num">3m 58s</span>
+<span class="num">$1.71</span>
+<span class="num">8 runs</span>
+<span class="num">4 in flight</span>
+
+<span>model sonnet</span>
+<span>judge default</span>
+<span class="num">threshold 100%</span>
+<span>filtered: --tag outcome</span>
+</div>
+</header>
+
+<section class="tiles">
+<div class="tile hero"><span class="label">Suite score · with plugin</span><span class="value">75%</span><span class="sub">mean of per-case scores</span></div>
+<div class="tile"><span class="label">Ablation Δ</span><span class="value num delta-pos">↑ +50.0</span><span class="sub">score points vs baseline, 4 of 4 cases</span></div>
+<div class="tile"><span class="label">Baseline score</span><span class="value num">25%</span><span class="sub">without the plugin</span></div>
+<div class="tile"><span class="label">Cases</span><span class="value num">4</span><span class="sub">3 of 4 ≥ 100% threshold</span></div>
+<div class="tile"><span class="label">Perfect runs</span><span class="value num">75%</span><span class="sub">runs where every grader passed</span></div>
+</section>
+<details class="section legend">
+<summary>How to read this report</summary>
+<ul class="legend-list">
+<li>A run's score is the weighted fraction of its graders that passed; a "perfect" run passed every grader.</li>
+<li>A case's score is the mean of its runs; a case passes when its score is at or above the 100% threshold (the tick on each case bar).</li>
+<li>The suite score is the mean of the per-case scores.</li>
+<li>Judge votes are independent samples of the LLM judge; the majority decides pass or fail.</li>
+<li>"With plugin" and "Baseline" runs are identical except for the plugin being loaded; Δ is the with-plugin score minus the baseline score.</li>
+
+</ul>
+</details>
+<div class="toolbar"><button type="button" data-act="expand">Expand all</button><button type="button" data-act="collapse">Collapse all</button></div>
+<article class="case" id="case-1">
+<div class="case-head">
+<h2>outcome-api-contract</h2>
+<span class="muted mono">evals/outcome-api-contract</span>
+<span class="spacer"></span>
+
+<span class="delta delta-pos">↑ +100.0 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">16 turns · $0.16 · 16:45:47 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">contract-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Contract: managers approve or reject leave, optionally with a note
+
+**Consumers:** unknown. The repo can&apos;t tell me who calls `/api/v1/timeOffRequests/*`, so I treat them as existing clients that must keep working and keep every change additive. The current callers of approve/reject are admins (`requireRole(&quot;admin&quot;)` in `routes.ts:21-22`). Who calls them (admin UI, scripts) is a question for you.
+
+**What exists today:** `POST /:id/approve` and `POST /:id/reject` already exist. They are admin-only and take no body. The service writes `status`, `decidedBy` and `decidedAt`, and `controller.ts` ignores any body. So the ticket is two changes to those endpoints: allow a new `manager` role, and accept an optional note.
+
+**Changes**
+
+| Endpoint | Class | Why |
+|---|---|---|
+| `POST /:id/approve`, `/:id/reject` accept an optional body `{ note }` | additive | Existing calls send no body and still get 200. |
+| Same two endpoints open to role `manager` | additive | Admins keep access. Plain users already get 403 and still do. |
+| Response of every request endpoint gains `decisionNote` and `managerId` (both nullable) | additive | New response fields. Old documents return `null`. |
+| `GET /:id` visible to the assigned manager | additive | Today it is 404 for everyone except the owner and admins. |
+| `GET /` gains `?assignedToMe=true` | additive | New optional filter. |
+| Admin approving or rejecting their own request | **unchanged (200)** | See the flag below. |
+
+**Flag, your decision:** admins can approve their own requests today. Blocking that would turn a 200 into a 403 for a live role, which is breaking. Default: leave it alone. Managers are a new role, so they get the self-decision block from day one.
+
+| Method &amp; path | Request | Response | Statuses | Access |
+|---|---|---|---|---|
+| `POST /timeOffRequests/:id/approve` | Optional JSON body `{ &quot;note&quot;: string }`. `note` is trimmed, 1–500 chars, and optional. An empty body or `{}` is valid. | 200 `{ data: TimeOffRequest }` with `status:&quot;approved&quot;`, `decidedBy`, `decidedAt`, `decisionNote` (the note, or `null`) | 200, 400, 401, 403, 404, 409, 502, 429 | admin, or the manager assigned to the request |
+| `POST /timeOffRequests/:id/reject` | Same body as approve. | Same shape, with `status:&quot;rejected&quot;`. | Same as approve | Same as approve |
+| `GET /timeOffRequests/:id` | none | `TimeOffRequest`, now with `decisionNote` and `managerId` | 200, 401, 404, 502 | owner, admin, or the assigned manager |
+| `GET /timeOffRequests?assignedToMe=true` | Existing `limit`, `cursor`, `status`, `from`, `to`, plus the new boolean | Existing page envelope | 200, 400, 401, 502 | Manager: requests where `managerId` = their uid. Admin: the same filter. Plain user: the param is ignored, as `status` is today. |
+
+Every other endpoint is unchanged apart from the two new response fields.
+
+**Ignored if sent:** `status`, `decidedBy`, `decidedAt`, `decisionNote`, `managerId`, `ownerId`, `id` and the timestamps. A body carrying them still succeeds, and the response shows the server&apos;s values. `decisionNote` is written only from `note`, and the server never takes `managerId` from a client.
+
+**State machine** (the transitions themselves are unchanged):
+- `pending → approved` or `pending → rejected` are the only legal decisions.
+- Any other state returns 409 `CONFLICT`, naming the current state:
+  - `cannot approve a rejected request`
+  - `cannot reject an approved request`
+  - `cannot approve a cancelled request`
+- A second decision on an already-decided request returns 409. Concurrent callers get exactly one 200 and one 409 (see &quot;For implementation&quot;).
+
+**Access matrix**
+
+| Endpoint | anonymous | user (owner) | user (other) | manager (assigned) | manager (not assigned) | manager (owner) | admin |
+|---|---|---|---|---|---|---|---|
+| approve / reject | 401 | 403 | 403 | 200, or 409 if not pending | 404 | 403 | 200, or 409 if not pending. Includes their own request, unchanged. |
+| `GET /:id` | 401 | 200 | 404 | 200 | 404 | 200 | 200 |
+| `GET /` | 401 | 200, own only | n/a | 200, own only. With `assignedToMe=true`, assigned requests only. | n/a | n/a | 200, all. With `assignedToMe=true`, filtered. |
+
+The 403/404 rule:
+- The role gate comes first and returns 403 with fixed text, before anything is read. This covers plain users on approve and reject.
+- A manager who isn&apos;t assigned to the request gets 404 with the same body as a missing id. Requests belong to one person, so existence is not disclosed.
+- A manager deciding their own request gets 403. They already know it exists.
+
+**Depends on** (outside this contract):
+- A `manager` value in the Firebase custom claim `role`. The API never sets claims.
+- `managerId` on each request: the uid of the person who may decide it. The system has no data today for who manages whom, and I&apos;m not designing that here.
+- Requests with `managerId: null` (all existing ones) can be decided by admins only.
+
+**For implementation**
+- Approve and reject are read-then-update today (`service.ts:60-63`). Two simultaneous approvals would both return 200. The 409 promise needs a precondition on the write (&quot;update only if still `pending`&quot;). Without it, the promise is false under load.
+- `assignedToMe` needs a composite index on `managerId` + `createdAt`, and one on `managerId` + `status` + `createdAt` for the status combination. Both go in `firestore.indexes.json`.
+- The route guard changes from `requireRole(&quot;admin&quot;)` to admin-or-manager, with the assignment and self-decision checks in the service.
+- Add `decisionNote` and `managerId` to the model&apos;s server fields. Keep them out of `NewTimeOffRequest` and `UpdateTimeOffRequest`. Existing documents read back as `null`.
+- Optional body: the controller&apos;s `body()` helper returns `null` on a missing or invalid body. Decode `null` or empty as `{}`.
+- No new error types. 400, 403, 404 and 409 all exist.
+
+## Acceptance
+QA runs these in order. Setup: **A** (user, owner), **M1** (manager), **M2** (manager), **U2** (plain user), **AD** (admin). Request **R1** is owned by A with `managerId = M1`, status `pending`, from 2026-11-03 to 2026-11-05.
+
+1. **401:** Given no token, when POST `/timeOffRequests/R1/approve`, then 401 `UNAUTHORIZED`.
+2. **403, plain user:** Given U2&apos;s token, when POST `/R1/approve`, then 403 `FORBIDDEN`.
+3. **403, owner:** Given A&apos;s token, when POST `/R1/approve`, then 403.
+4. **404, wrong manager:** Given M2&apos;s token (not assigned), when POST `/R1/approve` and when POST `/R1/reject`, then 404 `NOT_FOUND`. Given the same token, when POST `/does-not-exist/approve`, then 404 with the identical message.
+5. **404, wrong manager on reads:** Given M2&apos;s token, when GET `/R1`, then 404.
+6. **403, manager deciding their own request:** Given R2 owned by M1 with `managerId = M1`, when M1 POSTs `/R2/approve`, then 403.
+7. **400 on the body:** Given M1&apos;s token, when POST `/R1/approve` with `{&quot;note&quot;:123}`, then 400 with message `note: …`. The same for `{&quot;note&quot;:&quot;&quot;}` (empty) and a 501-char note. R1 stays `pending`.
+8. **Happy path, approve with note:** Given M1&apos;s token and R1 `pending`, when POST `/R1/approve` with `{&quot;note&quot;:&quot;enjoy the trip&quot;}`, then 200, `data.status=&quot;approved&quot;`, `data.decidedBy=M1&apos;s uid`, `data.decidedAt` is an ISO date, `data.decisionNote=&quot;enjoy the trip&quot;`, `data.managerId=M1&apos;s uid`.
+9. **Happy path, reject without a body:** Given R3 `pending` assigned to M1, when M1 POSTs `/R3/reject` with no body, then 200, `status=&quot;rejected&quot;`, `decisionNote=null`.
+10. **409 on each wrong state:**
+    - POST `/R1/approve` again returns 409 `cannot approve a approved request`. Spec for implementation: the message must read naturally, so use &quot;an approved request&quot; or the existing wording.
+    - POST `/R3/approve` returns 409 `cannot approve a rejected request`.
+    - POST `/R1/reject` returns 409 `cannot reject an approved request`.
+    - Approving a cancelled request returns 409.
+    - The `decisionNote` of R1 is unchanged after each 409.
+11. **Admin, unchanged:** Given AD&apos;s token and R4 `pending`, when POST `/R4/approve` with no body, then 200 (same as today). Given AD&apos;s own pending R5, when AD POSTs `/R5/approve`, then 200 (unchanged by default).
+12. **Server-owned field ignored:** Given M1&apos;s token and pending R6, when POST `/R6/approve` with `{&quot;note&quot;:&quot;ok&quot;,&quot;status&quot;:&quot;rejected&quot;,&quot;decidedBy&quot;:&quot;someone-else&quot;,&quot;managerId&quot;:&quot;M2&quot;}`, then 200, `status=&quot;approved&quot;`, `decidedBy=M1&apos;s uid`, `managerId` unchanged.
+13. **Reads:**
+    - GET `/R1` as M1 returns 200.
+    - GET `/?assignedToMe=true` as M1 returns only requests with `managerId=M1`, in the standard page envelope.
+    - The same call as U2 returns U2&apos;s own list, ignoring the param.
+    - GET `/` as M1 without the param returns M1&apos;s own requests only.
+14. **Existing clients:** The pre-change admin call (POST `/R4/approve`, no body, no Content-Type) returns 200 with all previous fields intact, plus `decisionNote:null` and `managerId`.
+15. **Concurrency:** Given pending R7, when M1 fires two simultaneous POSTs to `/R7/approve`, then exactly one returns 200 and the other returns 409.
+
+## Defaults applied / open questions
+
+**Defaults applied** (tell me if any is wrong):
+- The `note` is optional on both approve and reject, since the ticket says &quot;sometimes&quot;.
+- The field is named `decisionNote`, so it can&apos;t be confused with the requester&apos;s `reason`.
+- Max length is 500, matching `reason`.
+- Admin self-approval stays allowed.
+- Existing requests with `managerId: null` are admin-only.
+- Cancel is untouched. The ticket doesn&apos;t ask for a note there.
+
+**Blocking questions:**
+1. **Who is a manager of whom?** I assumed a `manager` role claim plus `managerId` on each request. If &quot;manager&quot; instead means &quot;any manager may decide any request&quot;, the 404 rows change to 200 and `managerId` isn&apos;t needed. That changes the access rule, so please confirm.
+2. **Who calls approve/reject today?** If any caller sends garbage or non-JSON bodies, 400 on a bad body is a behaviour change for them. I expect none do, but I can&apos;t tell from the repo.
+
+I did not write a checkpoint entry, because this session has no file-editing tool. The `api-contract` row in `.claude/checkpoints/2026-10-21-….md` still shows only &quot;invoked&quot;.</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">14 turns · $0.11 · 16:45:47 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">contract-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">The short version is that most of this API already exists. `POST /timeOffRequests/:id/approve` and `/reject` are in `routes.ts:21-22`. The real gap is the optional note, and &quot;manager&quot; doesn&apos;t exist as a role yet. I recommend extending those two endpoints rather than adding new ones.
+
+## Endpoints
+
+No new routes. Both existing routes get an optional JSON body.
+
+| Endpoint | Body | Success | Errors |
+|---|---|---|---|
+| `POST /api/v1/timeOffRequests/:id/approve` | optional `{ &quot;note&quot;: string }` | 200 `{ data: TimeOffRequest }` | 400, 401, 403, 404, 409 |
+| `POST /api/v1/timeOffRequests/:id/reject` | optional `{ &quot;note&quot;: string }` | 200 `{ data: TimeOffRequest }` | 400, 401, 403, 404, 409 |
+
+**Request**
+- `note` is a string of at most 500 characters, the same cap as `reason`.
+- It is trimmed. An empty or whitespace-only note is stored as no note.
+- A missing body, `{}`, or `{ &quot;note&quot;: null }` all mean &quot;no note&quot;.
+- Unknown fields are ignored, as elsewhere in the API.
+
+**Response**
+- The `TimeOffRequest` gains `decisionNote: string | null`.
+- The existing fields `status`, `decidedBy` and `decidedAt` are set as they are today.
+- Reject with a note is the main use. For approve, the note is optional.
+
+**Statuses**
+- 200: decided.
+- 400: the note is too long or not a string, or the body is malformed JSON. The error is `{ code: &quot;BAD_REQUEST&quot;, message: &quot;note: …&quot; }`.
+- 401: missing or invalid token.
+- 403: the caller isn&apos;t allowed to decide.
+- 404: the id doesn&apos;t exist.
+- 409: the request isn&apos;t `pending`, for example &quot;cannot approve a rejected request&quot;. This is unchanged.
+
+## Who may call
+
+Today only `role=admin` can approve or reject, so &quot;managers&quot; has no meaning in the code. The role comes from the Firebase token claim, and there is no team or manager-of relationship anywhere.
+
+I need a decision from product before building. Pick one:
+- **A (recommended for now):** &quot;manager&quot; means the existing admin role. There is no auth change, and it ships fastest.
+- **B:** add a `manager` role with `requireRole(&quot;admin&quot;, &quot;manager&quot;)`. This needs the claim to be issued on the identity side. A `manager` could then approve anyone&apos;s leave, which is probably wrong.
+- **C:** a manager can decide only for their own reports. This needs a data model for reporting lines, so it&apos;s a bigger ticket.
+
+I&apos;d ship A and raise B/C with product.
+
+An existing gap is that an admin can approve their own request. Ask product whether that should return 403. I left it alone because it would change behavior.
+
+Reading the note follows the existing rule: the owner (and admins) get it from `GET /timeOffRequests/:id` and from the list. Other users still get 404.
+
+## Impact on current clients
+
+This is backward compatible, with three caveats.
+- **Existing calls keep working.** Today&apos;s approve and reject calls send no body. The controller must not fail on an empty body. The current `body()` helper returns `null` in that case, so the service needs to treat `null` as &quot;no note&quot;. Only a malformed body (a non-empty body that isn&apos;t valid JSON) should give 400.
+- **The response gets a new field.** Strict clients that reject unknown fields will break. Clients that ignore extra fields are fine.
+- **Old documents have no `decisionNote`.** Documents already in Firestore are missing the field. Either normalise it to `null` on read, or document it as &quot;may be absent&quot;. I recommend normalising, so the contract holds.
+- **A note is only written when a request is decided.** `cancelled` and `pending` requests keep `null`.
+- **Update `api.http` and the OpenAPI** (`requestBody: jsonBody(DecisionBody)`).
+
+## QA test plan
+
+**Happy paths**
+- Approve with a note: 200, `status=approved`, `decisionNote` equals the note, `decidedBy` is the admin&apos;s uid, `decidedAt` is set.
+- Reject with a note: same, with `status=rejected`.
+- Approve and reject with no body, `{}`, `{&quot;note&quot;:null}` and `{&quot;note&quot;:&quot;  &quot;}`: 200 and `decisionNote: null`.
+- The owner sees the note on `GET /:id` and in the list. An admin sees it too.
+
+**Validation**
+- A 500-character note is accepted. A 501-character note gives 400.
+- A non-string note (`123`, `{}`) gives 400.
+- Malformed JSON gives 400.
+- A note with unicode or emoji, and surrounding whitespace, is stored trimmed.
+
+**Auth and visibility**
+- A normal user gets 403 on approve and reject. The 403 happens before any state check, so it doesn&apos;t reveal the request&apos;s status.
+- No token and a bad token both give 401.
+- A different, non-admin user gets 404 on `GET` for someone else&apos;s request, so the note isn&apos;t readable.
+
+**State and concurrency**
+- Approving or rejecting a request that&apos;s already approved, rejected or cancelled gives 409, and the existing note isn&apos;t overwritten.
+- Two admins decide the same request at the same time. Note that `decide` does a read then an update, so a race is possible. Confirm only one wins, or flag it as a known risk.
+- A decided request can&apos;t have its note edited (`PATCH` stays pending-only).
+
+**Regression**
+- The existing `routes.test.ts` and service tests pass unchanged.
+- Legacy documents without `decisionNote` come back with `decisionNote: null`.
+- Cancel, edit and list behave as before. Cancelling an approved request keeps the stored note.
+
+I added no automated test code, as you asked. The service tests and `fake-firestore` helper already cover most of this.
+
+## Open questions for product
+
+1. Does &quot;manager&quot; mean admin (A), a new role (B) or per-team (C)?
+2. Is the note required on reject? I&apos;d keep it optional, since the ticket says &quot;sometimes&quot;.
+3. Should the note be visible to the employee? I assumed yes.
+4. Can an admin decide their own request?</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>Ticket from product, verbatim: "managers need to approve leave; sometimes they need to add a note". This is our worker api (hono + effect + firestore, files are here). Give me the API for this: endpoints, what they take and return, statuses, who may call them, whether anything existing changes for current clients, and how QA will test it. No code.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">contract-quality</span><span class="badge">llm</span></div>
+<div class="md"><p>PASS if the final message (1) says who consumes the affected endpoints or asks before changing an existing response, and classifies each change as additive or breaking, (2) gives an endpoint table with request and response shapes that exclude server-owned fields from the request, (3) lists the statuses per endpoint including 401, 403 or 404 with the rule for which one, and 409 for an invalid state transition, (4) states the access rule per endpoint (role and ownership), and (5) ends with acceptance criteria in Given/When/Then form that QA can run.
+FAIL if a server-owned field (ownerId, status, decidedBy) is accepted in a request body, if no status list is given, if the additive/breaking question is not addressed, or if there are no acceptance criteria.</p>
+</div>
+</div>
+</details>
+</article>
+<article class="case" id="case-2">
+<div class="case-head">
+<h2>outcome-data-model</h2>
+<span class="muted mono">evals/outcome-data-model</span>
+<span class="spacer"></span>
+
+<span class="delta delta-zero">· 0.0 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:0.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">0%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">17 turns · $0.40 · 16:45:47 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">data-design-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">`firestore.indexes.json` is not written. Neither I nor the delegated agent has a working file-write tool in this session, so the JSON below is for you to paste. The only change to the existing file is one added line.
+
+I read `firestore.indexes.json`, `core/firestore.ts`, `core/pagination.ts`, `entity.ts`, the timeOffRequests model, schema and service, and the fake Firestore before designing. Everything below builds on the existing fields: `ownerId`, `from`/`to` as 00:00-UTC timestamps, `type` (annual/sick/unpaid), `status` (pending/approved/rejected/cancelled), `decidedBy` and `decidedAt`.
+
+## Collections
+
+### timeOffRequests/{id} (existing, extended; id = auto)
+| Field | Type | Owner | Rule |
+|---|---|---|---|
+| id, ownerId, createdAt, updatedAt | as today | server | unchanged |
+| type, from, to, reason | as today | client | unchanged |
+| status | enum | server | changes only inside the approve, reject and cancel paths |
+| decidedBy, decidedAt | string\|null, timestamp\|null | server | **copy** of the latest approve/reject event in `timeOffApprovals`. Cancel does not touch them. |
+| **deductions** (new) | array of `{balanceId, year, days}` | server | snapshot written on approve. Cancel refunds exactly this, so a later change to the day-counting rule can&apos;t alter a refund. Empty for unbounded types. |
+
+### leaveBalances/{ownerId}_{year}_{type} (new; id = natural key)
+| Field | Type | Owner | Rule |
+|---|---|---|---|
+| id | string | server | deterministic. Never parse it; use the fields. |
+| ownerId | string | server | the employee, taken from the admin grant target, never from a user body |
+| year, type | int, enum | server | key parts, immutable |
+| entitledDays | int ≥ 0 | server | set only by an admin grant/adjust path |
+| usedDays | int ≥ 0 | server | changed only by approve, cancel and reconcile, never by any body |
+| createdAt, updatedAt | timestamp | server | adapter |
+
+Remaining days = `entitledDays − usedDays`, computed in the response and not stored.
+
+Invariant: `0 ≤ usedDays ≤ entitledDays`. Firestore can&apos;t enforce this, because the service account bypasses rules. The guard is the transaction code path plus a reconcile job.
+
+### timeOffApprovals/{uuid} (new; append-only)
+| Field | Type | Owner | Rule |
+|---|---|---|---|
+| id | string | server | UUID generated once per service call, so a retry reuses it |
+| requestId | string | server | |
+| ownerId | string | server | **copy** of the request&apos;s owner, so owners can read their own history |
+| action | approved\|rejected\|cancelled | server | |
+| fromStatus, toStatus | enum | server | |
+| actorId | string\|null | server | who, from the token. Null only for legacy cancels. |
+| comment | string ≤ 500 | client, optional | free text |
+| createdAt | timestamp | server | when. Uses the same `now` as `decidedAt`. |
+| legacy | boolean | server | only on backfilled rows |
+
+No update or delete path exists for this collection. I chose a top-level collection because the adapter&apos;s `query` can&apos;t read subcollections, so a subcollection would need parent-path support first. Embedding was the alternative, since the state machine caps events at two per request. I rejected it because audit rows need separate retention and a &quot;by actor&quot; query later.
+
+Unpaid leave has no balance and `deductions: []`. Annual and sick have balances. This is an assumption (see the end).
+
+## Queries and indexes
+| # | Actor | Filter | Order | Index |
+|---|---|---|---|---|
+| 1 | user | `ownerId=uid` | createdAt desc | existing (ownerId, createdAt↓) |
+| 2 | user | `ownerId=uid`, from range | from asc | existing (ownerId, from) |
+| 3 | admin | none | createdAt desc | automatic single-field |
+| 4 | admin | `status` | createdAt desc | existing (status, createdAt↓) |
+| 5 | admin | `status` + from range | from asc | existing (status, from) |
+| 6 | admin | new `employeeId` → `ownerId==` | createdAt desc | existing (ownerId, createdAt↓) |
+| 7 | admin | `employeeId` + from range | from asc | existing (ownerId, from) |
+| 8 | owner or admin | `requestId==` | createdAt asc | **new** |
+| 9 | owner or admin | `ownerId==` [+ `year==`] | name asc | none (equalities only) |
+| 10 | admin | `year==` | name asc | none |
+
+The balance lookup for approve and cancel is a `get` by id. The filters you asked for need no new index on timeOffRequests; the only new index is for the history list.
+
+```json
+{
+  &quot;indexes&quot;: [
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffApprovals&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;requestId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] }
+  ],
+  &quot;fieldOverrides&quot;: []
+}
+```
+
+**Cursor rules**
+- The date range keeps its current meaning: it filters on `from`, the start date. `to` means `from &lt;= to`.
+- A cursor is keyset-only and opaque. It is base64url of `{h, v}`. `v` is the last row&apos;s order-by values as raw `timestampValue` strings, plus the document name. `h` is a hash of collection, filters with values, and order.
+- The cursor is rejected with `400 Invalid cursor` if `h` differs or the value count is wrong.
+- **Today&apos;s cursor is not bound to its filters.** The adapter only checks the value count. A cursor from the createdAt-ordered list passes on the from-ordered list (both have two values) and silently returns the wrong rows. The hash fixes that.
+- Cursors already in flight (old array format) get a 400 once after deploy, and clients restart from page 1.
+- A cursor is not a snapshot. Rows inserted before the cursor position aren&apos;t returned.
+- `employeeId` is ignored for non-admins, like `status` today. Their filter stays `ownerId=uid`.
+
+**Not queryable as asked**
+- `employeeId` + `status` + range would need a new (ownerId, status, from) index. Return 400 for that combination until someone needs it.
+- &quot;Requests that overlap a window&quot; (`from &lt;= b AND to &gt;= a`) needs (ownerId, from, to) and pays for a second range. Not offered.
+- Counting requests with a missing field can&apos;t be queried. Reconcile scans by status and `from` and filters in the script.
+
+## Consistency
+**Approve** runs in a transaction. The steps are:
+1. `:beginTransaction` (read-write).
+2. `:batchGet` the request inside the transaction.
+3. Check `pending`, then compute `deductions` from `from`/`to` (inclusive calendar days, split by year, at most two entries).
+4. `:batchGet` those balance docs inside the same transaction.
+5. Check `usedDays + days ≤ entitledDays` for each.
+6. `:commit` four writes together: the request (masked, `exists=true`), each balance&apos;s `usedDays` (masked), and the history row (`exists=false`).
+
+**Cancel and reject** go through the same transaction helper. Cancel refunds only when the request is `approved` as read inside the transaction. It refunds from the stored `deductions`, not a recomputation. If `usedDays − days &lt; 0`, it fails with a 500 and a log line instead of clamping, because clamping hides drift.
+
+**Why cancel can&apos;t be a plain read-then-update.** Cancel reads `pending`, an approve commits and deducts, then cancel writes `cancelled` with no refund. That leaks balance. It is a real race in today&apos;s `cancelTimeOffRequest`. A cancel of a pending request must use the transaction too.
+
+**Editing a pending request** needs `currentDocument.updateTime` from its read. Otherwise an edit that raced an approve can change the dates of an already-deducted request.
+
+**Losers**
+- **Insufficient or missing balance:** `409 Conflict`. It is deterministic, so there is no retry.
+- **Request no longer pending:** `409 Conflict`, as today. The client re-reads.
+- **Commit `ABORTED`** (another transaction on the same balance): the service retries in a new transaction, 3–5 attempts with jitter. The `now` and history id are fixed before the first attempt. After that it returns `503` with `Retry-After`. The client may retry.
+- **Failures before commit:** call `:rollback` best-effort so locks are released.
+
+Contention per employee balance is far below one write per second, so no sharding.
+
+**What the adapter lacks** (implement work; the tag and the fake both need it):
+1. `create` with a caller-supplied id and `exists=false`, for balance and history ids.
+2. A transaction primitive: begin, get inside the transaction, commit with multi-document writes and preconditions, rollback.
+3. `Doc.updateTime` and an `ifUpdateTime` option on `update`.
+4. A `FirestoreError` that carries the gRPC status string. `ABORTED` and `ALREADY_EXISTS` are both HTTP 409 and are indistinguishable today.
+5. The cursor v2 format above.
+6. A transaction-capable fake, with a version check that returns `ABORTED` so a concurrent-approval test can race two approves.
+
+## Rollout
+1. Export `timeOffRequests` with `gcloud firestore export`. Run a script that counts approved requests and shows their days per employee and year.
+2. Deploy the new index and wait for READY.
+3. Deploy the code behind an off-by-default flag such as `LEAVE_BALANCE_ENFORCED`. Readers tolerate a missing `deductions`. The schema decoder gets `deductions` as optional. Every write keeps its `updateMask`.
+4. Backfill the history rows, with id `${requestId}_legacy_${action}` and `exists=false`, so re-runs are no-ops:
+   - Approved: one `approved` row.
+   - Rejected: one `rejected` row.
+   - Cancelled with a non-null `decidedBy`: an `approved` row plus a `cancelled` row with `actorId: null` and `createdAt = updatedAt`. Reject can&apos;t be cancelled, so this means approved then cancelled. Cancelled requests can&apos;t be edited, so `updatedAt` is the cancel time.
+   - Cancelled with null `decidedBy`: one `cancelled` row with a null actor.
+   - Pending: none.
+   - All backfilled rows carry `legacy: true`.
+5. Backfill `deductions` onto approved requests only. Use a masked `PATCH` with the `updateTime` precondition from the read.
+6. Create the balance docs with `exists=false`. `usedDays` is the sum of the approved deductions, and `entitledDays` comes from HR.
+   - If `entitledDays` is below `usedDays` for someone, list them for HR. Don&apos;t silently raise it.
+7. Flip the flag.
+8. Run the reconcile script, which makes the request documents the source of truth. It scans `status==approved` over `from &gt;= Jan 1 − 30 days` (the existing index) and rebuilds `usedDays` per balance.
+   - It re-runs step 5 for any approved request still missing `deductions`. Those are approvals made between steps 5 and 7.
+   - Schedule it as a recurring check.
+9. **Rollback:** turn the flag off. The new fields are additive and old code ignores them. After a rollback, re-run reconcile before turning the flag on again. Cancels made while it was off didn&apos;t refund.
+
+## Data classification
+- `comment` and `reason` are free text, so treat them as PII: never log them and don&apos;t export them.
+- History retention is an HR policy (see open questions).
+- A user can see their own request&apos;s history, including the admin&apos;s `actorId` and comment.
+- Admin lists cross owners and expose reasons, comments and balances. That is the one place ownership isn&apos;t a filter.
+- The client SDK must stay denied by security rules. All access goes through this API.
+
+## Assumptions (defaults applied)
+- Days are counted as inclusive calendar days, whole days only, with no half-days.
+- Annual and sick have balances; unpaid doesn&apos;t.
+- Pending requests don&apos;t reserve balance. Only approve deducts, so two pending requests can together exceed the balance and the second approval gets the 409.
+- Carry-over between years is out of scope.
+
+## Open questions (blocking)
+- Where does `entitledDays` come from: an admin endpoint, or the HR import script? Step 6 needs the HR numbers either way.
+- How long is approval history kept?</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">11 turns · $0.24 · 16:45:47 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">data-design-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I read the module, `core/firestore.ts` and `core/pagination.ts`. Two findings change the design:
+
+- **The adapter can&apos;t do atomic multi-document writes.** It only has `create`, `update` and `remove`, with no `:commit`, no transactions and no preconditions. Keeping the balance correct needs one new adapter primitive (below).
+- **`toDoc` drops the document `updateTime`.** The concurrency approach depends on it.
+
+## Assumptions to confirm
+
+- **Days:** inclusive calendar days, `(to − from)/86400000 + 1`, as whole numbers. If weekends or holidays shouldn&apos;t count, or you want half-days, that changes the unit.
+- **Unpaid:** `unpaid` has no balance. `annual` and `sick` do.
+- **Reset:** a balance has no year in its key. It&apos;s a running balance, and a yearly reset is an admin grant.
+- **Date range:** the range filters on the request&apos;s start date (`from`), as it does today. Overlap semantics (&quot;who is off this week&quot;) would need two inequality fields, or in-memory filtering that breaks paging. I&apos;d keep start-date.
+
+## Collections
+
+**`timeOffRequests/{id}`** (existing). Client-writable fields stay `type, from, to, reason`. The new fields are server-owned:
+
+| Field | Meaning |
+|---|---|
+| `days` | Computed on create and on pending edit. |
+| `chargedDays` | 0 until approved, then equal to `days`, and back to 0 on cancel. A refund uses this value, never a recomputation. |
+| `version` | Count of history events. |
+
+`status, decidedBy, decidedAt, ownerId, createdAt, updatedAt` remain server-owned.
+
+**`leaveBalances/{ownerId}__{type}`** is a deterministic ID, so there is exactly one document per employee and type.
+- Fields: `ownerId`, `type`, `granted` (int), `used` (int), `version`, `createdAt`, `updatedAt`.
+- Server-owned: all of it. Clients never write it.
+- &quot;Available&quot; is `granted − used`, computed at read time and never stored, so it can&apos;t drift.
+- Invariant: `0 ≤ used ≤ granted`.
+
+**`timeOffRequestHistory/{requestId}_{version:04}`** is an append-only collection.
+- Fields: `requestId`, `ownerId`, `version`, `action` (`submitted | approved | rejected | cancelled | migrated`), `fromStatus`, `toStatus`, `actorId`, `at`, `comment`, `days`.
+- Server-owned: everything except `comment`, which is optional, max 500 characters, and comes from the body of approve, reject and cancel.
+- The ID is deterministic and written with `exists:false`, so a duplicate event is impossible.
+- It is top-level rather than a subcollection so the existing `query()` works without parent-path support.
+
+**`leaveBalanceEntries/{balanceId}_{version:06}`** is an append-only ledger of every balance change.
+- Fields: `kind` (`grant | deduct | refund | migrate`), `days`, `requestId?`, `actorId`, `at`, `comment`, `usedAfter`, `grantedAfter`.
+- It lets you audit and reconcile the balance.
+
+**New endpoints:**
+- `GET /time-off-requests/:id/history`
+- `GET /leave-balances`: your own balances, or `?ownerId=` for admins.
+- `POST /leave-balances/:ownerId/:type/grants`: admin only, `{days ≠ 0, comment required}`. It rejects any change that would make `granted &lt; used`.
+
+## Indexes
+
+All four required queries are already covered by the existing file, so it doesn&apos;t change:
+
+- admin status + range: `(status, from)`
+- admin employee + range: `(ownerId, from)`
+- the unranged defaults: `(status, createdAt↓)` and `(ownerId, createdAt↓)`
+
+History is `requestId ==` ordered by `__name__`, which the automatic single-field index serves. Balances are served the same way.
+
+```json
+{
+  &quot;indexes&quot;: [
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;createdAt&quot;, &quot;order&quot;: &quot;DESCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;ownerId&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] },
+    { &quot;collectionGroup&quot;: &quot;timeOffRequests&quot;, &quot;queryScope&quot;: &quot;COLLECTION&quot;, &quot;fields&quot;: [ { &quot;fieldPath&quot;: &quot;status&quot;, &quot;order&quot;: &quot;ASCENDING&quot; }, { &quot;fieldPath&quot;: &quot;from&quot;, &quot;order&quot;: &quot;ASCENDING&quot; } ] }
+  ],
+  &quot;fieldOverrides&quot;: []
+}
+```
+
+- **New query param:** admin list gains `?ownerId=`. Today the admin branch ignores it. Non-admins have it ignored, the same as `status` today.
+- **Combined filters:** `ownerId` together with `status` returns 400, because that query is unindexed.
+- **If you want the combination:** add `(ownerId, status, from ASC)` and `(ownerId, status, createdAt DESC)`.
+
+## Cursor rules
+
+1. The default order is `createdAt desc`, which is immutable. A ranged query orders by `from asc`.
+2. `__name__` is always the final sort key, in the same direction as the last field. The adapter already does this, and it fetches `limit+1` to detect a next page.
+3. Never filter in memory after the query. Every page except the last is full, and that is also why overlap ranges are out.
+4. Bind the cursor to the query. Today a cursor from one filter can be replayed on another, and a wrongly-typed one only fails when Firestore returns a 400. Encode `[v1, hash(collection, effective where, orderBy), ...values, name]`, and return 400 on a hash mismatch.
+   - &quot;Effective where&quot; includes the forced `ownerId` for non-admins.
+   - This is a correctness fix. Filters are server-applied, so a forged cursor can&apos;t widen access.
+5. Cursors in flight at deploy become invalid. Clients get 400 `Invalid cursor` and restart, which is acceptable.
+6. Sort fields come only from the server allowlist, never from the caller.
+7. `from` can change while a request is pending, so a concurrent edit can duplicate or skip a row in a `from`-ordered scan. That is acceptable, and I&apos;d document it.
+8. History and balances order by `__name__` alone. The zero-padded version in the ID makes that chronological.
+
+## Concurrency
+
+**Adapter change.** Add `commit(writes[])`, which POSTs to `:commit`:
+- Each write carries `currentDocument.updateTime` for an existing document, or `exists:false` for a new one.
+- A commit is all-or-nothing, so the preconditions are checked atomically.
+- `toDoc` must expose the raw `updateTime` string. Don&apos;t parse it into a `Date`, because millisecond truncation breaks the precondition.
+- Strip it from API output.
+- `fake-firestore` needs the same semantics.
+
+**Approve** runs this loop:
+1. Read the request. It must be `pending`.
+2. If the type isn&apos;t `unpaid`, read the balance. If `used + days &gt; granted`, or the balance is missing, return 409 `insufficient balance`.
+3. Commit four writes:
+   - the request: `status`, `decidedBy`, `decidedAt`, `chargedDays`, `version+1`
+   - the balance: `used+days`, `version+1`
+   - the history event
+   - the ledger entry
+4. The request and balance writes both carry their `updateTime` preconditions.
+5. On `FAILED_PRECONDITION` (400) or `ABORTED` (409), re-read and retry. Use up to 5 attempts with jitter, then return 409 &quot;try again&quot;.
+
+**Why this is safe.** Take a balance of 5 and two 3-day approvals for the same employee. Both read `used=0`. The first commit wins. The second fails its precondition on the balance, re-reads `used=3`, and gets 409. An approve racing a cancel or an edit of the same request fails the same way on the request document.
+
+**Cancel of an approved request** goes through the same loop and refunds `chargedDays`. If `used &lt; chargedDays` or the balance is missing, fail with a 500. Never clamp.
+
+**Existing paths must move to the same helper.** `updateTimeOffRequest`, `cancelTimeOffRequest` and `create` currently check the status and then write. An edit can land after an approval, and a cancel can&apos;t refund.
+
+**Why preconditions rather than `beginTransaction`:** no locks are held across Worker subrequests, and the adapter change is smaller. Per-employee-and-type write rates are tiny.
+
+Firestore has no CHECK constraint, and the service account bypasses security rules. The guarantee comes from read-then-precondition-commit, plus a reconciliation check. Deny client SDK access to these collections anyway.
+
+## Rollout
+
+Everything is additive and reversible. A flag `LEAVE_BALANCE_STRICT` starts off.
+
+1. **Prep (no deploy).** HR supplies `granted` per employee and type, and chooses a `--since` period start. That is the one input I can&apos;t derive.
+2. **Deploy code, flag off.**
+   - The response schema defaults the missing fields on old documents: `days` computed from the dates, `chargedDays=0`, `version=0`.
+   - All transitions now write history.
+   - Balance handling is lenient: if a balance document exists, it&apos;s enforced and updated. If it&apos;s missing, the approval goes through with `chargedDays=0`.
+3. **Backfill dry-run, then real run.** It&apos;s idempotent and resumable: a one-off script, paged by name, that skips any request that already has `version`.
+   - **Requests:** set `days`, then write the `submitted` event at v1 (flagged `migrated`). For decided requests, also write a v2 event from `decidedBy` and `decidedAt`. A legacy cancel has no recorded actor, so use `system:migration` and `updatedAt`. Set `version` to the event count.
+   - **Balances:** per (owner, type), commit one batch that creates the balance with `exists:false`. Set `granted` from HR, set `used` to the sum of legacy approved `days` since `--since`, and set `chargedDays` on those requests. Add a `migrate` ledger entry. It stays under 500 writes.
+   - **Overdrawn employees:** the dry-run lists anyone where `used &gt; granted`. The script refuses to create their balance, and HR resolves each case. It never clamps.
+   - **Concurrent approvals:** a live approval during the run just makes the batch retry on `updateTime`. Anything approved in step 2 without a balance has `chargedDays=0`, so the backfill picks it up.
+4. **Reconcile.** For every balance, check that `used` equals the sum of `chargedDays` over its approved requests in the period, and that it equals the ledger sum. Check that every in-period approved request has a balance. Fix any gaps.
+5. **Flip the flag on.** A missing balance now returns 409 `insufficient balance`.
+6. **Rollback.** Turn the flag off. No data needs reverting, and refunds still work wherever a balance exists.
+
+I haven&apos;t changed any code. If this looks right, I&apos;d start with the `commit` primitive and `updateTime` in `toDoc`, plus the fake-firestore support, since everything else sits on them.</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>Our worker api (hono + effect + firestore, files are here) already has timeOffRequests in production. Add: a leave balance per employee and leave type that must never go negative (approve deducts, cancelling an approved request refunds), an approval history with who/when/comment, and admin filters by status plus date range and by employee plus date range. Give me the data design: collections and fields with what the server owns, the exact firestore.indexes.json, cursor rules, how the balance stays correct under concurrent approvals, and the rollout for the existing documents.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">data-design-quality</span><span class="badge">llm</span></div>
+<div class="md"><p>PASS if the final message (1) uses the field names and types that exist in the repo (<code>ownerId</code>, <code>from</code>/<code>to</code> as timestamps) or explicitly flags any rename as a migration, (2) gives a complete firestore.indexes.json whose composites cover every listed admin query with the range field leading the order, (3) keeps the balance correct with a transaction or an equivalent precondition scheme, names the status the losing writer gets and who retries, and says the template adapter must gain that primitive, and (4) gives a rollout for the existing documents with an export or backup step, an idempotent masked backfill, and a rollback.
+FAIL if fields are invented without reading the repo, if an admin query has no declared index, if the balance is protected only by a read-then-write in code, or if there is no rollout section.</p>
+</div>
+</div>
+</details>
+</article>
+<article class="case" id="case-3">
+<div class="case-head">
+<h2>outcome-incident-502</h2>
+<span class="muted mono">evals/outcome-incident-502</span>
+<span class="spacer"></span>
+
+<span class="delta delta-pos">↑ +100.0 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">13 turns · $0.12 · 16:46:44 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">incident-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">**Verdict: BLOCKED.** I can&apos;t run commands here, and this checkout can&apos;t produce the logged error, so I have not changed any code.
+
+## What the code shows
+
+- **A string `qty` never reaches Firestore in this checkout.** `qty` is `Schema.NonNegativeInt` (`item.model.ts:9`), and `updateItem` decodes the body with it before touching the db (`item.service.ts:25`). `{&quot;qty&quot;:&quot;7&quot;}` fails as a `ParseError`, so the client gets 400 `BAD_REQUEST`.
+- **Even without the schema, the encoder would send `stringValue`.** `encode` (`firestore.ts:41`) maps a string to `{stringValue}`. Firestore would then accept it and store the wrong type. It would not return the 400 you saw.
+- **So what&apos;s live isn&apos;t this code.** The tail line shows `&quot;7&quot;` sent as `integer_value`, which this checkout can&apos;t do. Either the deployed build is a different SHA, or something outside `src/` is changing the request. I can&apos;t tell which without the deployed version.
+- **The 502 mapping is a second defect, and it is present here.** `run.ts:37` turns every `FirestoreError`, including a 400 caused by a value this API sent, into 502 `UPSTREAM_ERROR`. That is why clients see a gateway error instead of a 400. I&apos;m not changing it until the first cause is found.
+- **I&apos;m not proposing to coerce `&quot;7&quot;` to 7 at the boundary.** That would hide the symptom and change the contract so that mobile may send strings. That decision belongs to you and the mobile team. The defect is a live build encoding a string as an integer.
+
+## What I would run, in order
+
+1. **Mitigate first.** Run `npx wrangler deployments list --env prod`, and `npx wrangler versions list --env prod` if it&apos;s a versioned deploy. If a good version predates this morning, run `npx wrangler rollback --env prod`. It prompts, so confirm it yourself. Envs in `wrangler.toml` are `dev`, `stag` and `prod`.
+2. **Find the live SHA.** Get the source SHA for the deployed version and compare it with `git log -1` here.
+   - If the SHAs differ, check out the live SHA and diff `src/core/firestore.ts` and the items schema and model against this checkout.
+   - If they match, I&apos;m wrong and need the full tail output.
+3. **Reproduce.** Open `npx wrangler tail --env prod --format json`, then send the exact request:
+   `curl -X PATCH $URL/api/v1/items/abc123 -H &quot;authorization: Bearer $TOKEN&quot; -H &apos;content-type: application/json&apos; -d &apos;{&quot;qty&quot;:&quot;7&quot;}&apos;`
+   Expect 400 from this checkout. A 502 means the live build differs.
+4. **Pin it with a failing test.** On the live SHA, add an adapter test in `src/core/tests/firestore.test.ts` that checks the request body for a string value. Add a route test that PATCHes `{qty:&quot;7&quot;}` and expects 400. Run both on the unfixed code and keep the failure output.
+5. **Fix in the shared place.** Fix the encoding in `core/firestore.ts` and map a Firestore 400 caused by our own payload to something other than `UPSTREAM_ERROR` in `core/run.ts`. If you decide mobile may send numeric strings, that goes in the schema as an explicit `NumberFromString` and a contract change.
+6. **Check blast radius.** Run `git grep -n &quot;integerValue\|NonNegativeInt\|Schema.Int&quot;` across modules. `timeOffRequests` is the sibling to check for the same pattern.
+7. **Prove it.** Run `npm run typecheck &amp;&amp; npm test &amp;&amp; npm run check`. Re-run the original request and paste the status and body. Confirm the `firestore PATCH … 400` tail line is gone.
+
+## Still open
+
+- Which SHA is live.
+- Whether the mobile app&apos;s string `qty` is intended or a bug on their side.
+- Whether the 502 mapping should change.
+
+Send me the deployment list output and I&apos;ll continue from step 2.
+
+I couldn&apos;t tick the checkpoint file at `.claude/checkpoints/2026-10-21-da746ae2-cc77-45f1-81ce-f3a0ce685927.md` because I have no edit tool here. It still shows only the `invoked` row.</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">14 turns · $0.16 · 16:46:52 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">incident-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I couldn&apos;t change any files, because Edit is disabled in this session and I have no Write tool. Below is what I found and the patch I would apply. I haven&apos;t run any commands.
+
+## Conclusion from the code
+
+**The code in this directory can&apos;t produce the failure in your log.** That matters for the fix.
+
+- `qty` is `Schema.NonNegativeInt` (`src/modules/items/models/item.model.ts:9`). `updateItem` decodes the body with it before any Firestore call (`item.service.ts:25`).
+- A string `&quot;7&quot;` fails that decode with a `ParseError`. `toErrorResponse` turns that into a **400 BAD_REQUEST** (`run.ts:29`), not a 502.
+- On the Firestore side, `encode` only emits `integerValue` for a real JS number, as `String(v)` (`firestore.ts:43`). Firestore accepts that form.
+- So with this code, a string `qty` should never reach Firestore as an integer value.
+
+**Likely causes:**
+- The deployed worker isn&apos;t this code. `git log` is empty and everything is untracked, so I can&apos;t tell what was deployed or when.
+- The 400 from Firestore might come from some other value in the same request, such as one the mobile app sends in a different shape.
+
+## What I would run
+
+1. `wrangler deployments list` and `wrangler tail --format json`. These show which version is live and the raw request and response around the failure.
+2. `git log` and `git status` to confirm the deployed commit matches this tree.
+3. After the patch: `npx vitest run src/modules/items src/core` and `npx tsc --noEmit`.
+
+## Proposed patch
+
+Make the input DTOs tolerate digit strings for `qty` and decode them to numbers. Keep the stored and response schema (`ItemFields`) strict, so the OpenAPI response docs stay accurate.
+
+In `src/modules/items/schemas/item.schema.ts`, add this above `NewItem`:
+
+```ts
+const QtyInput = Schema.Union(
+  ItemFields.qty,
+  Schema.compose(Schema.String.pipe(Schema.pattern(/^\d+$/)), Schema.NumberFromString).pipe(Schema.compose(ItemFields.qty)),
+);
+const InputFields = { ...ItemFields, qty: QtyInput };
+```
+
+Then use `Schema.Struct(InputFields)` in both `NewItem` and `UpdateItem`.
+
+Add these cases to the `updateItem` test in `item.service.test.ts`:
+
+- `{ qty: &quot;7&quot; }` returns `qty` 7.
+- `{ qty: &quot;7.5&quot; }` fails with `ParseError`.
+- `{ qty: &quot;&quot; }` fails with `ParseError`.
+
+## Mitigation
+
+If the deployed code differs from this tree, this patch won&apos;t help until it&apos;s deployed.
+
+If the live worker really does forward strings to Firestore, the quickest mitigation is to redeploy the commit that matches this tree (`wrangler rollback` or `wrangler deploy`). Affected clients would then get a clear 400 instead of a 502.
+
+Do you want me to apply the patch once file edits are available?</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>Production incident on this worker api (files here). Since this morning some clients get 502 on PATCH /api/v1/items/:id. wrangler tail shows: firestore PATCH documents/items/abc123 400 {"error":{"code":400,"message":"Invalid value at 'document.fields[1].value.integer_value' (TYPE_INT64), "7"","status":"INVALID_ARGUMENT"}} → 502 UPSTREAM_ERROR. The mobile app sends qty as a string. Handle this incident; you cannot run commands here, so say what you would run and what you conclude from the code.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">incident-quality</span><span class="badge">llm</span></div>
+<div class="md"><p>PASS if the final message (1) notices that the code in the workspace rejects a string qty with 400 before reaching Firestore and therefore says the deployed version must be identified (wrangler deployments or versions list, git SHA) before concluding, (2) does not present coercing "7" to 7 as the fix, or presents it only as a contract decision to raise, (3) names the 502 mapping of a Firestore 400 caused by the API's own value as a defect in its own right, (4) proposes a failing test at the adapter or schema layer, and (5) mentions rollback as the mitigation while users are affected.
+FAIL if it ships a coercion as the fix, if it assumes the workspace code is what is deployed, or if no test is proposed.</p>
+</div>
+</div>
+</details>
+</article>
+<article class="case" id="case-4">
+<div class="case-head">
+<h2>outcome-system-design</h2>
+<span class="muted mono">evals/outcome-system-design</span>
+<span class="spacer"></span>
+
+<span class="delta delta-zero">· 0.0 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">22 turns · $0.29 · 16:47:20 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">design-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I&apos;ve read the template and written the design below. It&apos;s design only, with no code and no files changed. I couldn&apos;t tick the phase entry in `.claude/checkpoints/…md` because Edit is disabled in this session.
+
+## Design: leave requests, decision emails, monthly HR export
+
+**What the code does today**
+- `timeOffRequests` already exists with create, edit, approve, reject and cancel.
+- Approve and reject are `requireRole(&quot;admin&quot;)`. There is no manager concept anywhere.
+- There is no email, queue, cron or R2 yet. `src/index.ts` exports only the Hono app.
+- The request has no employee email. `AuthUser.email` is optional.
+- `decide()` reads, checks `pending`, then calls `update`, which only sends `currentDocument.exists=true`. Two concurrent approvals both succeed.
+- The code comments cite `architecture.md §n`, but that file isn&apos;t in the tree. If it has a &quot;no Queues&quot; scope line, ADR 0001 amends it.
+
+**Flows**
+- Employee → `POST /time-off-requests` → pending request. Already built, with one new field (below).
+- Manager → `POST /:id/approve` or `/reject` → decision saved. Employee emailed within about a minute, not before the response.
+- Cron on the 1st → HR gets last month&apos;s CSV. Within the hour is fine; it must never be sent twice.
+
+**Modules**
+- `timeOffRequests` stays the only owner of the data. The notification and export services go inside it, because modules never import each other.
+- New `core/jobs.ts`: a `Jobs` tag wrapping the Queue producer, with a fake for tests.
+- New `core/mailer.ts`: a `Mailer` tag over an HTTP email API, with a fake for tests. It takes an idempotency key.
+- New `core/files.ts`: a `Files` tag over R2, with a fake for tests.
+- `Firestore` gets two additions:
+  - An `updateTime` precondition on `update`.
+  - `createWithId`, using `?documentId=` and the not-exists precondition.
+- `src/index.ts` changes from `export default app` to `{ fetch, scheduled, queue }`.
+
+**Request path**
+- Create adds the server field `ownerEmail` from the token, plus `managerId` (see the open question).
+- Decide is one PATCH on the request document. It writes `status`, `decidedBy`, `decidedAt`, `noticePending: true` and `noticeKind: &quot;approved&quot;|&quot;rejected&quot;`. It carries the precondition `currentDocument.updateTime = &lt;value just read&gt;`.
+- After the write, `Jobs.send({type:&quot;decision-notice&quot;, requestId})` is awaited and its failure swallowed and logged. The decision is already committed, so a failed enqueue must not fail the approval. The sweep below covers it.
+
+**Off the request path** (one queue `leave-jobs` per env, plus a dead-letter queue; messages carry ids, never payloads)
+
+| Work | Primitive | Idempotency key | Where it lives |
+|---|---|---|---|
+| Decision email | Queue consumer | `notice:${requestId}:${noticeKind}` | `noticePending/noticeSentAt` on the request, plus the provider&apos;s idempotency header |
+| Lost-enqueue sweep | Cron `0 * * * *` | the same notice key | Queries `noticePending == true` and `decidedAt` older than 15 min (a single-field query, no new index), then `sendBatch` of up to 50 |
+| Monthly export | Cron `0 1 1 * *` UTC enqueues `{type:&quot;monthly-export&quot;, month:&quot;YYYY-MM&quot;}` | `export:${YYYY-MM}` | `exports/{YYYY-MM}` document created with `exists=false`, plus the R2 object `exports/YYYY-MM.csv` |
+
+Notice consumer, per message:
+1. `get` the request. If `noticePending` is false, ack.
+2. Send the email using `noticeKind` stored on the document, not the current `status`. A later cancel therefore doesn&apos;t change what the employee is told.
+3. Update `noticePending: false, noticeSentAt` with an updateTime precondition.
+
+A crash between steps 2 and 3 resends with the same provider key. The provider dedupes within its window (Resend is 24 h; verify the one you pick).
+
+Export consumer:
+1. Read `exports/{month}`. If `emailedAt` is set, ack.
+2. If there is no document, build the CSV, put it in R2, then `createWithId` the export document with `{r2Key, rowCount, sha256, emailedAt: null}`. An already-exists response means another consumer won, so reload it.
+3. If the document exists without `emailedAt`, read the CSV back from R2. The first snapshot wins, so a retry never emails a different file.
+4. Email HR with the CSV attached, using key `export:${month}`.
+5. Set `emailedAt`.
+
+Every step is safe to repeat. A month with no rows still sends a CSV with only a header, so HR knows the job ran.
+
+**Races and preconditions**
+- Approve vs approve, approve vs reject, and decide vs cancel all go through the `updateTime` precondition. The loser gets `Conflict` (409).
+- Firestore REST reports a failed precondition as HTTP 400 `FAILED_PRECONDITION`, which the adapter currently turns into a generic `FirestoreError`. Map it to `Conflict`. Verify the exact status on a dev project.
+- `updateTimeOffRequest` and `cancelTimeOffRequest` are also read-then-write and get the same precondition. Otherwise an edit can land between the manager&apos;s read and the approval write.
+- A manager can still approve dates they viewed before the employee edited them. Closing that means the client sends the `updatedAt` it saw, which is a contract change, so it is left out of this design.
+- A manager approving their own request is rejected.
+- A non-reportee gets 404, matching the existing &quot;no enumeration&quot; rule.
+
+**Limits** (assumes the Workers Paid plan; confirm the load-bearing numbers in the current docs)
+
+| Limit | Number assumed | How the design stays under it |
+|---|---|---|
+| Subrequests per invocation | 50 free, 10 000 paid | Each notice costs a Firestore get, a Firestore update, one email call and sometimes a token fetch. That&apos;s 3 to 4 per message, so a batch of 10 is under 50 even on free. The export is about 10 to 20 (paged queries of 300, plus R2 and email). |
+| CPU per invocation | 30 s default on paid, only about 10 ms on free | Per-message work is small. Building a CSV from about 2 000 rows is well under a second. Free is unusable for this. |
+| Memory | 128 MiB | A month&apos;s CSV is roughly 300 KB, assuming 5 000 employees or fewer. Built in memory from paged reads, no streaming needed. |
+| Queue message | 128 KB | Ids only. |
+| Outbound connections | 6 concurrent | The consumer handles messages sequentially. |
+| Queue retries and retention | `max_retries` defaults to 3; retention 4 days on paid | Set `max_retries = 5` with backoff. Anything left goes to the dead-letter queue, which is alerted on. |
+| Cron | UTC, per env | Declared under `[env.dev/stag/prod.triggers]`. The queue consumers, the producer binding, the R2 bucket and `HR_EMAIL` are also declared per env. Secret `MAIL_API_KEY` is set per env. |
+| Module-scope state | per isolate | None used for dedupe. State is only on documents. |
+
+**Data leaving the system**
+- **Employee email:** contains type, dates, decision and approver email only. It does not include the free-text `reason`.
+- **HR CSV columns:** `requestId, employeeId, employeeEmail, type, from, to, days, approverId, decidedAt`.
+- **Reason excluded:** the free-text reason is left out because it can hold health information. `sick` as a type stays, since HR needs it.
+- **Formula injection:** any string cell starting with `=`, `+`, `-`, `@`, tab or CR gets a leading `&apos;`. Output is RFC 4180 quoted with a UTF-8 BOM so Excel shows Vietnamese names correctly.
+- **Time zone:** leave dates are date-only UTC (`UtcDate`), so a &quot;month&quot; selected by `from` has no time-zone shift. Only `decidedAt` is shown, in UTC ISO. The cron runs at 01:00 UTC (08:00 in Vietnam).
+
+**Assumptions (defaults applied)**
+- Last month&apos;s rows are `status == approved` with `from` in that month. A request spanning two months counts in its start month. This uses the existing index `status + from`.
+- The mail provider is an HTTP API with an idempotency header (Resend or similar). The provider is swappable behind the `Mailer` tag.
+- R2 keeps the snapshot as an audit trail and for re-sending. The CSV is attached to the HR email.
+- The manager&apos;s identity arrives as a `managerId` custom claim in the Firebase token, plus a `manager` role. It is snapshotted onto the request at create. Admins may still decide.
+- The employee&apos;s email is snapshotted from the token at create, and create fails with 400 if the token has no email.
+- Only approve and reject send email. Cancellations don&apos;t.
+
+**Open question (blocking the data model only, not this design)**
+- Where does &quot;who is X&apos;s manager&quot; live? I defaulted to a token claim set by HR provisioning. If you&apos;d rather have an `employees/{uid}` profile collection, that is a new module and changes the create path. Please confirm before the data-model step.
+
+---
+
+## ADR 0001 — Queue and cron for decision emails and the monthly export, with Firestore preconditions on decisions
+
+Status: proposed. Date: 2026-10-21.
+
+**Context**
+- Employees need an email on each approve or reject, and HR needs last month&apos;s CSV on the 1st.
+- Both are side effects to other systems: an email provider and R2. They can fail and must not be lost or duplicated.
+- The worker has no queue, cron or mailer today.
+- `decide()` has a race: two concurrent approvals both succeed, and a trigger attached to that write would inherit the race.
+- Volumes are small: roughly hundreds of decisions a month and about 2 000 export rows, so the cost is in correctness rather than throughput.
+
+**Decision**
+- **Decision writes:** `decide`, edit and cancel gain a Firestore `updateTime` precondition.
+- **Notice flag:** the decision write also sets `noticePending` and `noticeKind` on the same document, which is the outbox.
+- **Emails:** a Cloudflare Queue `leave-jobs` (with a dead-letter queue) carries the id-only messages. The consumer sends the email with idempotency key `notice:${requestId}:${noticeKind}` and clears `noticePending`.
+- **Sweep:** an hourly cron re-enqueues notices still pending after 15 minutes, which covers a lost enqueue.
+- **Export:** a monthly cron enqueues `export:${YYYY-MM}`. The consumer snapshots the CSV to R2, creates `exports/{YYYY-MM}` with the not-exists precondition, emails HR with that key, and sets `emailedAt`.
+- **Scope line:** this amends any &quot;no Queues&quot; line in `architecture.md`.
+
+**Alternatives considered**
+- `ctx.waitUntil` for the email — the work is lost if the isolate is evicted, and there is no retry or dead letter.
+- Sending the email inside the request — a provider outage would fail an approval that has already been decided, and it adds latency.
+- A 5-minute polling cron as the only mechanism — it costs reads every tick with no backoff or dead letter, and it delays emails up to 5 minutes. A bounded hourly sweep is kept only as a safety net.
+- A Durable Object per request for ordering — there is no hot key, and a Firestore precondition already settles the race.
+- A Firestore transaction (`beginTransaction` and `commit`) for decide — it costs extra subrequests for the same guarantee as `updateTime`.
+- Cloudflare Workflows for the export — it brings a new primitive for a four-step job whose steps are each idempotent already.
+- Querying Firebase Auth for the employee&apos;s email at send time — it needs another OAuth scope and adds a dependency that can fail.
+
+**Consequences**
+- **Easier:** approvals no longer depend on the mail provider. Retries are safe, and the HR file is a reproducible snapshot.
+- **Harder or costlier:**
+  - It needs the Workers Paid plan and a queue and an R2 bucket in each of the 3 envs.
+  - `index.ts` gains `scheduled` and `queue` handlers, and the `Firestore` tag gains two operations.
+  - The create contract changes, because a token without an email is now rejected.
+  - Delivery is at-least-once, so a provider that ignores the idempotency header can send a duplicate.
+- **Monitor:**
+  - Dead-letter queue depth above 0 should alert.
+  - Sweep finds above 0 should warn, because they mean enqueues are failing.
+  - `exports/{prev month}` with no `emailedAt` by 03:00 UTC on the 1st should alert.
+  - A rise in decide Conflict responses would show a double-click or UI bug.
+- **Revisit if:**
+  - Volume reaches many thousands of decisions a day, which would call for per-message batching changes.
+  - HR wants per-team or time-zone-based months.
+  - The provider offers no idempotency key.
+  - Cloudflare Workflows becomes the house pattern for multi-step jobs.
+
+If you approve, the next steps are `data-model`, then `api-contract`, then `implement`. `data-model` covers the new fields, the `managerId` source, and the `Firestore` tag additions.</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">20 turns · $0.24 · 16:47:37 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">design-quality</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I read the existing `timeOffRequests` module, the Firestore adapter, `run.ts`, `auth.ts`, `app.ts` and `wrangler.toml`. No code has been written. Several parts of the request already exist, and a few gaps affect the design.
+
+## What exists and what&apos;s missing
+
+- **Already there:** create, edit, approve, reject and cancel for time-off requests, with an admin-only approve/reject.
+- **No manager concept:** a request has `ownerId` and nothing else. Approval is `requireRole(&quot;admin&quot;)`.
+- **Approve/reject has a race:** `decide()` in `timeOffRequest.service.ts:58` reads the request, checks it is pending, then updates it. Two managers acting at once both succeed. With email attached, that means two emails.
+- **The adapter can&apos;t make it safe yet:**
+  - `update` only supports `currentDocument.exists=true`.
+  - `toDoc` drops Firestore&apos;s `updateTime`, which is the precondition needed.
+  - There is no multi-document `:commit`.
+  - Every 4xx becomes a generic `FirestoreError` (502), so precondition failures can&apos;t map to `Conflict` (409).
+- **Entry point:** `index.ts` exports the Hono app directly, so there is no `scheduled` handler.
+- **Cron triggers:** `wrangler.toml` doesn&apos;t inherit bindings per env, so each env needs its own `triggers.crons`. A stag cron that mails real HR would be bad.
+- **The docs are missing:** the code cites &quot;architecture §N&quot;, but no such doc is in the repo.
+
+## Modules
+
+```
+core/firestore.ts      + commit(writes[]) with preconditions (exists / updateTime)
+                       + create-with-id, updateTime on Doc, 409/412 -&gt; Conflict
+core/mailer.ts         Mailer Context.Tag + MailerLive (HTTPS provider) + fake for tests
+core/jobs.ts           runJob(env, effect): provides Firestore + Mailer (+ R2 later)
+modules/employees/     employees/{uid} {email, name, managerId}: read-only lookups
+modules/timeOffRequests/  create snapshots approverId; decide() becomes an atomic commit
+modules/notifications/ outbox collection, templates, delivery (claim -&gt; send -&gt; mark)
+modules/hrExport/      period math, query, CSV, export job
+src/jobs/index.ts      cron string -&gt; job effect, mirroring modules/index.ts
+src/index.ts           export default { fetch: app.fetch, scheduled }
+```
+
+The request path stays Firestore-only. `Run` already types its environment as `Firestore`, and `Mailer` appears only in jobs. That keeps a mail outage from reaching approve/reject.
+
+## Request path vs background
+
+**Request path (approve/reject):**
+1. The caller must be the request&apos;s `approverId`. An admin override is possible. The approver is never the owner.
+2. One Firestore `:commit` does two things atomically:
+   - Update the request with `status`, `decidedBy` and `decidedAt`, under an `updateTime` precondition.
+   - Create `emailOutbox/decision:{requestId}` with `exists=false`.
+3. Respond 200. No email I/O happens inline.
+4. Optionally call `ctx.waitUntil(deliver(id))` as a fast path.
+
+**Background:**
+- `*/5 * * * *` is the sweeper. It delivers due outbox rows and advances the HR export.
+- `0 1 1 * *` seeds `exports/{YYYY-MM}` for the previous month. It only creates the job doc, and the sweeper does the work. That gives one retry mechanism for both features.
+
+`waitUntil` is only a latency optimization. It gets about 30 seconds after the response and isn&apos;t durable. The outbox row is the real guarantee.
+
+## Retry safety
+
+**Decision emails (at-least-once delivery, made effectively once):**
+- **No double decision:** the outbox doc id is deterministic, and the `updateTime` precondition also catches a decide racing a cancel. A second decider gets 409 instead of a second email.
+- **Delivery states:** rows go `pending` → `sending` → `sent`, or `dead`.
+- **Claim:** a compare-and-set sets `leaseUntil` (about 2 minutes), so the fast path and the sweeper can&apos;t both send. An expired lease is retaken.
+- **Provider dedupe:** the send passes `Idempotency-Key: decision:{requestId}`. A crash between &quot;provider accepted&quot; and &quot;marked sent&quot; is then deduplicated, provided the provider supports it. Resend does for about 24 hours, but check that for whichever provider is chosen.
+- **Backoff:** 4xx permanent errors go straight to `dead`. 429, 5xx and network errors retry with exponential backoff, capped inside the provider&apos;s dedupe window. Beyond that, a rare duplicate is the accepted failure mode.
+- **Payload:** the row stores a snapshot of recipient, decision and dates, so a later cancel or edit doesn&apos;t change what was announced.
+
+**HR export:**
+- **Period:** it comes from `event.scheduledTime`, never `Date.now()`, so a late or re-run tick targets the same month.
+- **Job doc:** `exports/2026-09` is created with `exists=false`. A second cron fire or a retry hits 409 and resumes.
+- **Steps:** claim lease → query → build CSV → R2 put → mark `built` → send with `Idempotency-Key: hr-export:2026-09` → mark `sent`.
+- **Resume:** once the job is `built`, retries reuse the stored file and only re-send. The file HR gets is stable even if requests are cancelled later.
+- **Query:** `status == approved` and `from ∈ [monthStart − MAX_SPAN_DAYS, monthEnd)`, then filter `to ≥ monthStart` in memory. `MAX_SPAN_DAYS = 30` bounds this, and the existing `status+from` index serves it. Paging goes through the adapter&apos;s cursor.
+- **CSV safety:** quote per RFC 4180. Prefix any cell starting with `= + - @` with `&apos;` (formula injection), since `reason` is free text. I&apos;d leave `reason` out by default, because sick-leave reasons are sensitive.
+
+## Platform limits that matter
+
+I&apos;m confident about the Firestore items. I&apos;m less sure of the exact Cloudflare numbers, so verify those against current docs and the account&apos;s plan before building.
+
+| Limit | Effect on the design |
+|---|---|
+| Subrequests per invocation (50 free, much higher on paid) | Every Firestore call, token fetch and mail send counts. Sweeper batches are capped (about 20 rows, 3–4 calls each) so they fit even the free limit. |
+| CPU time per invocation (about 10 ms free, 30 s default paid) | A paid plan is effectively required. Cold-isolate RS256 signing happens on every cron tick. |
+| `waitUntil` about 30 s | It can&apos;t be the delivery mechanism. |
+| Cron: UTC only, can fire late, can double-fire | Everything downstream is idempotent. 01:00 UTC is 08:00 Vietnam time. &quot;Last month&quot; is defined on UTC-midnight date fields, so DST and TZ don&apos;t shift the boundary. |
+| Cron triggers are per env | The `[env.*]` blocks need their own crons. Dev and stag need `HR_EXPORT_TO` and an email allowlist pointing at a test inbox. |
+| No outbound SMTP on Workers | Use an HTTPS email API behind the `Mailer` tag. |
+| Provider rate limit (Resend defaults to about 2 req/s) | The sweeper sends sequentially or with low concurrency. |
+| Worker memory 128 MB | Building the CSV in memory is fine at this scale. |
+| Firestore `:commit` max 500 writes, 1 MiB doc | Not a constraint here, but the CSV does not go in a Firestore doc, so it goes in R2. |
+| Composite indexes must be deployed | Add `emailOutbox(state, nextAttemptAt)` and `exports(state)` to `firestore.indexes.json`. |
+
+## Testing
+
+- Extend `fake-firestore` with commit preconditions.
+- Add a fake `Mailer` with injectable failures.
+- Drive time with Effect&apos;s `TestClock`.
+- Cases to cover:
+  - double-approve race
+  - approve racing cancel
+  - crash between send and mark
+  - lease expiry
+  - cron double-fire
+  - a month-boundary request
+  - CSV injection
+
+## Blocking questions
+
+1. Which email provider? This determines the idempotency header and the rate limit.
+2. Where does the manager relationship live? I assumed an `employees` collection. The alternative is Firebase custom claims.
+3. What should the CSV count: leave overlapping the month or decided in the month, and calendar days or working days? I assumed approved leave overlapping the month, in calendar days.
+4. Is R2 (a new binding) acceptable? Without it there is no durable copy of what HR received.
+5. Do managers get notified of new requests? You didn&apos;t ask for it, so I left it out, but nothing else tells them.
+
+---
+
+# ADR-0001: Leave approval notifications and monthly HR export
+
+**Status:** Proposed (2026-10-21)
+
+**Context.** The Worker API (Hono + Effect + Firestore REST) already has time-off CRUD and an admin-only approve/reject. The new requirements are:
+- Manager-based approval.
+- An email to the employee on every decision.
+- A CSV of last month&apos;s leave sent to HR on the 1st.
+
+Workers have no transactions across Firestore and an email provider, and cron triggers and `waitUntil` give no exactly-once guarantee. The current decide path is read-then-write and racy.
+
+**Decision.**
+1. **Approver.** `approverId` (from `employees/{uid}.managerId`) is snapshotted on the request at creation. Only the approver, or an admin, may decide. The owner may never decide their own request.
+2. **Atomic decision.** Decide is a single Firestore `:commit`. It updates the request under an `updateTime` precondition and creates `emailOutbox/decision:{requestId}` with `exists=false`. The adapter gains `commit`, `updateTime` exposure and precondition-failure → `Conflict` mapping.
+3. **Transactional outbox, delivered by a cron sweeper (`*/5`).** An optional `waitUntil` fast path exists. Delivery uses a lease, exponential backoff and a dead state. The provider `Idempotency-Key` equals the outbox id. We accept at-least-once delivery with provider-level dedupe.
+4. **HR export is a job doc.** A monthly cron seeds `exports/{YYYY-MM}`, and the same sweeper completes it through resumable, idempotent steps. The period comes from `scheduledTime`. The CSV is stored in R2 and emailed with a deterministic idempotency key.
+5. **Mail stays off the request path.** Mailing lives behind an Effect `Mailer` tag used only by jobs. `Run` stays `Firestore`-only, and `index.ts` exports `{ fetch, scheduled }`.
+6. **Per-env crons and recipients.** Dev and stag send only to test inboxes.
+
+**Alternatives considered.**
+- **Send inline in the request:** couples approve/reject availability and latency to the mail provider, and a failure after commit loses the email.
+- **`waitUntil` only:** not durable.
+- **Cloudflare Queues:** gives retries and a DLQ, but there is still a dual-write problem between Firestore and the queue, so an outbox is needed anyway. It is a reasonable later upgrade if volume grows.
+- **Delivery state on the request doc:** this avoids multi-doc commits, but it leaks internal fields into API responses and doesn&apos;t generalize to other emails.
+- **A single `*/5` cron that also seeds the export:** self-heals a missed monthly tick. Rejected for now as less legible.
+
+**Consequences.**
+- Decisions are race-safe and an email is never lost once the decision commits. Delivery latency is a few seconds on the fast path and up to 5 minutes otherwise.
+- A rare duplicate email is possible if retries outlive the provider&apos;s dedupe window.
+- New surface to build and maintain: the commit/precondition adapter work, an `employees` data source, an R2 binding, email secrets, new indexes and per-env cron config.
+- A missed monthly cron seed has no alerting yet. A follow-up should add a dead-letter or &quot;export not sent by the 2nd&quot; alert.
+
+**Open items.** Email provider, source of the manager relationship, CSV semantics, and R2 approval. See the questions above.
+
+I haven&apos;t saved the ADR to a file. If you&apos;d like it at `docs/adr/0001-leave-notifications-and-hr-export.md`, say so.</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>Our worker api (hono + effect + firestore, see any files here) needs: employees submit leave requests, their manager approves or rejects, the employee gets an email on each decision, HR gets a CSV of last month on the 1st. Design it before any code: modules, request path vs background work, how emails and the export are safe against retries, which platform limits matter. Finish with an ADR.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">design-quality</span><span class="badge">llm</span></div>
+<div class="md"><p>PASS if the final message (1) keeps the approve/reject request path to a single write and moves the email and the export off it onto a named Workers primitive (Queue, Cron Trigger, or an explicitly justified polling cron), (2) names an idempotency key for the email and one for the export and where each is stored, (3) states at least two platform limits with how the design stays under them, and (4) ends with an ADR that has context, decision, at least one rejected alternative with a reason, and consequences.
+FAIL if emails are sent inside the request handler, if idempotency is not addressed, if no limit is named, or if there is no ADR section.</p>
+</div>
+</div>
+</details>
+</article>
+<footer>Generated by <code>claude plugin eval</code> · schema v1 · scores are not comparable across different suites</footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var bar=document.querySelector('.toolbar');
+  if(!bar)return;
+  bar.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest('button');
+    if(!b)return;
+    var open=b.dataset.act==='expand';
+    document.querySelectorAll('details.section, details.grader').forEach(function(d){d.open=open});
+  });
+});
+// Collapsed details vanish from print/PDF; these pages are share artifacts.
+window.addEventListener('beforeprint',function(){
+  document.querySelectorAll('details').forEach(function(d){
+    if(!d.open){d.dataset.printOpened='1';d.open=true}
+  });
+});
+window.addEventListener('afterprint',function(){
+  document.querySelectorAll('details[data-print-opened]').forEach(function(d){
+    d.open=false;delete d.dataset.printOpened;
+  });
+});
+</script>
+</body>
+</html>

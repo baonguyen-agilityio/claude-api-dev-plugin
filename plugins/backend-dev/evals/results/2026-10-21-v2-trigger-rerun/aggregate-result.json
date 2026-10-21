@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.306",
+  "startedAt": "2026-10-21T16:53:36.253Z",
+  "durationSeconds": 108,
+  "costUsd": 0.2511143,
+  "partial": false,
+  "suite": {
+    "root": "/Users/baonguyen/Desktop/trainings/claude-api-dev-plugin/plugins/backend-dev",
+    "ablation": "none",
+    "modelOverride": "sonnet",
+    "caseFilter": "sd-buried",
+    "threshold": 1,
+    "concurrency": 3,
+    "plugins": [
+      {
+        "name": "backend-dev",
+        "version": "0.1.0",
+        "path": "/Users/baonguyen/Desktop/trainings/claude-api-dev-plugin/plugins/backend-dev"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "sd-buried",
+      "dir": "evals/sd-buried",
+      "source": "prose",
+      "promptMarkdown": "two things: 1) fix the typo in the README, 2) the bigger one — we want a nightly job that recomputes every employee's leave balance and flags negative ones. where does that run and how do we keep it from double-running?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?system-design\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.0830507,
+            "judgeCostUsd": 0,
+            "durationSeconds": 51,
+            "startedAt": "2026-10-21T16:53:36.328Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-JqkhF7/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.0849953,
+            "judgeCostUsd": 0,
+            "durationSeconds": 47,
+            "startedAt": "2026-10-21T16:53:36.328Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-ZMHwEv/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.0830683,
+            "judgeCostUsd": 0,
+            "durationSeconds": 108,
+            "startedAt": "2026-10-21T16:53:36.328Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-m7ltPO/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}
