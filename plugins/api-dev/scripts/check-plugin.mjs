@@ -40,7 +40,9 @@ for (const name of skills) {
   const body = read(file);
   if (fm.name !== name) err(file, `name "${fm.name}" != folder "${name}"`);
   const desc = fm.description ?? "";
-  if (desc.length < 250) err(file, `description too short to trigger reliably (${desc.length} chars)`);
+  if (desc.length < 120) err(file, `description too short to trigger reliably (${desc.length} chars)`);
+  if (!/^This skill should be used when/.test(desc)) err(file, "description must be third person: start with \"This skill should be used when\"");
+  if ((desc.match(/"/g) ?? []).length < 6) err(file, "description needs at least three quoted trigger phrases");
   if (desc.length > 1024) err(file, `description over 1024 chars (${desc.length})`);
   if (!/standalone/i.test(desc)) err(file, "description must say it is for a standalone API");
   if (!/Not for|instead/.test(desc)) err(file, "description must say which sibling or situation it is not for");

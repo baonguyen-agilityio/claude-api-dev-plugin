@@ -1,11 +1,11 @@
 ---
 name: probe-endpoint
-description: Drive an endpoint of a standalone Hono + Effect API for real with curl — against wrangler dev or a deployed env — to confirm the status, the { data } / { code, message } envelope, the OpenAPI schema and every rejection case (400/401/403/404/409). Use whenever the user asks to verify, smoke-test, try or "check it works" on an endpoint, inspect a response, confirm a change before a PR or after a deploy — also phrased like "kiểm tra API chạy chưa", "test thử endpoint", "gọi thử bằng curl", "verify endpoint". Use it even when vitest is green: tests never see an unregistered route, a missing guard, a spec that drifted or a var missing in one env. Not for writing code; for a defect found here, continue with debug-endpoint.
+description: This skill should be used when the user asks to "verify the endpoint", "smoke-test the API", "check it works", "hit it with curl", "test thử endpoint", "kiểm tra API chạy chưa", "gọi thử bằng curl", or wants a change confirmed before a PR or after a deploy, on a standalone Hono + Effect Worker API. Drives every declared status with curl, even when tests are green. Not for writing code; for a defect found here, continue with debug-endpoint.
 ---
 
 # Probe endpoint
 
-An endpoint is verified when a curl you actually ran returned the status and body you report, and you can paste both. Green tests, a clean typecheck, a click in Swagger or reading the handler are not verification. Swagger UI (`/api/v1/docs`) is for discovery; curl is the record.
+An endpoint is verified when a curl that actually ran returned the status and body in the report, and both can be pasted. Green tests, a clean typecheck, a click in Swagger or reading the handler are not verification. Swagger UI (`/api/v1/docs`) is for discovery; curl is the record.
 
 ## 1. Set up
 ```bash
@@ -44,7 +44,7 @@ A spec that disagrees with the response is the bug even when the response is rig
 | missing record | `/does-not-exist` | 404 |
 | bad cursor | `?cursor=garbage` | 400 "Invalid cursor" |
 | invalid transition | approve an already approved request | 409 |
-| server-owned field in body | `-d '{"ownerId":"someone-else", ...}'` | 2xx, returned record shows **your** ownerId |
+| server-owned field in body | `-d '{"ownerId":"someone-else", ...}'` | 2xx, returned record shows the **caller's** ownerId |
 | body limit / rate limit | > 1 MB body; burst past the limit (deployed only) | 413 / 429 |
 
 Deployed env: `BASE=https://<env>-<name>.<account>.workers.dev/api/v1`; once per release also check headers: `curl -s -D - -o /dev/null "$BASE/health" -H 'Origin: https://evil.example' | grep -iE 'access-control|strict-transport|x-content-type'`. Never change data in `prod` to verify without the user's go-ahead.

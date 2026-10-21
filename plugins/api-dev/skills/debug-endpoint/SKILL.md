@@ -1,11 +1,11 @@
 ---
 name: debug-endpoint
-description: Diagnose and fix a defect in a standalone Hono + Effect + Firestore API on Cloudflare Workers — reproduce with curl, pin it with a failing test, find the real cause, fix it in the shared place, prove it is gone. Use whenever the user reports an endpoint returning the wrong status or body, a 500, a 401/403 that should not happen, missing or wrong data, something that fails only after deploy, a failing or flaky test, or pastes an error from wrangler, vitest or the logs — also phrased like "API bị lỗi", "endpoint trả sai", "deploy xong thì hỏng", "test bị fail". Use it even when the user already guessed the cause or the fix looks like one line. Not for a multi-app monorepo that has its own bug workflow.
+description: This skill should be used when the user reports that an endpoint "returns 500", "returns the wrong status", "returns 200 when it should be 403", "fails only after deploy", "any website can call our API", "the CORS header says *", "test bị fail", "API bị lỗi", "endpoint trả sai", or pastes a wrangler, vitest or log error from a standalone Hono + Effect Worker API, including when they only want the cause and the fix without edits. Reproduces with curl before explaining. Not for a multi-app monorepo with its own bug workflow.
 ---
 
 # Debug endpoint
 
-The first fix that comes to mind is a theory about a bug you have not seen yet. Reproduce, pin, explain, fix the cause, prove.
+The first fix that comes to mind is a theory about a bug nobody has reproduced yet. Reproduce, pin, explain, fix the cause, prove.
 
 ## 1. Reproduce
 - Exact request: method, path, body, which user/role, which env, the response received.
@@ -25,7 +25,7 @@ Lowest layer that shows it (`${CLAUDE_PLUGIN_ROOT}/rules/testing.md`). Run it on
 | widen `PUBLIC_ROUTES` to clear a 401 | token from the wrong Firebase project, or the route path |
 | re-run a flaky test | fix shared state |
 
-If you cannot explain why it happens, you have not found the cause; say that instead of shipping a guard. `git log -S '<expression>' -- src/` shows when the code appeared.
+When the cause cannot be explained, it has not been found; say so instead of shipping a guard. `git log -S '<expression>' -- src/` shows when the code appeared.
 
 ## 4. Fix in the shared place, check the blast radius
 Fix `run`, `authMiddleware`, `core/firestore.ts` or the model, not the one route in the report. Then grep every module for the same pattern; a defect copied from `items` usually has siblings.

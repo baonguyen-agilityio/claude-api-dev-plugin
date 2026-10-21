@@ -1,6 +1,6 @@
 ---
 name: add-endpoint
-description: Add or change a module, resource, endpoint, field, DTO, validation rule, pagination, role or ownership check in a standalone Hono + Effect + Firestore API on Cloudflare Workers (one Worker repo with src/core and src/modules/<name>). Use whenever the user asks to add an API or endpoint, create a module or CRUD for a resource, add or rename a response field, change validation, restrict who may call or edit something, or make a route public — also phrased like "thêm API", "tạo module", "thêm field vào response", "chỉ admin mới được duyệt", "chỉ chủ sở hữu mới được sửa". Use it BEFORE editing routes or services: it starts with the contract check and the module generator; an endpoint built outside the conventions silently skips auth or the error envelope. For a reported defect use debug-endpoint instead; not for a multi-app monorepo.
+description: This skill should be used when the user asks to "add an endpoint", "add a module", "create CRUD for a resource", "add a field to the response", "change validation", "only admins can delete", "chỉ chủ sở hữu mới được sửa", "thêm API", "tạo module" in a standalone Hono + Effect + Firestore Worker API. Runs the contract check and the module generator first. For a reported defect use debug-endpoint; not for a multi-app monorepo.
 ---
 
 # Add endpoint
