@@ -1,2 +1,0 @@
-Wrote evals/results/2026-10-21/result.json
-Report: /Users/baonguyen/Desktop/trainings/claude-api-dev-plugin/plugins/api-dev/evals/results/2026-10-21/report.html
