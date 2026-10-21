@@ -1,12 +1,12 @@
 ---
 name: data-model
-description: Designs Firestore data for a Cloudflare Workers API: document shapes from the access patterns, server-owned fields, composite indexes as firestore.indexes.json, cursor rules, consistency under concurrent writes, and a rollout plan for existing data. Use when a feature needs to store, query, filter, sort, count or migrate data, even if the user only asks for a field, an index or a filter, or asks how to store something.
+description: "Designs Firestore data for a Cloudflare Workers API: document shapes from the access patterns, server-owned fields, composite indexes as firestore.indexes.json, cursor rules, consistency under concurrent writes, and a rollout plan for existing data. Use when a feature needs to store, query, filter, sort, count or migrate data, even if the user only asks for a field, an index or a filter, or asks how to store something."
 allowed-tools: Read, Glob, Grep, Write, Edit, WebFetch
 ---
 
 # Data model
 
-Scope: stage 2 of the backend process. Not for module boundaries and background work (that is system-design) or the HTTP shape (api-contract). The output is the data design in the reply; `firestore.indexes.json` is the one file this stage writes.
+Problem this solves: a feature needs documents, queries and invariants, and Firestore punishes a shape chosen before the access patterns (missing composite, unbounded fan-out, a balance that goes negative under two concurrent writes). The answer is the data design in the reply plus `firestore.indexes.json`, the one file this skill writes. Works on its own or as a step of the process; module boundaries and the HTTP shape are separate skills.
 
 Rules of the store: `references/firestore-modeling.md` (shapes, server fields, consistency, rollout). Queries, indexes and cursors: `references/queries-and-indexes.md`.
 
@@ -18,7 +18,7 @@ Rules of the store: `references/firestore-modeling.md` (shapes, server fields, c
 4. **Mark every field server-owned or client-supplied.** Server-owned: ids, `ownerId` from the token, timestamps (`REQUEST_TIME` transform or adapter), status, derived amounts. Snapshot what a later rule change must not alter (`deductedDays` on approve, so cancel refunds exactly that).
 5. **Derive the indexes from the queries, then write `firestore.indexes.json`.** One composite per distinct (equalities…, range/order) shape; the range field leads the `orderBy`; `__name__` is the implicit tiebreak and follows the last field's direction. A query that needs an index the file does not declare is a bug, not a console link to click later.
 6. **Define the cursor contract per query:** opaque, encodes the order-by values plus the document name, bound to the filter set that produced it, `400 Invalid cursor` otherwise; `limit + 1` or the adapter's `nextCursor` to detect the last page.
-7. **Choose consistency per invariant:** a precondition (`currentDocument.updateTime` / `exists`) for one document; a transaction (`:beginTransaction` + `:commit`) when the check reads one document and writes another (balance must not go negative); a `FieldTransform.increment` for counters with no invariant; sharded counters only above ~1 write/s on one document. Say which REST status the loser gets and who retries. If the adapter lacks the primitive, say so and hand it to implement.
+7. **Choose consistency per invariant:** a precondition (`currentDocument.updateTime` / `exists`) for one document; a transaction (`:beginTransaction` + `:commit`) when the check reads one document and writes another (balance must not go negative); a `FieldTransform.increment` for counters with no invariant; sharded counters only above ~1 write/s on one document. Say which REST status the loser gets and who retries. If the adapter lacks the primitive, say so; adding it is implementation work.
 8. **Plan the rollout for existing documents:** additive fields; tolerant readers first; backfill idempotent with `updateMask` and an `updateTime` precondition; flag flip; reconcile; rollback by flag. Export the collection before the backfill.
 9. **Classify the data:** PII and free text (comments, reasons), retention of history, what an admin list leaks across owners.
 
@@ -36,7 +36,7 @@ Rules of the store: `references/firestore-modeling.md` (shapes, server fields, c
 
 ## Output
 
-```markdown
+````markdown
 ## Collections
 ### <collection>/{id}  (<existing, extended> | <new>; id = <auto | natural key>)
 | Field | Type | Owner | Rule |
@@ -62,11 +62,11 @@ Not queryable as asked: <pattern → why → the shape offered instead>
 <PII / free text / retention / cross-owner exposure>
 
 ## Assumptions (defaults applied) / Open questions (blocking only)
-```
+````
 
-## Checklist before handing to api-contract and implement
+## Done when
 - [ ] Every field in the tables exists in the repo or is marked new; types match the existing documents.
 - [ ] Every query line has an index row and the file declares it.
 - [ ] Every invariant has a mechanism, a loser status and a retry owner.
 - [ ] The rollout has an export step and a rollback step.
-- [ ] Adapter primitives the design relies on but the template lacks are listed for implement.
+- [ ] Adapter primitives the design relies on but the template lacks are listed.
