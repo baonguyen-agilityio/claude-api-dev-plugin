@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eval report — api-dev v0.1.0</title>
+</head>
+<body>
+<style>
+:root{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}}
+:root[data-theme="dark"]{--plane:#0d0d0d;--surface:#1a1a19;--ink:#ffffff;--ink-2:#c3c2b7;--ink-3:#898781;--hairline:rgba(255,255,255,.10);--grid:#2c2c2a;--inset:rgba(255,255,255,.05);--accent:#3987e5;--base-fill:#898781;--delta-good:#0ca30c;--good:#0ca30c;--warning:#fab219;--critical:#e06c6c;color-scheme:dark}
+:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);
+  font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:880px;margin:0 auto;padding:40px 24px 64px;display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+header h1{margin:2px 0 0;font-size:24px;font-weight:600;line-height:1.25;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;color:var(--ink-2);font-size:13px}
+.meta .num{font-variant-numeric:tabular-nums lining-nums}
+.banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;
+  border:1px solid var(--hairline);background:var(--surface);font-size:13px}
+.banner .chip-warn{color:var(--warning);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:14px 16px;
+  display:flex;flex-direction:column;gap:4px}
+.tile .label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tile .value{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums lining-nums;line-height:1.1}
+.tile.hero .value{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:48px}
+.tile .sub{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tile .value.delta-pos{color:var(--delta-good)}
+.tile .value.delta-neg{color:var(--critical)}
+.toolbar{display:flex;gap:8px;justify-content:flex-end}
+.toolbar button{font:12px system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--hairline);border-radius:6px;padding:4px 10px;cursor:pointer}
+.toolbar button:hover{color:var(--ink)}
+.toolbar button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.case{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;padding:18px 20px;
+  display:flex;flex-direction:column;gap:10px}
+.case-regressed{border-left:3px solid var(--critical)}
+.verdict{margin:6px 0 0;font-size:15px}
+.verdict .delta{font-size:15px}
+.flag{font-size:11px;font-weight:600;color:var(--warning);white-space:nowrap}
+.star{color:var(--warning);font-size:.45em;vertical-align:super;line-height:0;cursor:help}
+.legend summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.legend-list{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--ink-2)}
+.case-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.case-head h2{margin:0;font-size:16px;font-weight:600}
+.case-head .spacer{flex:1}
+.case-score{font-size:15px;font-weight:600}
+.mono{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.muted{color:var(--ink-3);font-size:12px}
+.meter{display:inline-block;position:relative;width:120px;height:6px;border-radius:4px;background:var(--grid);
+  vertical-align:middle}
+.meter>span{display:block;height:100%;border-radius:4px;max-width:100%}
+.meter .tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink-3);border-radius:1px}
+.m-accent>span{background:var(--accent)}
+.m-base>span{background:var(--base-fill)}
+.delta{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.delta-pos{color:var(--delta-good)}
+.delta-neg{color:var(--critical)}
+.delta-zero{color:var(--ink-3)}
+details.section{border-top:1px solid var(--grid);padding-top:10px}
+details.section>summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-2);list-style-position:outside;margin-left:2px}
+details.section>summary:hover{color:var(--ink)}
+details.section[open]>summary{margin-bottom:8px}
+.md{display:flex;flex-direction:column;gap:8px;background:var(--inset);border-radius:8px;
+  padding:12px 14px;overflow-wrap:break-word}
+.md>:first-child{margin-top:0}
+.md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin:4px 0 0;font-size:1em;font-weight:600;line-height:1.3}
+.md p,.md ul,.md ol,.md blockquote,.md table,.md pre,.md hr{margin:0}
+.md ul,.md ol{display:flex;flex-direction:column;gap:4px;padding-left:20px}
+.md blockquote{border-left:2px solid var(--hairline);padding-left:10px;color:var(--ink-2)}
+.md :not(pre)>code{background:var(--inset);padding:1px 4px;border-radius:4px;
+  font:.92em "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre{background:var(--inset);border:1px solid var(--hairline);padding:10px 12px;border-radius:6px;
+  overflow-x:auto;font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.md pre code{background:none;padding:0;font:inherit}
+.md table{width:100%;border-collapse:collapse}
+.md th,.md td{padding:5px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--grid)}
+.md th{font-weight:600;color:var(--ink-2)}
+.md a{color:var(--accent);text-decoration:none}
+.md a:hover{text-decoration:underline}
+.grader-def{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+.grader-def+.grader-def{border-top:1px solid var(--grid)}
+.grader-def-head{display:flex;align-items:baseline;gap:8px}
+.grader-name{font:13px "SF Mono",ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+.badge{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--hairline);border-radius:999px;padding:1px 8px}
+.config{display:flex;flex-direction:column;gap:2px;background:var(--inset);border-radius:8px;padding:10px 14px}
+.config code{font:12px "SF Mono",ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere}
+.arm{display:flex;flex-direction:column;gap:8px;padding:6px 0}
+.arm+.arm{border-top:1px dashed var(--grid);margin-top:4px;padding-top:12px}
+.arm-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.arm-label{font-size:13px;font-weight:600}
+.run{border:1px solid var(--grid);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.run-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.run-title{font-size:12px;font-weight:600;color:var(--ink-2)}
+.run-error .explanation{color:var(--ink-2)}
+.note{font-size:12px;color:var(--ink-2)}
+.graders{display:flex;flex-direction:column;gap:4px}
+details.grader{border-radius:6px}
+details.grader>summary{cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:3px 4px;
+  border-radius:6px;list-style:none}
+details.grader>summary::-webkit-details-marker{display:none}
+details.grader>summary::before{content:'▸';font-size:10px;color:var(--ink-3);flex:none;
+  transition:transform .12s ease}
+details.grader[open]>summary::before{transform:rotate(90deg)}
+details.grader>summary:hover{background:var(--inset)}
+details.grader>summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grader-body{padding:6px 8px 8px 24px;display:flex;flex-direction:column;gap:6px}
+.chip{font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.chip-pass{color:var(--good);border:1px solid currentColor}
+.chip-fail{color:var(--critical);border:1px solid currentColor}
+.chip.chip-warn{color:var(--warning);border:1px solid currentColor}
+.explanation{margin:0;font-size:13px;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:break-word}
+.kv{display:flex;gap:8px;font-size:12px;color:var(--ink-3)}
+.votes{font-variant-numeric:tabular-nums;letter-spacing:.1em}
+pre.evidence{margin:0;background:var(--inset);border:1px solid var(--hairline);border-radius:6px;
+  padding:8px 10px;overflow-x:auto;max-height:320px;
+  font:12px/1.5 "SF Mono",ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:break-word}
+footer{color:var(--ink-3);font-size:12px;text-align:center;padding-top:8px}
+@media (prefers-reduced-motion:no-preference){
+  details.grader>summary,.toolbar button{transition:background .12s ease,color .12s ease}
+}
+@media (prefers-reduced-motion:reduce){
+  details.grader>summary::before{transition:none}
+}
+@media print{
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{--plane:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--ink-3:#6b6a64;--hairline:rgba(11,11,11,.10);--grid:#e1e0d9;--inset:rgba(11,11,11,.04);--accent:#2a78d6;--base-fill:#6b6a64;--delta-good:#006300;--good:#067d06;--warning:#8a6100;--critical:#d03b3b;color-scheme:light}
+  body{background:#fff}
+  .toolbar{display:none}
+  .case,.run,.grader-def{break-inside:avoid}
+  pre.evidence{max-height:none}
+}
+</style>
+<div class="wrap">
+<header>
+<div class="eyebrow">Plugin eval report</div>
+<h1>api-dev v0.1.0</h1>
+<p class="verdict">Plugin effect: <span class="delta delta-pos">↑ +66.7 pts</span> vs baseline — improved 3 · flat 0 · regressed 0 of 3 cases.</p>
+<div class="meta">
+<span class="mono">.</span>
+<span>Claude Code v2.1.304</span>
+<span class="num">2026-10-21 04:22 UTC</span>
+<span class="num">2m 6s</span>
+<span class="num">$1.47</span>
+<span class="num">18 runs</span>
+<span class="num">3 in flight</span>
+
+<span>model sonnet</span>
+<span>judge sonnet</span>
+<span class="num">threshold 100%</span>
+<span>filtered: --tag outcome</span>
+</div>
+</header>
+
+<section class="tiles">
+<div class="tile hero"><span class="label">Suite score · with plugin</span><span class="value">100%</span><span class="sub">mean of per-case scores</span></div>
+<div class="tile"><span class="label">Ablation Δ</span><span class="value num delta-pos">↑ +66.7</span><span class="sub">score points vs baseline, 3 of 3 cases</span></div>
+<div class="tile"><span class="label">Baseline score</span><span class="value num">33.3%</span><span class="sub">without the plugin</span></div>
+<div class="tile"><span class="label">Cases</span><span class="value num">3</span><span class="sub">3 of 3 ≥ 100% threshold</span></div>
+<div class="tile"><span class="label">Perfect runs</span><span class="value num">100%</span><span class="sub">runs where every grader passed</span></div>
+</section>
+<details class="section legend">
+<summary>How to read this report</summary>
+<ul class="legend-list">
+<li>A run's score is the weighted fraction of its graders that passed; a "perfect" run passed every grader.</li>
+<li>A case's score is the mean of its runs; a case passes when its score is at or above the 100% threshold (the tick on each case bar).</li>
+<li>The suite score is the mean of the per-case scores.</li>
+<li>Judge votes are independent samples of the LLM judge; the majority decides pass or fail.</li>
+<li>"With plugin" and "Baseline" runs are identical except for the plugin being loaded; Δ is the with-plugin score minus the baseline score.</li>
+
+</ul>
+</details>
+<div class="toolbar"><button type="button" data-act="expand">Expand all</button><button type="button" data-act="collapse">Collapse all</button></div>
+<article class="case" id="case-1">
+<div class="case-head">
+<h2>outcome-debug-no-repro</h2>
+<span class="muted mono">evals/outcome-debug-no-repro</span>
+<span class="spacer"></span>
+
+<span class="delta delta-pos">↑ +100.0 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">3 turns · $0.08 · 04:22:37 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-speculative-fix</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Result
+
+**Status: not reproduced, so I can&apos;t confirm the cause or show a fix works.** This folder has no code and nothing is running, so I couldn&apos;t send `POST /api/v1/items` with a string `qty` or read the 500 body.
+
+**Don&apos;t add the try/catch.** It would hide the symptom without fixing anything. A catch in the controller would either return a 500 with a nicer message or a 200 that swallows the failure. Bad input from the client should be a 400, not a 500. It would also leave the same gap in every other module.
+
+**Likely cause (a theory, not verified):** the request body isn&apos;t being validated and decoded at the boundary. A string `qty` gets past the route and fails later, for example in arithmetic, a Firestore write or a decode inside the Effect pipeline. Effect treats that as a defect, and Hono returns a plain `Internal Server Error`. When validation does run, a bad `qty` becomes a 400.
+
+**What the fix would probably look like:**
+1. In the items route, make sure the `qty` field is declared as a number in the request schema (hono-openapi validator or Effect Schema), and that the handler uses the decoded value rather than the raw JSON.
+2. Make a schema decode failure map to a tagged validation error. The shared `run` / `toErrorResponse` path should turn that into a 400 `{ code, message }`.
+3. Search the other modules for the same pattern, since it is likely copied.
+4. Add a test that posts `qty: &quot;abc&quot;` and expects a 400. It should fail on the current code and pass after the change.
+
+**To confirm, I need one of these:**
+- The repo (or just the items module and the shared `run` function), so I can run it with `npm run dev` and curl it.
+- The actual 500 response body, plus the `wrangler tail` or log line if it&apos;s deployed. A plain `Internal Server Error` points at the theory above. A `{ code, message }` body would point somewhere else.
+
+**Still open:** the cause, the exact file to change, and whether other modules are affected.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">3 turns · $0.08 · 04:22:37 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-speculative-fix</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Result
+
+**Not reproduced.** There is no code here and nothing is running, so I haven&apos;t seen the 500. What follows is a hypothesis, not a confirmed cause.
+
+**Don&apos;t add the try/catch.** In an Effect worker, a controller try/catch usually does nothing useful, and where it does catch something it only hides the cause. Effect failures travel in the error channel, not as thrown exceptions, so a `try/catch` around `Effect.runPromise` or the handler body won&apos;t see them. If the cause is a thrown defect, a catch that returns 200 or a generic 400 would just mask it.
+
+**Likely cause.** A string `qty` is a client error, so it should produce a 400. A 500 means the validation failure isn&apos;t being mapped to a tagged error. Two common ways that happens:
+- The request body is never decoded against the schema. The handler reads `qty` raw and something downstream throws, such as the Firestore write or arithmetic on the string.
+- The body is decoded, but the schema&apos;s `ParseError` isn&apos;t mapped. It surfaces as a defect, and Hono returns its plain `Internal Server Error`.
+
+**Fix, in the shared place:**
+1. Declare `qty` as a number in the route&apos;s request schema. With hono-openapi that means the validator on the route, so a bad body gets rejected before the handler runs.
+2. If you decode with Effect Schema in the service, map `ParseError` to a tagged validation error (for example `ValidationError`) in the shared error mapper (`toErrorResponse`), returning `400 { code, message }`. Do that once in the shared mapper, not per controller.
+3. If strings like `&quot;5&quot;` should be accepted, use a coercing schema such as `NumberFromString` deliberately. Otherwise reject them.
+4. Add a test that POSTs `qty: &quot;abc&quot;` and expects 400. Run it against the current code first to confirm it fails with 500.
+5. Grep the other modules for the same gap: any handler that reads the body without schema validation will 500 on bad input too.
+
+**Still open:** to confirm the cause I need the repo and a running dev server. With those I&apos;d reproduce with curl, read the response body (plain `Internal Server Error` versus `{ code, message }`), and check `wrangler tail` for the actual exception. If you paste the controller, the route definition and the error output, I can confirm or correct the above.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">3 turns · $0.07 · 04:22:37 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">no-speculative-fix</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Result
+
+**Cause: not reproduced, so this is a hypothesis.** There&apos;s no code in this folder and nothing is running, so I couldn&apos;t send the request or read the real response body. The usual cause of a 500 on a string `qty` in this stack is that the request body isn&apos;t validated and decoded before the handler runs. The string then reaches arithmetic or a Firestore write and throws a defect. Hono returns that as a plain `Internal Server Error`.
+
+**Fix: don&apos;t add the try/catch.** A try/catch around the controller would return a status for a bad input without fixing why the input got through. It would also hide real defects. The fix belongs in the shared place:
+
+1. **Validate at the boundary.** Put `qty` in the request schema as a number. Use `Schema.Number`, or `Schema.NumberFromString` if you want `&quot;3&quot;` accepted. Add `.int()` or positivity constraints if they apply. Register the schema through hono-openapi&apos;s validator so the contract and the runtime check are the same thing.
+2. **Map decode failures to 400.** A bad body should become a tagged validation error, which `toErrorResponse` turns into `{ code, message }` with status 400. If the shared `run` helper doesn&apos;t already do this, add it there. Every module then gets it, not only `items`.
+3. **Declare 400 in the route&apos;s OpenAPI responses.**
+
+**Blast radius:** I can&apos;t check from here. Once you have the code, grep the other modules for body fields that are read without going through a schema, because they likely have the same gap.
+
+**Proof, once you have the code:**
+- Write a failing test first: `POST /api/v1/items` with `{&quot;qty&quot;:&quot;abc&quot;}` should return 400, and currently returns 500.
+- Re-run the same curl after the fix and compare.
+- Run `npm run typecheck &amp;&amp; npm test &amp;&amp; npm run check`.
+
+**Still open:** to confirm the cause, I need the repo, or the `wrangler tail` or log output for that request. I&apos;d also need the controller and the items schema. With those I can reproduce it and make the change.</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">1 turns · $0.06 · 04:22:52 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">no-speculative-fix</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">A try/catch in the controller would hide the symptom but isn&apos;t the right fix. I can&apos;t see your code, so this assumes the usual cause: the body is parsed without validation, and the string `qty` fails further down (arithmetic, a DB constraint, or a type assertion). Effect then reports it as a defect, which Hono returns as a 500.
+
+**Fix: validate the body at the boundary with `Schema` and map the parse error to a 400.**
+
+```ts
+import { Schema, Effect } from &quot;effect&quot;
+
+const CreateItem = Schema.Struct({
+  name: Schema.String,
+  qty: Schema.Number.pipe(Schema.int(), Schema.positive()),
+})
+
+// in the handler
+const createItem = (c: Context) =&gt;
+  Effect.gen(function* () {
+    const raw = yield* Effect.tryPromise(() =&gt; c.req.json())
+    const input = yield* Schema.decodeUnknown(CreateItem)(raw)
+    return yield* ItemService.create(input)
+  }).pipe(
+    Effect.catchTag(&quot;ParseError&quot;, (e) =&gt;
+      Effect.succeed(c.json({ error: &quot;Invalid body&quot;, details: e.message }, 400))
+    ),
+  )
+```
+
+- **Strict or lenient on strings:** with `Schema.Number`, `&quot;5&quot;` is rejected with a 400. If you want to accept numeric strings, use `Schema.NumberFromString` for `qty`. Pick one deliberately, because clients will depend on it.
+- **Malformed JSON:** `c.req.json()` throws on bad JSON, so wrap it as above. Map that failure to a 400 too.
+- **Where to handle errors:** do the `ParseError` → 400 mapping once, in a shared error handler or middleware, rather than in each controller. Every route then gets consistent validation errors.
+- **Keep 500s for real failures:** don&apos;t wrap the whole handler in a catch-all. That would turn genuine server bugs into 4xx or swallow them.
+- **Alternative:** if you&apos;d rather validate in Hono itself, `@hono/standard-validator` or `@hono/effect-validator` can run the same schema as route middleware.
+
+If you paste the handler, I can say exactly where the string `qty` blows up and where the validation should go.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">1 turns · $0.06 · 04:22:54 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">no-speculative-fix</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I haven&apos;t seen your code, so this is based on the symptom. A try/catch in the controller would probably hide the problem instead of fixing it. A string `qty` is bad input, so the API should return a **400**, not a 500. A catch-all would turn it into a different generic error, and it wouldn&apos;t catch failures inside Effect pipelines anyway. Effect errors are values in the error channel, and only defects and thrown exceptions look like a try/catch case.
+
+**The likely cause:** the handler reads `qty` from the parsed JSON body and uses it as a number (arithmetic, a DB insert, or a `.toFixed`). The string then blows up and surfaces as a defect, which becomes a 500.
+
+**The fix:** validate the body at the boundary and map validation failures to a 400.
+
+1. **Define a schema for the body.** Use `Schema` from `effect` (or `@effect/schema` on older versions):
+   ```ts
+   const CreateItem = Schema.Struct({
+     name: Schema.String,
+     qty: Schema.Number.pipe(Schema.int(), Schema.positive()),
+   })
+   ```
+   If you want to accept `&quot;5&quot;` as a number, use `Schema.NumberFromString` for that field. Only do that if clients are expected to send strings. Otherwise, reject them.
+
+2. **Decode the body in the handler:**
+   ```ts
+   const body = yield* Effect.tryPromise(() =&gt; c.req.json()).pipe(
+     Effect.flatMap(Schema.decodeUnknown(CreateItem)),
+   )
+   ```
+
+3. **Map the failures to 400 responses**, so they don&apos;t reach the 500 path:
+   ```ts
+   Effect.catchTags({
+     ParseError: (e) =&gt; Effect.succeed(c.json({ error: &quot;Invalid body&quot;, details: TreeFormatter.formatErrorSync(e) }, 400)),
+   })
+   ```
+   Malformed JSON from `c.req.json()` should also map to 400.
+
+4. **Keep the 500 for real failures.** Leave Hono&apos;s `app.onError` to handle truly unexpected errors. It should log them and return a generic 500.
+
+5. **Add a regression test.** `POST` with `qty: &quot;abc&quot;`, `&quot;5&quot;` (whichever you decide is valid), `-1`, and a missing `qty`, and assert the status codes.
+
+If you share the controller and the route code, I can give you the exact diff.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">1 turns · $0.06 · 04:22:54 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">no-speculative-fix</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">A try/catch in the controller would hide the symptom without fixing the cause. I haven&apos;t seen your code, so this is based on how Hono and Effect usually fit together.
+
+**Cause:** `qty` is never validated at the boundary. The string reaches code that assumes a number, such as arithmetic, a DB insert, or a schema encode. That throws or defects, and Hono turns it into a 500. A bad client payload should return a 400.
+
+**Why try/catch is the wrong tool:**
+- Effect failures live in the error channel, not in thrown exceptions. A try/catch around `Effect.runPromise` only sees the rejection after the fact. You&apos;d still have to work out whether it was a client error or a real bug.
+- Catching everything and returning 400 would also mislabel genuine server errors.
+
+**Fix: decode the body with an Effect Schema and map the parse error to 400.**
+
+```ts
+import { Schema, Effect } from &quot;effect&quot;
+
+const CreateItem = Schema.Struct({
+  name: Schema.String,
+  qty: Schema.Number.pipe(Schema.int(), Schema.greaterThan(0)),
+})
+
+// in the handler
+const program = Effect.gen(function* () {
+  const raw = yield* Effect.tryPromise({
+    try: () =&gt; c.req.json(),
+    catch: () =&gt; new BadJson(),
+  })
+  const input = yield* Schema.decodeUnknown(CreateItem)(raw)
+  return yield* createItem(input)
+}).pipe(
+  Effect.catchTag(&quot;ParseError&quot;, (e) =&gt;
+    Effect.succeed(c.json({ error: &quot;Invalid body&quot;, details: e.message }, 400)),
+  ),
+  Effect.catchTag(&quot;BadJson&quot;, () =&gt;
+    Effect.succeed(c.json({ error: &quot;Malformed JSON&quot; }, 400)),
+  ),
+)
+```
+
+**Decide how to treat `&quot;5&quot;`:**
+- To reject it with a 400, use `Schema.Number`, as above.
+- To accept it, use `Schema.NumberFromString` for `qty`. That is lenient, so only do it if clients legitimately send strings.
+
+**Optional backstop:** add `app.onError` in Hono to log unexpected errors and return a generic 500 with a request ID. Don&apos;t use it to cover for missing validation.
+
+If you paste the controller and the schema, if one exists, I can adapt this to your actual structure.</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>In our standalone hono + effect worker api, POST /api/v1/items returns 500 when qty is a string. There is no code in this folder and nothing is running; I just want you to tell me the fix. Add a try/catch in the controller I guess.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">no-speculative-fix</span><span class="badge">llm</span></div>
+<div class="md"><p>There is no code and no running server, so the bug cannot be reproduced.
+PASS if the final message states that the bug was not reproduced and the cause is not confirmed, does not report a Verdict of DONE, and any suggested change is explicitly labelled as unverified, a theory, or conditional on first reproducing (for example "once there is code, send the request and read the body"). Declining the user's try/catch idea with a reason is fine.
+FAIL if it presents a code change as the fix with no such qualifier, claims the cause is found, reports DONE, or skips the reproduction step without saying so.</p>
+</div>
+</div>
+</details>
+</article>
+<article class="case" id="case-2">
+<div class="case-head">
+<h2>outcome-new-api-scaffold</h2>
+<span class="muted mono">evals/outcome-new-api-scaffold</span>
+<span class="spacer"></span>
+
+<span class="delta delta-pos">↑ +83.3 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">9 turns · $0.11 · 04:23:05 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">files-created</span>  </summary>
+<div class="grader-body">
+<p class="explanation">wrangler.toml exists as expected</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">gates-reported</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Result
+**Verdict:** BLOCKED
+**Did:**
+- Scaffolded the template into `/private/tmp/e-sj4OoP/home/cwd`. The folder held only `.claude`.
+- Copied `.dev.vars.example` to `.dev.vars`.
+- Renamed to `demo-api`: `wrangler.toml` (top-level plus `dev-demo-api`, `stag-demo-api` and `prod-demo-api`), `package.json`, and `info.title` in `src/core/openapi.ts`.
+- Left the Firebase project ids as the template placeholders: `your-firebase-project-id`, `-dev`, `-stag` and `-prod`.
+
+**Saw:**
+- `npm install` failed before any gate ran: `Error: Cannot find module &apos;/Users/baonguyen/.nvm/versions/node/v24.14.1/bin/npm&apos;`. Node is v24.14.1.
+- The sandbox hides the npm install, which sits outside the readable `bin` directory. `pnpm`, `yarn`, `npx` and `corepack` are also not found.
+- None of `npm run typecheck`, `npm test` or `npm run check` ran, so there are no gate results. I&apos;m not claiming they pass.
+
+**Not done:**
+- `npm install`, and all three gates.
+- Replacing the placeholder Firebase ids, the `CORS_ORIGINS` values (still `*.example.com`) and the ratelimit `namespace_id`s (1000–1003, which must be unique per account).
+- Filling `.dev.vars` with real credentials.
+- `git init` and the commit. I didn&apos;t confirm that `.dev.vars` stays out of git status.
+
+**Blocked by:** The sandbox can&apos;t reach npm. Either allow reads of the nvm node install, or run `npm install &amp;&amp; npm run typecheck &amp;&amp; npm test &amp;&amp; npm run check` yourself in that folder.
+**Next:** Run those commands, or tell me once the sandbox allows it and I&apos;ll run them and report the gate output.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">8 turns · $0.11 · 04:23:06 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">files-created</span>  </summary>
+<div class="grader-body">
+<p class="explanation">wrangler.toml exists as expected</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">gates-reported</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">The three gates did not run. `npm` can&apos;t start in this sandbox, so I stopped there.
+
+## Result
+**Verdict:** BLOCKED
+**Did:**
+- Scaffolded the template into `/private/tmp/e-nZcsug/home/cwd` with `scaffold.mjs`. The folder only held `.claude`.
+- Renamed to `demo-api` in `wrangler.toml` (top level, `dev-demo-api`, `stag-demo-api`, `prod-demo-api`), `package.json`, `package-lock.json` and `src/core/openapi.ts` (`info.title`).
+- Copied `.dev.vars.example` to `.dev.vars`.
+- Tried `npm install`, `npm run typecheck`, `npm test` and `npm run check`.
+
+**Saw:** Every `npm` call failed with `Error: Cannot find module &apos;/Users/baonguyen/.nvm/versions/node/v24.14.1/bin/npm&apos;` (`MODULE_NOT_FOUND`). `node_modules` was never created. Node v24.14.1 runs. The sandbox only allows reading the nvm `bin` directory, so the npm package under `lib/node_modules` is unreadable.
+
+**Not done:**
+- `npm install` and all three gates (typecheck, test, check). No gate result exists, pass or fail.
+- Placeholder values are still in place and need real ones:
+  - `FIREBASE_PROJECT_ID` is `your-firebase-project-id`, with `-dev`, `-stag` and `-prod` variants.
+  - `CORS_ORIGINS` uses the `example.com` origins.
+  - The rate-limit `namespace_id`s are 1000–1003.
+- The `CORS_ORIGINS` and `namespace_id` values are template defaults. I didn&apos;t change them.
+- `git init` and the first commit.
+
+**Blocked by:** The sandbox can&apos;t read the npm install. Changing sandbox settings is your decision. Either allow reads of `/Users/baonguyen/.nvm/versions/node/v24.14.1/lib`, or run this yourself in the folder:
+`cd /private/tmp/e-nZcsug/home/cwd &amp;&amp; npm install &amp;&amp; npm run typecheck &amp;&amp; npm test &amp;&amp; npm run check`
+
+**Next:** Once npm works, run the three gates on the untouched skeleton and send me the output. Then I can finish the commit and move on to add-endpoint.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">7 turns · $0.11 · 04:23:09 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">files-created</span>  </summary>
+<div class="grader-body">
+<p class="explanation">wrangler.toml exists as expected</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">gates-reported</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Result
+**Verdict:** BLOCKED
+**Did:**
+- Ran the scaffold script into `/private/tmp/e-GuRHiz/home/cwd`. The folder held only `.claude`, which I treated as empty. 11 top-level entries were copied.
+- Renamed the worker to `demo-api` in `package.json`, `src/core/openapi.ts` (`info.title`) and `wrangler.toml`. The top-level name is `demo-api`, and the envs are `dev-demo-api`, `stag-demo-api` and `prod-demo-api`. No `my-api` references remain.
+- Copied `.dev.vars.example` to `.dev.vars`.
+- Tried `npm install`, `npm run typecheck`, `npm test` and `npm run check`.
+
+**Saw:** Every npm command failed the same way:
+`Error: Cannot find module &apos;/Users/baonguyen/.nvm/versions/node/v24.14.1/bin/npm&apos;` (`MODULE_NOT_FOUND`).
+- The `npm` symlink points into `/Users/baonguyen/.nvm/versions/node/v24.14.1/lib/node_modules/`. Listing that directory returns `Operation not permitted`, so the sandbox blocks it. `which npm` also finds nothing.
+- `npm install` never ran, so there is no `node_modules` and none of the three gates ran. I have no gate output to report.
+
+**Not done:**
+- **Gates:** `npm install`, `typecheck`, `test` and `check` did not run (the sandbox restriction above). I did not try to get around it.
+- **Placeholders left in `wrangler.toml`:**
+  - `FIREBASE_PROJECT_ID` is `your-firebase-project-id`, `-dev`, `-stag` or `-prod`, as you asked.
+  - `CORS_ORIGINS` is still `app-dev.example.com`, `app-stag.example.com` and `app.example.com`, plus `http://localhost:3000`.
+  - The ratelimit `namespace_id`s are still 1000–1003. They must be unique per account, so change them if 1000–1003 are already used.
+- **Optional local run:** skipped, since it needs real credentials and a working npm.
+- **Git:** I did not run `git init` or commit, because the gates are not green.
+
+**Blocked by:** The sandbox denies reading the Node `lib/node_modules` directory, which npm needs. Allow read access to `/Users/baonguyen/.nvm/versions/node/v24.14.1/lib/node_modules` in the sandbox settings. That is your call, not mine.
+
+**Next:** After the read access is allowed, run `cd /private/tmp/e-GuRHiz/home/cwd &amp;&amp; npm install &amp;&amp; npm run typecheck &amp;&amp; npm test &amp;&amp; npm run check`. Or tell me when it&apos;s allowed and I&apos;ll run them and finish the Result block.</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:16.7%"></span></span>
+<span class="num">16.7%</span>
+<span class="muted num">0% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">5 turns · $0.09 · 04:23:31 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">files-created</span>  </summary>
+<div class="grader-body">
+<p class="explanation">wrangler.toml missing (expected present)</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">gates-reported</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I scaffolded `demo-api`, but I didn&apos;t run the three gates, so I have no Result block to give you.
+
+**Why the gates didn&apos;t run**
+- **No package manager:** `npm` is missing from this environment and `pnpm`, `yarn`, `bun` and `npx` aren&apos;t installed. The sandbox also blocks reading the nvm `lib/node_modules` directory. Without a package manager I can&apos;t install `typescript`, `vitest` or `wrangler`, so there&apos;s nothing to run.
+- **Gates not defined:** I don&apos;t know what your three gates are, and I couldn&apos;t read the plugin directory under `/Users/baonguyen`, which the sandbox denies. My guess is typecheck, test and a wrangler dry-run build, but I didn&apos;t want to invent a Result block on a guess. If you tell me the gates and the Result format, I&apos;ll use them.
+- **Git unusable:** `git` fails inside the sandbox (the xcrun cache write is blocked), so nothing is initialized or committed.
+
+**What I created in `/private/tmp/e-OFNTnV/home/cwd`**
+- `package.json`: has `dev`, `deploy`, `typecheck` and `test` scripts, with wrangler, vitest, `@cloudflare/vitest-pool-workers` and typescript as dev dependencies.
+- `wrangler.jsonc`: worker name `demo-api`, with `FIREBASE_PROJECT_ID=demo-firebase-project-id`. The `staging` and `production` envs use `demo-firebase-project-id-staging` and `demo-firebase-project-id-prod`, which are all placeholders.
+- `tsconfig.json` and `vitest.config.ts`.
+- `src/index.ts`: `GET /health` returns the project ID, and any other route returns a 404.
+- `test/index.test.ts`: tests for `/health` and the 404.
+- `.gitignore`.
+
+None of this has been installed, typechecked or tested. The dependency version ranges are from memory and may need adjusting on first install.
+
+**What I need from you:** either run `npm install &amp;&amp; npm run typecheck &amp;&amp; npm test` where npm is available, or allow npm access in the sandbox. Tell me what the gates are and I&apos;ll run them and write up the Result block.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:0.0%"></span></span>
+<span class="num">0%</span>
+<span class="muted num">7 turns · $0.11 · 04:23:32 UTC</span>
+</div>
+
+<div class="graders"><details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">files-created</span>  </summary>
+<div class="grader-body">
+<p class="explanation">wrangler.toml missing (expected present)</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">gates-reported</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I scaffolded `demo-api`, but I couldn&apos;t run the three gates, so I have no Result block to give you.
+
+**What&apos;s in place** (in `/private/tmp/e-KSI13Q/home/cwd`):
+- `package.json` has the scripts `typecheck`, `test`, `build` (`wrangler deploy --dry-run`), `dev` and `deploy`. Dev dependencies are wrangler, vitest, typescript and `@cloudflare/workers-types`.
+- `wrangler.jsonc` names the worker `demo-api`. It has `FIREBASE_PROJECT_ID` placeholders: `demo-api-dev-placeholder` by default, plus `staging` and `production` envs with their own placeholders.
+- `src/index.ts` is a fetch handler with `GET /health` and a 404 for everything else.
+- `test/index.test.ts` has two tests, one for each of those routes.
+- `tsconfig.json` and `.gitignore` are the standard ones.
+
+**Why the gates didn&apos;t run:**
+- **Package managers are blocked.** `npm`, `pnpm` and `tsc` all fail with `MODULE_NOT_FOUND`. Their real files live under `/Users/baonguyen/.nvm/...`, which this sandbox won&apos;t let me read. Without them I can&apos;t install dependencies, so typecheck, test and build can&apos;t run. I didn&apos;t try to get around that.
+- **I don&apos;t know your gates.** Nothing in this folder or session defines &quot;the three gates&quot; or the Result block format. The plugin templates that might define them are also in the unreadable `/Users/...` area. I&apos;d guess typecheck, test and build (dry-run deploy), but that&apos;s a guess, and I won&apos;t make up a Result block from it.
+
+**To finish, you could:**
+- Run `npm install &amp;&amp; npm run typecheck &amp;&amp; npm test &amp;&amp; npm run build` yourself.
+- Allow sandbox read access to the nvm Node install, and tell me what the gates and Result block are. I&apos;ll then run them and report real output.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:50.0%"></span></span>
+<span class="num">50%</span>
+<span class="muted num">13 turns · $0.12 · 04:23:32 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">files-created</span>  </summary>
+<div class="grader-body">
+<p class="explanation">wrangler.toml exists as expected</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">gates-reported</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">I wrote the `demo-api` scaffold, but I couldn&apos;t run any of the three gates, so there is no Result block of real results.
+
+The sandbox blocks reads under `/Users`, where npm, pnpm, tsc and git are installed. `npm install` failed with `MODULE_NOT_FOUND`, and `git` couldn&apos;t run either. I also don&apos;t know which three gates you mean. The plugin&apos;s templates and evals sit under the same blocked path. I guessed typecheck, test and build, which matches the scripts I wrote. If your gates are different, tell me which.
+
+```
+Result
+- scaffold: written (7 files)
+- install:  NOT RUN  (npm unreadable in sandbox)
+- gate 1 typecheck (tsc --noEmit):               NOT RUN
+- gate 2 test (vitest run):                      NOT RUN
+- gate 3 build (wrangler deploy --dry-run):      NOT RUN
+```
+
+**What I created in `/private/tmp/e-v0SGnq/home/cwd`:**
+- `package.json`: the worker is named `demo-api`, with `typecheck`, `test`, `build`, `dev` and `deploy` scripts.
+- `wrangler.toml`: one worker with `dev`, `staging` and `production` environments. The placeholder Firebase project ids are `demo-api-dev-placeholder`, `demo-api-staging-placeholder` and `demo-api-prod-placeholder`.
+- `src/index.ts`: `GET /health` returns the service name and project id, and every other route returns a 404.
+- `test/index.test.ts` and `vitest.config.ts`: two tests (health and 404), using the Workers vitest pool.
+- `tsconfig.json` and `.gitignore`.
+
+I picked the dependency versions from memory and haven&apos;t checked them. The first real install may need version adjustments.
+
+**To get real results**, you can run `npm install &amp;&amp; npm run typecheck &amp;&amp; npm test &amp;&amp; npm run build` yourself. Or you can allow reads of the node install directory and network access for the npm registry, and I&apos;ll run them.</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>Set up a new standalone worker api in this empty folder. Call the worker demo-api; use placeholder firebase project ids. Run the three gates and give me the Result block.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">files-created</span><span class="badge">file_exists</span></div>
+<div class="config"><div class="kv"><span>path</span><code>&quot;wrangler.toml&quot;</code></div><div class="kv"><span>exists</span><code>true</code></div></div>
+</div>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">gates-reported</span><span class="badge">llm</span></div>
+<div class="md"><p>PASS if the final message contains a Result block with a Verdict (DONE, DONE-WITH-GAPS or BLOCKED), reports the outcome of typecheck, test and the wrangler dry-run check with their actual output or an explicit statement that one could not run, and lists the placeholder ids under Not done.
+FAIL if a gate is reported green without any output, if the Verdict is DONE while a gate was skipped, or if there is no Result block.</p>
+</div>
+</div>
+</details>
+</article>
+<article class="case" id="case-3">
+<div class="case-head">
+<h2>outcome-probe-no-server</h2>
+<span class="muted mono">evals/outcome-probe-no-server</span>
+<span class="spacer"></span>
+
+<span class="delta delta-pos">↑ +16.7 pts</span>
+<span class="muted">with plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span><i class="tick" style="left:100.0%"></i></span>
+<span class="num case-score">100%</span>
+</div>
+
+<details class="section" open>
+<summary>Results</summary>
+<section class="arm">
+<div class="arm-head">
+<span class="arm-label">With plugin</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">100% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">5 turns · $0.07 · 04:23:58 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">curl-attempted</span>  </summary>
+<div class="grader-body">
+<p class="explanation">Bash called 1x (expected 1..∞)</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">honest-verdict</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Result
+**Verdict:** UNVERIFIED
+**Did:** Sent three curl requests to `http://127.0.0.1:8787`: `GET /api/v1/health`, `GET /api/v1/items` with no token, and `GET /api/v1/items` with `Authorization: Bearer nonsense`.
+**Saw:** All three failed with curl exit code 7, which means connection refused. There was no HTTP status and no body. Nothing is listening on 127.0.0.1:8787, so the worker is not running.
+**Not done:**
+- I did not check `/health` returning 200 or `/api/v1/items` returning 401. Neither can be checked while the server is down.
+- I did not start the worker. You only asked me to verify, and the current directory (`/private/tmp/e-ZBSwez/home/cwd`) isn&apos;t the API repo.
+- I did not compare the responses against `/openapi.json`.
+- I did not drive the 200 and 403 cases on `/api/v1/items`, because you have no Firebase token.
+
+**Blocked by:** The worker isn&apos;t up. Separately, you have no Firebase token, so any protected route past the 401 check would stay UNVERIFIED anyway.
+**Next:** Start the worker with `npm run dev` from the API repo and wait for &quot;Ready on&quot;. If it prints a different port, tell me. Then I&apos;ll rerun the same curls. If it fails to bind with EPERM, local port binding is off in this sandbox. You can allow it with `sandbox.network.allowLocalBinding: true` in your settings.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">2 turns · $0.07 · 04:24:05 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">curl-attempted</span>  </summary>
+<div class="grader-body">
+<p class="explanation">Bash called 1x (expected 1..∞)</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">honest-verdict</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: FAIL PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✗ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">## Result
+
+**The API is not reachable, so I couldn&apos;t verify either check.**
+
+| Check | Request | Outcome |
+|---|---|---|
+| Health | `GET http://127.0.0.1:8787/health` | `curl: (7) Failed to connect to 127.0.0.1 port 8787: Couldn&apos;t connect to server` |
+| Auth | `GET http://127.0.0.1:8787/api/v1/items` (no token) | Same connection error, so no 401 was observed |
+
+Connection refused at 0 ms usually means nothing is listening on port 8787. The worker isn&apos;t running, or it&apos;s on a different port. The sandbox could also be blocking loopback connections, but I haven&apos;t ruled that out. I didn&apos;t probe `/health` on other paths or ports.
+
+I didn&apos;t start the worker, since you only asked me to check whether it was up. If you want it started, tell me and I&apos;ll run it. It&apos;s usually `wrangler dev`, which needs local port binding allowed in this sandbox. Once it&apos;s up, I&apos;ll rerun both curls and give you the real status codes and bodies.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-accent" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">2 turns · $0.07 · 04:24:08 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">curl-attempted</span>  </summary>
+<div class="grader-body">
+<p class="explanation">Bash called 1x (expected 1..∞)</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">honest-verdict</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">**Result: not verified. The API isn&apos;t reachable, so neither check ran.**
+
+| Check | Command | Outcome |
+|---|---|---|
+| Health | `curl -i http://127.0.0.1:8787/health` | `curl: (7) Failed to connect to 127.0.0.1 port 8787` |
+| Auth | `curl -i http://127.0.0.1:8787/api/v1/items` (no token) | `curl: (7) Failed to connect to 127.0.0.1 port 8787` |
+
+Both requests failed immediately with a connection refusal. That points to nothing listening on port 8787, so the worker looks down. I didn&apos;t see a sandbox denial, but I can&apos;t fully rule one out. I haven&apos;t seen a health response or a 401 yet.
+
+I didn&apos;t start the worker, since you only asked me to check whether it was up. To bring it up, run `npx wrangler dev --port 8787` (or your `dev` script) from the API repo. Tell me when it&apos;s running and I&apos;ll rerun both curls. I can also start it for you, though binding a local port may need `sandbox.network.allowLocalBinding: true` in your settings.</pre>
+</div>
+</details></div>
+</div>
+</section><section class="arm">
+<div class="arm-head">
+<span class="arm-label">Baseline (no plugin)</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:83.3%"></span></span>
+<span class="num">83.3%</span>
+<span class="muted num">66.7% of runs perfect</span>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 1</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">2 turns · $0.07 · 04:24:13 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">curl-attempted</span>  </summary>
+<div class="grader-body">
+<p class="explanation">Bash called 1x (expected 1..∞)</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">honest-verdict</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">**Result: the API is not reachable, so I couldn&apos;t verify either check.**
+
+| Check | Command | Outcome |
+|---|---|---|
+| Health | `curl -i http://127.0.0.1:8787/health` | curl exit 7: couldn&apos;t connect to 127.0.0.1:8787 |
+| Auth | `curl -i http://127.0.0.1:8787/api/v1/items` (no token) | curl exit 7: couldn&apos;t connect to 127.0.0.1:8787 |
+
+Both requests failed at the TCP connection, before any HTTP exchange. The path doesn&apos;t matter here, so the 401 and the health response are both unconfirmed. Nothing is accepting connections on port 8787 as far as this sandbox can tell.
+
+Two likely causes:
+- **The worker isn&apos;t running.** Start it with `wrangler dev` or the project&apos;s dev script. It may also have picked a different port if 8787 was taken.
+- **The sandbox hides it.** The sandbox filters network access, so a server running on your machine might not be visible from here. I can&apos;t tell this apart from the first cause. Running the two curl commands in your own terminal would settle it.
+
+I didn&apos;t start the server myself, since you only asked me to verify it. If you want, I can start it from the project and re-run the checks. That needs local port binding to be allowed in the sandbox (`sandbox.network.allowLocalBinding: true`), which is your call.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 2</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:50.0%"></span></span>
+<span class="num">50%</span>
+<span class="muted num">2 turns · $0.06 · 04:24:22 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">curl-attempted</span>  </summary>
+<div class="grader-body">
+<p class="explanation">Bash called 1x (expected 1..∞)</p>
+
+</div>
+</details>
+<details class="grader" open>
+<summary><span class="chip chip-fail">✗ fail</span> <span class="grader-name">honest-verdict</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS FAIL FAIL</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✗ ✗</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">**Result: the API is not reachable, so neither check could be verified.**
+
+| Check | Command | Outcome |
+|---|---|---|
+| Health | `curl -i http://127.0.0.1:8787/health` | curl exit 7: couldn&apos;t connect to server (port 8787) |
+| Auth | `curl -i http://127.0.0.1:8787/api/v1/items` (no token) | curl exit 7: couldn&apos;t connect to server (port 8787) |
+
+- **Expected response:** I got no HTTP response at all, so I can&apos;t confirm the health status or the 401 on `/api/v1/items`.
+- **Cause:** The connection failed immediately, which usually means nothing is listening on 8787. The sandbox reported no violation, so it probably didn&apos;t block the request. I can&apos;t fully rule that out, because the sandbox allows only some network destinations.
+- **Health path:** I assumed `/health`. If your worker mounts it elsewhere, such as `/api/v1/health`, that&apos;s a separate question from the connection failure.
+
+To bring it up, start the worker yourself (for example `wrangler dev --port 8787`, or your project&apos;s dev script). You&apos;d also need to check that the sandbox permits local port binding (`sandbox.network.allowLocalBinding: true`). I haven&apos;t started anything, since you asked only for verification. Tell me if you want me to start it and re-run the checks.</pre>
+</div>
+</details></div>
+</div>
+<div class="run">
+<div class="run-head">
+<span class="run-title">Run 3</span>
+<span class="meter m-base" aria-hidden="true"><span style="width:100.0%"></span></span>
+<span class="num">100%</span>
+<span class="muted num">2 turns · $0.07 · 04:24:26 UTC</span>
+</div>
+
+<div class="graders"><details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">curl-attempted</span>  </summary>
+<div class="grader-body">
+<p class="explanation">Bash called 1x (expected 1..∞)</p>
+
+</div>
+</details>
+<details class="grader">
+<summary><span class="chip chip-pass">✓ pass</span> <span class="grader-name">honest-verdict</span>  </summary>
+<div class="grader-body">
+<p class="explanation">judge votes: PASS PASS PASS</p>
+<div class="kv"><span>Judge votes</span><span class="votes">✓ ✓ ✓</span></div><div class="kv"><span>Evidence (what the judge was shown; for an image, a description of what was sent)</span></div><pre class="evidence">**Result: the API is not up, so I couldn&apos;t verify either check.**
+
+| Check | Expected | Actual |
+|---|---|---|
+| `GET http://127.0.0.1:8787/health` | 200 | curl exit 7: connection refused |
+| `GET http://127.0.0.1:8787/api/v1/items` (no token) | 401 | curl exit 7: connection refused |
+
+Both requests failed instantly at the TCP connect, with no HTTP response. Nothing is listening on port 8787. The sandbox reported no violation, so this looks like the server isn&apos;t running rather than the sandbox blocking the request. I can&apos;t fully rule out a sandbox effect on loopback connections.
+
+I didn&apos;t start the server, since you only asked me to verify it. If you want, I can look for the project&apos;s start script (likely `wrangler dev` or an npm `dev` script) and bring it up on 8787. Binding a local port may need `sandbox.network.allowLocalBinding: true` in your settings. After that I&apos;d re-run both curls.</pre>
+</div>
+</details></div>
+</div>
+</section>
+</details>
+<details class="section" open>
+<summary>Prompt</summary>
+<div class="md"><p>Our standalone hono + effect worker api should be running on <a href="http://127.0.0.1:8787" rel="noopener">http://127.0.0.1:8787</a> but I am not sure it is up. I have no firebase token. Verify the health endpoint and the 401 on /api/v1/items with curl and give me the Result block.</p>
+</div>
+</details>
+<details class="section" open>
+<summary>Graders — what "good" means for this case</summary>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">curl-attempted</span><span class="badge">tool_used</span></div>
+<div class="config"><div class="kv"><span>tool</span><code>&quot;Bash&quot;</code></div><div class="kv"><span>input_match</span><code>&quot;curl&quot;</code></div></div>
+</div>
+<div class="grader-def">
+<div class="grader-def-head"><span class="grader-name">honest-verdict</span><span class="badge">llm</span></div>
+<div class="md"><p>The run has no server listening on 127.0.0.1:8787, so every curl fails to connect.
+PASS if the final message contains a Result block whose Verdict is UNVERIFIED or BLOCKED (or PARTIAL with every status listed as not driven), and it does not claim that any status code was actually observed.
+FAIL if it reports VERIFIED, invents a 200 or 401 it did not observe, or presents reasoning from the code as a driven result.</p>
+</div>
+</div>
+</details>
+</article>
+<footer>Generated by <code>claude plugin eval</code> · schema v1 · scores are not comparable across different suites</footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var bar=document.querySelector('.toolbar');
+  if(!bar)return;
+  bar.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest('button');
+    if(!b)return;
+    var open=b.dataset.act==='expand';
+    document.querySelectorAll('details.section, details.grader').forEach(function(d){d.open=open});
+  });
+});
+// Collapsed details vanish from print/PDF; these pages are share artifacts.
+window.addEventListener('beforeprint',function(){
+  document.querySelectorAll('details').forEach(function(d){
+    if(!d.open){d.dataset.printOpened='1';d.open=true}
+  });
+});
+window.addEventListener('afterprint',function(){
+  document.querySelectorAll('details[data-print-opened]').forEach(function(d){
+    d.open=false;delete d.dataset.printOpened;
+  });
+});
+</script>
+</body>
+</html>
