@@ -1,6 +1,6 @@
 ---
 name: data-model
-description: Designs Firestore data for a Cloudflare Workers API: document shapes from the access patterns, server-owned fields, composite indexes as firestore.indexes.json, cursor rules, consistency under concurrent writes, and a rollout plan for existing data. Use when a feature needs to store, query, filter, sort, count or migrate data, or when the user asks about fields, collections, indexes, balances or counters.
+description: Designs Firestore data for a Cloudflare Workers API: document shapes from the access patterns, server-owned fields, composite indexes as firestore.indexes.json, cursor rules, consistency under concurrent writes, and a rollout plan for existing data. Use when a feature needs to store, query, filter, sort, count or migrate data, even if the user only asks for a field, an index or a filter, or asks how to store something.
 allowed-tools: Read, Glob, Grep, Write, Edit, WebFetch
 ---
 
@@ -29,6 +29,7 @@ Rules of the store: `references/firestore-modeling.md` (shapes, server fields, c
 - A document missing the ordered or filtered field is invisible to that query, silently. Backfill the field before an index that sorts on it goes live.
 - A string and a timestamp in the same field sort by type, not by value; one mixed document breaks every range on that field.
 - The template adapter has `update` with `updateMask` and `currentDocument.exists`, and no transaction or transform. A balance invariant needs `:beginTransaction`/`:commit` added to the `Firestore` tag and its fake; the design must say so instead of assuming it.
+- The adapter's `query` runs `:runQuery` on the database root (`from: [{ collectionId }]`), so it cannot read a subcollection. History as `timeOffRequests/{id}/approvals` needs a parent path in the adapter; history as a top-level `timeOffApprovals` with `requestId` works today. Say which, and what implement must add.
 - An unmasked `PATCH` replaces the document and deletes the fields a migration just added.
 - Cursors from `Date` carry millisecond precision; a timestamp written by another client with microseconds makes the next page skip or repeat the boundary row. Carry the raw `timestampValue` string in the cursor when documents are not all written by this API.
 - Counting approved days from the request documents on every balance check is a fan-out of reads inside the request path; store the running total and reconcile it from the documents in a job.

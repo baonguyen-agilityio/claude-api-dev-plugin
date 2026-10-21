@@ -7,7 +7,7 @@ Documents are read whole and billed per read; design for the list the API return
 | Pattern | Shape | Why | Not this |
 |---|---|---|---|
 | Returned together on every read, bounded size (address on a request) | embed as a map | one read, one write | a second collection joined in the handler |
-| Unbounded list owned by one parent (approval history, comments) | subcollection `parent/{id}/<list>/{autoId}` | no 1 MiB document cap, no growth in the parent the list query reads | an array field that grows forever |
+| Unbounded list owned by one parent (approval history, comments) | subcollection `parent/{id}/<list>/{autoId}`, or a top-level collection with `parentId` + a composite on (`parentId`, `createdAt`) | no 1 MiB document cap, no growth in the parent the list query reads; the top-level form works with the adapter as is, the subcollection needs `query` to take a parent path | an array field that grows forever |
 | Value read on every list but owned elsewhere (latest decision, display name) | duplicate onto the parent, name it as a copy | list queries stay single-collection | a per-row lookup in the handler (N subrequests) |
 | Thing addressed by a natural key (balance per employee + year + type) | deterministic id `${employeeId}_${year}_${type}` | lookup is one `get`; racing creators collide (`exists=false`) instead of duplicating | a query by three equalities plus a uniqueness check in code |
 | Many-to-many (employees ↔ teams) | an edge collection or an array of ids on the smaller side, `array-contains` | Firestore has no join | nested maps keyed by id (unqueryable) |
