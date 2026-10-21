@@ -1,6 +1,6 @@
 ---
 name: release-api
-description: This skill should be used when the user asks to "deploy to dev/stag/prod", "release the API", "set a secret", "rotate a secret", "add an environment", "roll back", "read production logs", "deploy lên dev", "đưa lên production", "thêm secret", "rollback", or hits a wrangler, Firestore or auth setup error on a standalone Hono + Effect Worker API. Gates on the checks and confirms the env before wrangler deploy. Not for turbo-driven monorepo deploys.
+description: This skill should be used when the user asks to "deploy to dev/stag/prod", "release the API", "set a secret", "rotate a secret", "add an environment", "roll back", "read production logs", "rollback", or hits a wrangler, Firestore or auth setup error on a standalone Hono + Effect Worker API. Gates on the checks and confirms the env before wrangler deploy. Not for turbo-driven monorepo deploys.
 ---
 
 # Release API

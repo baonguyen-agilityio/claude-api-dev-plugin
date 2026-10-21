@@ -1,6 +1,6 @@
 ---
 name: debug-endpoint
-description: This skill should be used when the user reports that an endpoint "returns 500", "returns the wrong status", "returns 200 when it should be 403", "fails only after deploy", "any website can call our API", "the CORS header says *", "test bị fail", "API bị lỗi", "endpoint trả sai", or pastes a wrangler, vitest or log error from a standalone Hono + Effect Worker API, including when they only want the cause and the fix without edits. Reproduces with curl before explaining. Not for a multi-app monorepo with its own bug workflow.
+description: This skill should be used when the user reports that an endpoint "returns 500", "returns the wrong status", "returns 200 when it should be 403", "fails only after deploy", "any website can call our API", "the CORS header says *", or pastes a wrangler, vitest or log error from a standalone Hono + Effect Worker API, including when they only want the cause and the fix without edits. Reproduces with curl before explaining. Not for a multi-app monorepo with its own bug workflow.
 ---
 
 # Debug endpoint

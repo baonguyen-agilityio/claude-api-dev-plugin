@@ -1,6 +1,6 @@
 ---
 name: probe-endpoint
-description: This skill should be used when the user asks to "verify the endpoint", "smoke-test the API", "check it works", "hit it with curl", "test thử endpoint", "kiểm tra API chạy chưa", "gọi thử bằng curl", or wants a change confirmed before a PR or after a deploy, on a standalone Hono + Effect Worker API. Drives every declared status with curl, even when tests are green. Not for writing code; for a defect found here, continue with debug-endpoint.
+description: This skill should be used when the user asks to "verify the endpoint", "smoke-test the API", "check it works", "hit it with curl", or wants a change confirmed before a PR or after a deploy, on a standalone Hono + Effect Worker API. Drives every declared status with curl, even when tests are green. Not for writing code; for a defect found here, continue with debug-endpoint.
 ---
 
 # Probe endpoint
