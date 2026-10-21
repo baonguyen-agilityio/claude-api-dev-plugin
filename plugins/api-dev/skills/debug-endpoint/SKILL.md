@@ -1,6 +1,6 @@
 ---
 name: debug-endpoint
-description: Diagnose and fix a defect in a standalone Hono + Effect + Firestore API on Cloudflare Workers — reproduce with curl, pin it with a failing test, find the real cause, fix it in the shared place, prove it is gone. Use whenever the user reports an endpoint returning the wrong status or body, a 500, a 401/403 that should not happen, missing or wrong data, something that fails only after deploy, a failing or flaky test, or pastes an error from wrangler, vitest or the logs — also phrased like "API bị lỗi", "endpoint trả sai", "deploy xong thì hỏng", "test bị fail". Use it even when the user already guessed the cause or the fix looks like one line. Not for the space-api monorepo's own bug skill.
+description: Diagnose and fix a defect in a standalone Hono + Effect + Firestore API on Cloudflare Workers — reproduce with curl, pin it with a failing test, find the real cause, fix it in the shared place, prove it is gone. Use whenever the user reports an endpoint returning the wrong status or body, a 500, a 401/403 that should not happen, missing or wrong data, something that fails only after deploy, a failing or flaky test, or pastes an error from wrangler, vitest or the logs — also phrased like "API bị lỗi", "endpoint trả sai", "deploy xong thì hỏng", "test bị fail". Use it even when the user already guessed the cause or the fix looks like one line. Not for a multi-app monorepo that has its own bug workflow.
 ---
 
 # Debug endpoint

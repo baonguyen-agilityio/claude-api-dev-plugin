@@ -1,6 +1,6 @@
 ---
 name: new-api
-description: Create a new standalone REST API project on Cloudflare Workers from this plugin's template — Hono + hono-openapi, Effect programs and Effect Schema, Firestore over REST, Firebase ID-token auth, vitest, feature modules. Use whenever the user wants to start, bootstrap, scaffold or set up a new API, backend, REST service or Worker in an empty folder — also phrased like "tạo project API mới", "dựng backend mới", "khởi tạo API từ template". Use it BEFORE writing package.json or wrangler.toml by hand: the template already decides auth, envelopes, pagination and tests. Not for adding to an API that already exists (use add-endpoint) and not for a pnpm/turbo monorepo such as space-api.
+description: Create a new standalone REST API project on Cloudflare Workers from this plugin's template — Hono + hono-openapi, Effect programs and Effect Schema, Firestore over REST, Firebase ID-token auth, vitest, feature modules. Use whenever the user wants to start, bootstrap, scaffold or set up a new API, backend, REST service or Worker in an empty folder — also phrased like "tạo project API mới", "dựng backend mới", "khởi tạo API từ template". Use it BEFORE writing package.json or wrangler.toml by hand: the template already decides auth, envelopes, pagination and tests. Not for adding to an API that already exists (use add-endpoint) and not for a pnpm/turbo monorepo with several apps.
 ---
 
 # New API

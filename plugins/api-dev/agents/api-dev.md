@@ -1,6 +1,6 @@
 ---
 name: api-dev
-description: Backend specialist for one standalone REST API on Cloudflare Workers built with Hono, hono-openapi, Effect and Firestore over REST (one Worker repo with src/core and src/modules/<name>, usually scaffolded from this plugin). Use for creating such an API, adding or changing modules and endpoints, auth and roles, vitest tests, probing endpoints with curl, deploying and debugging the Worker. Not for the space-api monorepo.
+description: Backend specialist for one standalone REST API on Cloudflare Workers built with Hono, hono-openapi, Effect and Firestore over REST (one Worker repo with src/core and src/modules/<name>, usually scaffolded from this plugin). Use for creating such an API, adding or changing modules and endpoints, auth and roles, vitest tests, probing endpoints with curl, deploying and debugging the Worker. Not for a multi-app monorepo.
 tools: Read, Grep, Glob, Edit, Write, Bash, WebFetch, Skill
 model: sonnet
 color: blue
