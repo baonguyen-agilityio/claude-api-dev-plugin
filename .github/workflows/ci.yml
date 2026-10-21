@@ -13,8 +13,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - run: node plugins/api-dev/scripts/check-plugin.mjs
-      - run: node --test plugins/api-dev/hooks/*.test.mjs
+      - run: node plugins/backend-dev/scripts/check-plugin.mjs
+      - run: node --test plugins/backend-dev/hooks/*.test.mjs
 
   template-gates:
     runs-on: ubuntu-24.04
@@ -25,11 +25,11 @@ jobs:
           node-version: 22
       - name: Gates on a clean copy of the template
         run: |
-          tmp=$(mktemp -d) && cp -R plugins/api-dev/templates/. "$tmp" && cd "$tmp"
+          tmp=$(mktemp -d) && cp -R plugins/backend-dev/templates/. "$tmp" && cd "$tmp"
           npm ci
           npm run typecheck && npm test && npm run check
       - name: Generator adds a module and gates stay green
         run: |
-          tmp=$(mktemp -d) && cp -R plugins/api-dev/templates/. "$tmp"
-          node plugins/api-dev/scripts/new-module.mjs "$tmp" tags tag
+          tmp=$(mktemp -d) && cp -R plugins/backend-dev/templates/. "$tmp"
+          node plugins/backend-dev/scripts/new-module.mjs "$tmp" tags tag
           cd "$tmp" && npm ci && npm run typecheck && npm test

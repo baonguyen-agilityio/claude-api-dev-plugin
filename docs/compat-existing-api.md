@@ -1,6 +1,6 @@
-# Compatibility check: api-dev process skills on an existing API
+# Compatibility check: backend-dev process skills on an existing API
 
-Date: 2026-10-21. Plugin: `api-dev` at the `feat/plugin-hooks` tip. Target: an existing internal API that does not follow this plugin's template. In this run it is a pnpm + turbo monorepo with several apps; the Worker under test (`apps/<app>`) shares the wire contract with this plugin's design but not its internal shape (a shared `@packages/core` package, a permission matrix inside the request handler, class-based services).
+Date: 2026-10-21. Plugin: `backend-dev` at the `feat/plugin-hooks` tip. Target: an existing internal API that does not follow this plugin's template. In this run it is a pnpm + turbo monorepo with several apps; the Worker under test (`apps/<app>`) shares the wire contract with this plugin's design but not its internal shape (a shared `@packages/core` package, a permission matrix inside the request handler, class-based services).
 
 Question answered here: do the stack-neutral skills (`probe-endpoint`, `debug-endpoint`) work on real team code when the repo's `CLAUDE.md` tells them the local commands and names? The build skills (`new-api`, `add-endpoint`, `release-api`) are out of scope: their descriptions already exclude a multi-app monorepo.
 
@@ -11,7 +11,7 @@ Repeat this check for any other repo shape; the questions are the same: does the
 - `pnpm install --frozen-lockfile` at the monorepo root; `pnpm --filter @packages/core build` (the Worker imports the shared package from `dist/`).
 - `apps/<app>/.dev.vars` copied from the sample: no real Firebase credentials, so only public routes answer 200; protected routes answer 401, which is itself a probe target.
 - A local-only `CLAUDE.md` at the monorepo root (git-excluded, never pushed) with: the real gates (`pnpm --filter <app> test`, `lint`, `pnpm build:<app>`; no `typecheck`/`check`), the dev command (`wrangler dev` on :8787), the shared-handler and middleware names, the permission model (entity/action matrix), the deploy envs (four, including `testing`), and the public routes (`/api/v1/docs`, `/openapi`).
-- Skills loaded with `claude --plugin-dir <this repo>/plugins/api-dev` from the monorepo root, model Sonnet, headless (`-p`) so every tool call is on record.
+- Skills loaded with `claude --plugin-dir <this repo>/plugins/backend-dev` from the monorepo root, model Sonnet, headless (`-p`) so every tool call is on record.
 
 ## Runs
 
@@ -29,9 +29,9 @@ GET /api/v1/docs  Origin: evil.example   Access-Control-Allow-Origin: *
 
 Prompt: "The API in this repo is running locally on http://127.0.0.1:8787 (wrangler dev, apps/<app>). I have no Firebase token. Verify it works: the public docs route, that protected routes reject a missing and a bad bearer token with the right status and envelope, and the CORS behaviour of /api/v1/docs for an origin like https://evil.example. Use curl, show each status and body, and finish with the Result block."
 
-Session: `claude -p --model sonnet --plugin-dir …/plugins/api-dev --allowedTools "Bash(curl *)" "Bash(jq *)" Read Grep Glob Skill`, 6 turns, $0.26.
+Session: `claude -p --model sonnet --plugin-dir …/plugins/backend-dev --allowedTools "Bash(curl *)" "Bash(jq *)" Read Grep Glob Skill`, 6 turns, $0.26.
 
-- Skill tool call: `api-dev:probe-endpoint` (first action).
+- Skill tool call: `backend-dev:probe-endpoint` (first action).
 - Commands: curl against `/api/v1/docs`, `/openapi`, two protected resources with no token, `Bearer nonsense`, `Basic abc`, plus `OPTIONS` preflights with `Origin: https://evil.example`.
 - Reported verdict: **PARTIAL**. Drove 200 (docs, openapi), 401 (missing token → `UNAUTHORIZED`, bad token → `INVALID_TOKEN`, wrong scheme), 204 (preflight). Listed as not driven: any 2xx on a protected route, 403/404/400/409, pagination, the basic-auth routes.
 - Findings it made on its own: `cors()` with default options on every route in the app entry file, `Access-Control-Allow-Origin: *` on success and error responses alike; the skill's example path `/api/v1/openapi.json` does not exist here (the spec is at `/openapi`, listed in the local CLAUDE.md), which it noted instead of reporting a failure.
@@ -69,6 +69,6 @@ Session: same flags plus `"Bash(git log *)"`, 9 turns, $0.21.
 cd <path to the monorepo> && pnpm install --frozen-lockfile && pnpm --filter @packages/core build
 cp -n apps/<app>/.dev.vars.sample apps/<app>/.dev.vars
 (cd apps/<app> && npx wrangler dev --port 8787 --ip 127.0.0.1)
-claude --plugin-dir <this repo>/plugins/api-dev
+claude --plugin-dir <this repo>/plugins/backend-dev
 ```
 Full transcripts of both runs (stream-json) were kept outside the repo; the quoted Result blocks above are verbatim apart from the anonymised paths.

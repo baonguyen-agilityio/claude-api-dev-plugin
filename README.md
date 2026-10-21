@@ -1,6 +1,21 @@
 # claude-api-dev-plugin
 
-Claude Code plugin for building one standalone REST API on Cloudflare Workers, plus the design it implements.
+Claude Code plugin `backend-dev`: the backend engineer's process on Cloudflare Workers + Firestore, one skill per stage, plus the design and template they implement.
+
+## The process and its skills
+
+| Stage | Skill | Status |
+|---|---|---|
+| 1 Requirement → system design | `system-design` | planned |
+| 2 Data design | `data-model` | planned |
+| 3 API contract | `api-contract` | planned |
+| 4 Implementation | `implement` | planned (replaces `new-api`, `add-endpoint`) |
+| 5 Quality before the MR | `review-and-secure` | planned |
+| 6 Live verification | `live-verify` | planned (replaces `probe-endpoint`) |
+| 7 Delivery and operations | `delivery` | planned (replaces `release-api`) |
+| 8 Incidents | `incident` | planned (replaces `debug-endpoint`) |
+
+Until a stage lands, its v1 skill stays installed.
 
 ## Stack
 
@@ -23,35 +38,23 @@ Design and decisions: [docs/architecture.md](docs/architecture.md).
 In Claude Code 2.1.275 or later:
 
 ```
-/plugin install api-dev --marketplace baonguyen-agilityio/claude-api-dev-plugin
+/plugin install backend-dev --marketplace baonguyen-agilityio/claude-api-dev-plugin
 ```
 
-Or from a clone: `claude plugin marketplace add ./` then `claude plugin install api-dev@bao-plugins`. In this repo the plugin is already enabled through `.claude/settings.json`.
+Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@bao-plugins`. In this repo the plugin is already enabled through `.claude/settings.json`.
 
-Skills: `new-api`, `add-endpoint`, `debug-endpoint`, `probe-endpoint`, `release-api`; agent `api-dev:api-dev`. Say the job in plain words (Vietnamese works); you do not need to name a skill.
-
-## Install
-
-In Claude Code 2.1.275 or later:
-
-```
-/plugin install api-dev --marketplace baonguyen-agilityio/claude-api-dev-plugin
-```
-
-Or from a clone: `claude plugin marketplace add ./` then `claude plugin install api-dev@bao-plugins`. In this repo the plugin is already enabled through `.claude/settings.json`.
-
-Skills: `new-api`, `add-endpoint`, `debug-endpoint`, `probe-endpoint`, `release-api`; agent `api-dev:api-dev`. Say the job in plain words (Vietnamese works); you do not need to name a skill.
+Agent: `backend-dev:backend-dev`. Say the job in plain words; you do not need to name a skill.
 
 ## Maintaining
 
 - Owner: baonguyen-agilityio. Changes go through a pull request with a review pass (`/review-checklist` or `/code-review`) posted on it.
-- Any change to a skill description, a rule or the agent: run `node plugins/api-dev/scripts/check-plugin.mjs`, then the trigger suite the way agentskills.io describes it: `claude plugin eval plugins/api-dev --trust-plugin --ablation none --tag train --threshold 0.5` to find failures and guide edits, then `--tag validation` once, on queries never used to edit the description (a case passes at a trigger rate ≥ 0.5 over 3 runs). About $2–3 per set on Sonnet; commit the dated results folders. Descriptions follow https://agentskills.io/skill-creation/optimizing-descriptions: what the skill does, then "Use this skill whenever … even if they don't mention …", then the boundary; no implementation details, no lists of quoted user phrases.
+- Any change to a skill description, a rule or the agent: run `node plugins/backend-dev/scripts/check-plugin.mjs`, then the trigger suite the way agentskills.io describes it: `claude plugin eval plugins/backend-dev --trust-plugin --ablation none --tag train --threshold 0.5` to find failures and guide edits, then `--tag validation` once, on queries never used to edit the description (a case passes at a trigger rate ≥ 0.5 over 3 runs). About $2–3 per set on Sonnet; commit the dated results folders. Descriptions follow https://agentskills.io/skill-creation/optimizing-descriptions: what the skill does, then "Use this skill whenever … even if they don't mention …", then the boundary; no implementation details, no lists of quoted user phrases.
 - The outcome cases (`evals/outcome-*`) run with `--ablation with-without --tag outcome --allow-tools Bash Write Edit` to report the delta against no plugin.
-- Any change to `docs/architecture.md`: copy it to `plugins/api-dev/references/architecture.md` (the lint fails otherwise) and re-check the template against the changed sections.
+- Any change to `docs/architecture.md`: copy it to `plugins/backend-dev/references/architecture.md` (the lint fails otherwise) and re-check the template against the changed sections.
 - Any change to `templates/`: CI runs the gates on a clean copy and the generator; run them locally first (`npm run typecheck && npm test && npm run check`).
 - Adding a skill: a folder under `skills/` with a third-person description (quoted trigger phrases, one "not for" clause), `allowed-tools`, a body that ends with the Result block, and at least one eval case whose grader expects it.
 
 ## Layout
 
-- `plugins/api-dev/` — the plugin (skills, rules, agent, template, evals, hooks)
+- `plugins/backend-dev/` — the plugin (skills, rules, agent, template, evals, hooks)
 - `docs/` — architecture and decisions the plugin and template follow
