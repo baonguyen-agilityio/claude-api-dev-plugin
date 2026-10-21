@@ -45,7 +45,7 @@ for (const name of skills) {
   if ((desc.match(/"/g) ?? []).length < 6) err(file, "description needs at least three quoted trigger phrases");
   if (desc.length > 1024) err(file, `description over 1024 chars (${desc.length})`);
   if (!/standalone/i.test(desc)) err(file, "description must say it is for a standalone API");
-  if (!/Not for|instead/.test(desc)) err(file, "description must say which sibling or situation it is not for");
+  if (!/\bnot for\b|\binstead\b/i.test(desc)) err(file, "description must say which sibling or situation it is not for");
   if (body.split("\n").length > 200) err(file, "SKILL.md over 200 lines; move detail to rules/ or references/");
   if (!/## Result|result-block\.md/.test(body)) err(file, "does not close with the Result block");
 }
