@@ -1,6 +1,7 @@
 ---
 name: add-endpoint
 description: This skill should be used when the user asks to "add an endpoint", "add a module", "create CRUD for a resource", "add a field to the response", "change validation", "only admins can delete" in a standalone Hono + Effect + Firestore Worker API. Runs the contract check and the module generator first. For a reported defect use debug-endpoint; not for a multi-app monorepo.
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(node * new-module.mjs *), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*)
 ---
 
 # Add endpoint

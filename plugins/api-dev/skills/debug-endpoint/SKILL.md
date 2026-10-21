@@ -1,6 +1,7 @@
 ---
 name: debug-endpoint
 description: This skill should be used when the user reports that an endpoint "returns 500", "returns the wrong status", "returns 200 when it should be 403", "fails only after deploy", "any website can call our API", "the CORS header says *", or pastes a wrangler, vitest or log error from a standalone Hono + Effect Worker API, including when they only want the cause and the fix without edits. Reproduces with curl before explaining. Not for a multi-app monorepo with its own bug workflow.
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(curl *), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npx wrangler tail *), Bash(git log *)
 ---
 
 # Debug endpoint

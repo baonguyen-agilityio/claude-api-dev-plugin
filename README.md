@@ -42,6 +42,14 @@ Or from a clone: `claude plugin marketplace add ./` then `claude plugin install 
 
 Skills: `new-api`, `add-endpoint`, `debug-endpoint`, `probe-endpoint`, `release-api`; agent `api-dev:api-dev`. Say the job in plain words (Vietnamese works); you do not need to name a skill.
 
+## Maintaining
+
+- Owner: baonguyen-agilityio. Changes go through a pull request with a review pass (`/review-checklist` or `/code-review`) posted on it.
+- Any change to a skill description, a rule or the agent: run `node plugins/api-dev/scripts/check-plugin.mjs`, then the trigger suite `claude plugin eval plugins/api-dev --trust-plugin --ablation none` (about $3, Sonnet) and commit the dated results folder. The outcome cases (`evals/outcome-*`) run with `--ablation with-without` to report the delta against no plugin.
+- Any change to `docs/architecture.md`: copy it to `plugins/api-dev/references/architecture.md` (the lint fails otherwise) and re-check the template against the changed sections.
+- Any change to `templates/`: CI runs the gates on a clean copy and the generator; run them locally first (`npm run typecheck && npm test && npm run check`).
+- Adding a skill: a folder under `skills/` with a third-person description (quoted trigger phrases, one "not for" clause), `allowed-tools`, a body that ends with the Result block, and at least one eval case whose grader expects it.
+
 ## Layout
 
 - `plugins/api-dev/` — the plugin (skills, rules, agent, template, evals, hooks)

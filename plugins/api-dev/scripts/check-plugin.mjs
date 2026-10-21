@@ -48,6 +48,7 @@ for (const name of skills) {
   if (!/\bnot for\b|\binstead\b/i.test(desc)) err(file, "description must say which sibling or situation it is not for");
   if (body.split("\n").length > 200) err(file, "SKILL.md over 200 lines; move detail to rules/ or references/");
   if (!/## Result|result-block\.md/.test(body)) err(file, "does not close with the Result block");
+  if (!fm["allowed-tools"]) err(file, "missing allowed-tools (state the permission boundary)");
 }
 
 // agents

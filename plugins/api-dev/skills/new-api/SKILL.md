@@ -1,6 +1,7 @@
 ---
 name: new-api
 description: This skill should be used when the user asks to "create a new API", "scaffold a backend", "set up a Worker API in an empty folder", or wants to start a standalone REST service on Cloudflare Workers from scratch. Copies and verifies this plugin's template. Not for adding to an existing API (add-endpoint) or a multi-app monorepo.
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(mkdir *), Bash(cp *), Bash(ls *), Bash(node -v), Bash(npm install*), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(git init*), Bash(git status*)
 ---
 
 # New API

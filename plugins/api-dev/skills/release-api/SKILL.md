@@ -1,6 +1,7 @@
 ---
 name: release-api
 description: This skill should be used when the user asks to "deploy to dev/stag/prod", "release the API", "set a secret", "rotate a secret", "add an environment", "roll back", "read production logs", "rollback", or hits a wrangler, Firestore or auth setup error on a standalone Hono + Effect Worker API. Gates on the checks and confirms the env before wrangler deploy. Not for turbo-driven monorepo deploys.
+allowed-tools: Read, Glob, Grep, Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npm audit *), Bash(npx wrangler secret list *), Bash(npx wrangler tail *)
 ---
 
 # Release API
@@ -8,6 +9,8 @@ description: This skill should be used when the user asks to "deploy to dev/stag
 Setup and commands: `${CLAUDE_PLUGIN_ROOT}/references/deploy.md`. Symptom → cause → fix: `${CLAUDE_PLUGIN_ROOT}/references/troubleshoot.md`. Env table: architecture §7.
 
 ## Deploying
+`wrangler deploy`, `wrangler secret put` and `wrangler rollback` are not pre-approved on purpose: each one prompts, so a deploy never happens on the skill's own initiative.
+
 1. **Confirm the env with the user.** Deploying is outward-facing; never pick `stag` or `prod` yourself.
 2. Gates, output shown: `npm run typecheck && npm test && npm run check` and `npm audit --omit=dev` (a high/critical runtime advisory blocks stag/prod).
 3. Config for that env: `[env.<env>]` has `name`, `FIREBASE_PROJECT_ID`, `CORS_ORIGINS` and its own `ratelimits` block; `npx wrangler secret list --env <env>` shows every secret the `Env` type needs. Bindings and vars are not inherited; a missing limiter silently means no limiting.
