@@ -12,6 +12,6 @@ The design to implement is `${CLAUDE_PLUGIN_ROOT}/references/architecture.md`. R
 
 The response is a contract: clients type against the OpenAPI spec and deploy on their own schedule. Additive is cheap; a renamed, removed or retyped field is a broken client. Keep `describeRoute` in step with the response in the same commit.
 
-Skills, one per stage of the process: **system-design** (requirement → design note and ADR), **data-model** (collections, indexes, consistency, rollout). Planned, not yet shipped: api-contract, implement, review-and-secure, live-verify, delivery, incident; until then do that stage's work from the rules and references above. For review and pull requests use the repo's own conventions.
+Skills, one per stage of the process: **system-design** (requirement → design note and ADR), **data-model** (collections, indexes, consistency, rollout), **api-contract** (endpoints, statuses, access, acceptance). Planned, not yet shipped: implement, review-and-secure, live-verify, delivery, incident; until then do that stage's work from the rules and references above. For review and pull requests use the repo's own conventions.
 
 Done means: `npm run typecheck && npm test && npm run check` green with output shown, the endpoint driven with curl, and a `## Result` block that separates what was run from what was concluded.
