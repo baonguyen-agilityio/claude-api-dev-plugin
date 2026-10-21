@@ -1,0 +1,12 @@
+# Leaked credential runbook
+
+A service-account key (`FIREBASE_CLIENT_EMAIL` + `FIREBASE_PRIVATE_KEY`) that was pasted, committed, logged or screenshotted is compromised. Deleting the message, the commit or the log entry does not make it secret again; bots, exports, notifications and screenshots have it.
+
+1. **Rotate now, before investigating.** GCP Console → IAM → Service Accounts → the account matching `client_email` → Keys → create a new key. Open `wrangler.toml` for the env names; for every env that holds the leaked key: `npx wrangler secret put FIREBASE_CLIENT_EMAIL --env <env>` and `… FIREBASE_PRIVATE_KEY --env <env>` (each `put` deploys), then an authenticated read on each env (live-verify). Only then delete the leaked key, matched by its `private_key_id`, never "the oldest one". If abuse is already visible, delete first and accept the downtime.
+2. **Contain the exposure** in parallel, by a second person: purge from the channel including retention and exports; check whether the channel is shared externally or has logging bots; ask where else it was pasted (tickets, chats, AI tools).
+3. **Audit the window** from the exposure to the rotation: Cloud Logging audit logs filtered on `protoPayload.authenticationInfo.principalEmail="<client_email>"`; unfamiliar IPs, methods, Firestore reads and writes, IAM changes, new keys. A Firebase Admin credential can mint custom tokens, so also review Auth activity and revoke refresh tokens if anything is suspicious. Check billing.
+4. **Check the rest of the file.** `.dev.vars` may hold more than the two secrets; `git log --all -- .dev.vars` to confirm it was never committed; `.gitignore` covers it.
+5. **Notify and record:** security lead now; if user data was read, legal and compliance (breach-notification clocks start at awareness). Timeline: posted, rotated per env, logs reviewed, outcome.
+6. **Prevent:** separate Firebase projects per env so a local file never holds a prod key; minimal IAM roles; secret scanning in CI and pre-commit; the Result says the key was rotated and in which envs.
+
+The Firebase ID-token verification of the API is unaffected by the rotation (it uses Google's public keys); only the service account the Worker uses to reach Firestore changes.
