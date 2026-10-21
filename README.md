@@ -16,7 +16,7 @@ Claude Code plugin for building one standalone REST API on Cloudflare Workers, p
 | Language | TypeScript strict, no build step | typescript 5.9 | `templates/tsconfig.json` |
 | Node | for tooling only (wrangler, vitest, scripts) | >= 22 | `templates/package.json` `engines` |
 
-Design: [docs/architecture.md](docs/architecture.md). Decisions: [docs/adr](docs/adr).
+Design and decisions: [docs/architecture.md](docs/architecture.md).
 
 ## Layout
 
