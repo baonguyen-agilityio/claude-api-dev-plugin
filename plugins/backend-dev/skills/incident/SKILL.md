@@ -1,20 +1,20 @@
 ---
 name: incident
-description: Handles defects and incidents in a Cloudflare Workers + Firestore API: triages, establishes which version is live, reproduces first, pins the bug with a failing test, finds the cause and its blast radius, fixes it in the shared place, proves the fix and writes the postmortem; includes the leaked-credential response. Use when something is broken, misbehaving or exposed, or when an error, log line or alert is pasted, even if the cause has already been guessed.
+description: "Handles defects and incidents in a Cloudflare Workers + Firestore API: triages, establishes which version is live, reproduces first, pins the bug with a failing test, finds the cause and its blast radius, fixes it in the shared place, proves the fix and writes the postmortem; includes the leaked-credential response. Use when something is broken, misbehaving or exposed, or when an error, log line, alert or security scan finding is pasted, even if the cause has already been guessed or the fix looks obvious."
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npx vitest*), Bash(npx wrangler tail*), Bash(npx wrangler deployments*), Bash(npx wrangler versions list*), Bash(npx wrangler secret list*), Bash(git log*), Bash(git status*), Bash(git diff*), Bash(curl *), Bash(jq *)
 ---
 
 # Incident
 
-Scope: stage 8 of the backend process. A healthy endpoint that needs proof is live-verify; rolling back is delivery (`wrangler rollback` is theirs and prompts). The leaked-credential runbook: `references/leaked-credential.md`. Symptom → cause table: `references/symptoms.md`.
+Problem this solves: something is broken, misbehaving or exposed, and the first fix that comes to mind is a theory about a bug nobody has reproduced on the version that is live. The answer is cause, fix, blast radius, proof and a short postmortem; for a leaked credential, the runbook in `references/leaked-credential.md`. Symptom → cause table: `references/symptoms.md`. Rolling back is a `wrangler rollback` that prompts. Works on its own or as a step of the process.
 
 ## Procedure
 
-1. **Triage in one line:** which env, since when, who is affected, is data exposed or corrupted. Users affected and a previous good version → rollback first (delivery), investigate second. A credential exposed → the runbook, before anything else.
+1. **Triage in one line:** which env, since when, who is affected, is data exposed or corrupted. Users affected and a previous good version → rollback first (`wrangler rollback`), investigate second. A credential exposed → the runbook, before anything else.
 2. **Establish what is live before reading code.** `npx wrangler deployments list --env <env>` (or `versions list`) for the deployed version and its source SHA; `git log -1` for the checkout. A checkout that cannot produce the logged error is not wrong, it is a different version; say so and get the right one.
 3. **Reproduce** with the exact request (method, path, body, role, env) against `wrangler dev` with that env's project, or against the env with `npx wrangler tail --env` open. Not reproducible: say so and stop; a speculative fix cannot be shown to work.
 4. **Pin it with a failing test** at the lowest layer that shows it (adapter for an encoding or mapping fault, service for logic, route for a guard). Run it on the unfixed code and keep the failure output.
-5. **Cause, not symptom.** Read the table in the reference before touching code. A Firestore 400 caused by a value this API sent is this API's defect, and surfacing it as 502 `UPSTREAM_ERROR` is a second defect in the mapping. A coercion at the boundary (`"7"` → 7) that makes the symptom vanish is a contract decision for api-contract, not a fix.
+5. **Cause, not symptom.** Read the table in the reference before touching code. A Firestore 400 caused by a value this API sent is this API's defect, and surfacing it as 502 `UPSTREAM_ERROR` is a second defect in the mapping. A coercion at the boundary (`"7"` → 7) that makes the symptom vanish is a contract decision (who may send strings), not a fix.
 6. **Blast radius:** grep every module for the same pattern (`git grep` the expression); a 200 where 401/403/404 was expected is checked in every sibling and reported with whether data could have been read.
 7. **Fix in the shared place:** `core/firestore.ts`, `core/run.ts`, `authMiddleware`, the model; never the one route in the report. The failing test passes; no assertion loosened.
 8. **Prove:** `npm run typecheck && npm test && npm run check`; the original request re-run with the new status and body pasted; on a deployed env, the `tail` line that used to show the error.
