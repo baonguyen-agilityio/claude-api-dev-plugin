@@ -1,12 +1,12 @@
 ---
 name: review-and-secure
-description: Reviews a change to a Cloudflare Workers + Firestore API before the merge request: contract against code, access control per endpoint, input handling, error leakage, reads per request, CORS and headers, secrets and tests, and writes the findings with the MR notes. Use when a change should be checked, hardened or made ready for review, even if the user only asks whether it is ok to merge.
+description: "Reviews a change to a Cloudflare Workers + Firestore API before the merge request: contract against code, access control per endpoint, input handling, error leakage, reads per request, CORS and headers, secrets and tests, and writes the findings with the MR notes. Use when a change should be checked, hardened or made ready for review, even if the user only asks whether it is ok to merge."
 allowed-tools: Read, Glob, Grep, Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npm audit*), Bash(git diff*), Bash(git status*), Bash(git log*)
 ---
 
 # Review and secure
 
-Scope: stage 5 of the backend process. Reads and reports; fixes go back to implement, defects found live go to incident. Not for driving the running API (live-verify).
+Problem this solves: a change looks done, and the defects that reach production in this stack are the quiet ones: a fetched document never compared with the caller, a server field accepted from the body, `cors()` with no options, a `get` per row. The answer is a findings list with locations and tests, plus the MR notes. Reads and reports; it changes no code. Works on its own or as a step of the process.
 
 Risk table with the template's status: `references/security-checklist.md`. Reads, limits and amplification: `references/performance.md`.
 
