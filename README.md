@@ -11,7 +11,7 @@ Claude Code plugin `backend-dev`: the backend engineer's process on Cloudflare W
 | 3 API contract | `api-contract` | done |
 | 4 Implementation | `implement` | done |
 | 5 Quality before the MR | `review-and-secure` | done |
-| 6 Live verification | `live-verify` | planned |
+| 6 Live verification | `live-verify` | done |
 | 7 Delivery and operations | `delivery` | planned |
 | 8 Incidents | `incident` | planned |
 
