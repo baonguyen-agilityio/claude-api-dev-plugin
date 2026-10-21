@@ -1,12 +1,12 @@
 ---
 name: live-verify
-description: Proves a Cloudflare Workers + Firestore API works by calling it for real: obtains Firebase ID tokens for a user and an admin, drives every declared status with curl against wrangler dev or a deployed environment, diffs responses against the OpenAPI spec, checks headers and logs, and reports VERIFIED, PARTIAL or UNVERIFIED. Use when someone wants proof that an endpoint, change or deployment works, even when the tests are green.
+description: "Proves a Cloudflare Workers + Firestore API works by calling it for real: obtains Firebase ID tokens for a user and an admin, drives every declared status with curl against wrangler dev or a deployed environment, diffs responses against the OpenAPI spec, checks headers and logs, and reports VERIFIED, PARTIAL or UNVERIFIED. Use when someone wants proof that an endpoint, change or deployment works, even when the tests are green."
 allowed-tools: Read, Glob, Grep, Bash(curl *), Bash(jq *), Bash(npm run dev*), Bash(npx wrangler dev*), Bash(npx wrangler tail*), Bash(node * set-claim.mjs *), Bash(base64 *), Bash(cut *)
 ---
 
 # Live verify
 
-Scope: stage 6 of the backend process. Changes no code and no data in `prod`; a defect it finds goes to incident with the exact request that showed it.
+Problem this solves: green tests prove the fake, not the token check, the adapter or the bindings. The answer is a curl record of every declared status against a running Worker, with a verdict. Changes no code and no data in `prod`; a defect it finds is reported with the exact request that showed it. Works on its own or as a step of the process.
 
 Tokens and claims: `references/token-flow.md`. Statuses to drive and what each proves: `references/status-table.md`. Claim script: `scripts/set-claim.mjs`.
 
@@ -20,7 +20,7 @@ Tokens and claims: `references/token-flow.md`. Statuses to drive and what each p
 6. **Diff against the spec:** `/openapi.json` (or the path the repo's `app.ts` declares) for the route's responses and schema versus `jq -S 'keys'` of the real response. A spec that disagrees with a correct response is the defect.
 7. **Headers and limits once per deployment:** `Origin: https://evil.example` must get no `access-control-allow-origin`; `strict-transport-security` and `x-content-type-options` present; a burst past the limit answers 429 (deployed only; `wrangler dev` has no limiter).
 8. **Read the logs while driving:** `npx wrangler tail --env <env>` for the `firestore` line on a 502, the `forbidden` event on a 403.
-9. **Race the transition when the contract promises one winner:** five concurrent approvals on a fresh request; more than one 200 is a finding for incident.
+9. **Race the transition when the contract promises one winner:** five concurrent approvals on a fresh request; more than one 200 is a defect to report with the request that showed it.
 10. **Clean up what you created** on dev and stag (cancel, delete); never create or change data in `prod` without the user's go-ahead.
 
 ## Gotchas seen on this stack
@@ -44,7 +44,7 @@ Tokens and claims: `references/token-flow.md`. Statuses to drive and what each p
 **Headers:** <checked | not checked (local)>
 **Logs:** <lines that matter, or "none">
 **Statuses not driven:** <which and why>
-**Defects found:** <exact request → expected vs seen> (hand to incident)
+**Defects found:** <exact request → expected vs seen> (report with the exact request)
 **Cleanup:** <what was removed or left, where>
 ```
 
