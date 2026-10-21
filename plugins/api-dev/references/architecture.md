@@ -191,3 +191,9 @@ Validation messages are `"<field>: <reason>"`, first issue only. Every failure i
 ## 9. Dates and times
 
 Stored as Firestore `timestampValue`; exposed as ISO 8601 strings in JSON; validated with `Schema.DateFromString` at the boundary. Date-only values (`from`, `to`) are midnight UTC. No local-time arithmetic anywhere in the Worker.
+
+## 10. Decisions
+
+- **Effect Schema and Effect programs, not Zod.** One schema serves validation, decoding and the OpenAPI spec; services are Effect programs so every failure is a typed, mapped error rather than a `throw`. Zod would have needed a second layer for the Effect services. Cost: a steeper learning curve, carried by the template and the generator.
+- **`effect` pinned to 3.x.** 4.x changes the Schema API; upgrade deliberately, with the adapter tests as the gate.
+- **Firestore over REST, no SDK.** `firebase-admin` does not run on Workers; the REST adapter is small and fully testable with a stubbed `fetch`.
