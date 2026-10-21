@@ -41,8 +41,8 @@ for (const name of skills) {
   if (fm.name !== name) err(file, `name "${fm.name}" != folder "${name}"`);
   const desc = fm.description ?? "";
   if (desc.length < 120) err(file, `description too short to trigger reliably (${desc.length} chars)`);
-  if (!/^This skill should be used when/.test(desc)) err(file, "description must be third person: start with \"This skill should be used when\"");
-  if ((desc.match(/"/g) ?? []).length < 6) err(file, "description needs at least three quoted trigger phrases");
+  if (!/\bUse this skill (whenever|when)\b/.test(desc)) err(file, "description must tell the agent when to act: \"Use this skill when(ever) …\" (agentskills.io)");
+  if (!/even if|even when/.test(desc)) err(file, "description must cover the implicit case: \"even if they don't mention …\"");
   if (desc.length > 1024) err(file, `description over 1024 chars (${desc.length})`);
   if (!/standalone/i.test(desc)) err(file, "description must say it is for a standalone API");
   if (!/\bnot for\b|\binstead\b/i.test(desc)) err(file, "description must say which sibling or situation it is not for");

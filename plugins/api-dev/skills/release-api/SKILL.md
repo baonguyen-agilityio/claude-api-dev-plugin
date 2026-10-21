@@ -1,6 +1,6 @@
 ---
 name: release-api
-description: This skill should be used when the user asks to "deploy to dev/stag/prod", "release the API", "set a secret", "rotate a secret", "add an environment", "roll back", "read production logs", "rollback", or hits a wrangler, Firestore or auth setup error on a standalone Hono + Effect Worker API. Gates on the checks and confirms the env before wrangler deploy. Not for turbo-driven monorepo deploys.
+description: Deploys, configures and rolls back a standalone Hono + Effect Worker API across dev, staging and production: runs the gates and the audit, checks each environment's variables, secrets and rate-limit binding, deploys with wrangler, smoke-tests, reads logs, rotates secrets, rolls back. Use this skill whenever the user wants the API shipped, promoted, released or restored, a secret or environment added or rotated, or production logs read, even if they just say push it live or that something broke right after a deploy. Not for monorepos deployed through turbo.
 allowed-tools: Read, Glob, Grep, Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npm audit *), Bash(npx wrangler secret list *), Bash(npx wrangler tail *)
 ---
 

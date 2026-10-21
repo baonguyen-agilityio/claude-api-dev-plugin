@@ -1,6 +1,6 @@
 ---
 name: debug-endpoint
-description: This skill should be used when the user reports that an endpoint "returns 500", "returns the wrong status", "returns 200 when it should be 403", "fails only after deploy", "any website can call our API", "the CORS header says *", or pastes a wrangler, vitest or log error from a standalone Hono + Effect Worker API, including when they only want the cause and the fix without edits. Reproduces with curl before explaining. Not for a multi-app monorepo with its own bug workflow.
+description: Diagnoses and fixes defects in a standalone Hono + Effect + Firestore Worker API by reproducing them before explaining: wrong status codes or bodies, 500s, requests that should be rejected but succeed, auth, permission, CORS and header problems, missing or wrong data, failures that appear only after a deploy, failing or flaky tests. Use this skill whenever the user says the API misbehaves or pastes an error, even if they have already guessed the cause, propose a one-line fix, or only want to know why. Not for a monorepo that has its own bug workflow.
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(curl *), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npx wrangler tail *), Bash(git log *)
 ---
 

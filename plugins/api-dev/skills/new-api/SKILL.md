@@ -1,6 +1,6 @@
 ---
 name: new-api
-description: This skill should be used when the user asks to "create a new API", "scaffold a backend", "set up a Worker API in an empty folder", or wants to start a standalone REST service on Cloudflare Workers from scratch. Copies and verifies this plugin's template. Not for adding to an existing API (add-endpoint) or a multi-app monorepo.
+description: Scaffolds a complete standalone REST API on Cloudflare Workers from a vetted template (Hono, Effect, Firestore, Firebase auth, vitest) and proves it runs: copies the skeleton into the folder, renames it, runs the typecheck, test and dry-run gates. Use this skill whenever the user wants to start a new backend, API, service or Worker, or points at an empty folder and asks for a project to be set up, even if they never say template, scaffold or the stack. Not for adding to an API that already exists (add-endpoint) or for a monorepo with several apps.
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(node *), Bash(cp .dev.vars.example .dev.vars), Bash(ls *), Bash(npm install*), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(git init*), Bash(git status*)
 ---
 

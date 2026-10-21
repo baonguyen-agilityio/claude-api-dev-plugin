@@ -1,6 +1,6 @@
 ---
 name: probe-endpoint
-description: This skill should be used when the user asks to "verify the endpoint", "smoke-test the API", "check it works", "hit it with curl", or wants a change confirmed before a PR or after a deploy, on a standalone Hono + Effect Worker API. Drives every declared status with curl, even when tests are green. Not for writing code; for a defect found here, continue with debug-endpoint.
+description: Verifies an endpoint of a standalone Hono + Effect Worker API by actually calling it: drives every declared status with curl against wrangler dev or a deployed environment, compares the response with the OpenAPI spec, checks the security headers, and reports exactly what was observed. Use this skill whenever the user wants proof that an endpoint, a change or a deployment works, asks to try, hit, smoke-test or double-check the API, or wants confidence before a pull request or after a release, even when the tests are already green. Not for writing code: for a defect it finds, continue with debug-endpoint.
 allowed-tools: Read, Glob, Grep, Bash(curl *), Bash(jq *)
 ---
 
