@@ -13,7 +13,7 @@ Claude Code plugin `backend-dev`: the backend engineer's process on Cloudflare W
 | 5 Quality before the MR | `review-and-secure` | done |
 | 6 Live verification | `live-verify` | done |
 | 7 Delivery and operations | `delivery` | done |
-| 8 Incidents | `incident` | planned |
+| 8 Incidents | `incident` | done |
 
 
 ## Stack
