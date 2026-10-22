@@ -6,7 +6,7 @@ Claude Code plugin `backend-dev`: the backend engineer's process on Cloudflare W
 
 | Stage | Skill | Status |
 |---|---|---|
-| 1 Requirement → system design | `system-design` | planned |
+| 1 Requirement → system design | `system-design` | done |
 | 2 Data design | `data-model` | planned |
 | 3 API contract | `api-contract` | planned |
 | 4 Implementation | `implement` | planned |
