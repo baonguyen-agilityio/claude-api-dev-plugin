@@ -8,15 +8,17 @@ allowed-tools: Read, Glob, Grep, Bash(npm run typecheck*), Bash(npm test*), Bash
 
 Problem this solves: a change looks done, and the defects that reach production in this stack are the quiet ones: a fetched document never compared with the caller, a server field accepted from the body, `cors()` with no options, a `get` per row. The answer is a findings list with locations and tests, plus the MR notes. Reads and reports; it changes no code. Works on its own or as a step of the process.
 
+Before anything else, follow the project profile: the `backend-dev:profile` block in the repo's `CLAUDE.md`. Where it differs from the defaults below (commands, layering, error style, git and CI conventions), the profile wins. No profile: the defaults below are the template's (`${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`); say in the result that `/backend-dev:kit-setup` has not been run.
+
 Risk table with the template's status: `references/security-checklist.md`. Reads, limits and amplification: `references/performance.md`.
 
 ## Procedure
 
-1. **Establish the diff and run what you may.** `git diff <base>` or the module named; `npm run typecheck && npm test` when the dependencies are installed and the mode allows. When they cannot run, the Result says "gates not run" instead of inferring green.
+1. **Establish the diff and run what you may.** `git diff <base>` or the module named; the profile's gates (template: `npm run typecheck && npm test && npm run check`) when the dependencies are installed and the mode allows. When they cannot run, the Result says "gates not run" instead of inferring green.
 2. **Contract against code.** For each endpoint in the diff: does `describeRoute` list every status the service can return; is the response shape the one the contract promised; is any existing field renamed, removed or retyped (breaking) without a consumer named.
 3. **Access per endpoint, both checks.** Role on the route (`requireRole`), ownership in the service, and the 403/404 choice per resource. A fetched `current` that is never compared with the caller is a missing check; a `Forbidden` import with no use is the same finding. A gap in one module is checked in every sibling module.
 4. **Input.** DTOs hold writable fields only; `{ ...data, ownerId: user.uid }` has the server field after the spread; `limit` is capped at `MAX_LIMIT`; query filter fields come from the model's allow-list; the body limit is in the chain.
-5. **Errors.** No `throw` in a service; every tagged error mapped in `toErrorResponse`; the 502 body never carries the upstream message; a Firestore 400 caused by our own value is our defect, not an upstream one.
+5. **Errors, by the profile's error style.** Template: no `throw` in a service, every tagged error mapped in `toErrorResponse`. Exception-style repos: every thrown exception is one the mapper knows (an unknown one is a bare 500). Either way: the 502 body never carries the upstream message; a Firestore 400 caused by our own value is our defect, not an upstream one.
 6. **Reads per request.** Count the Firestore calls on the hot path: a `get` inside a loop over a list, a list fetched twice, a lookup per row. Multiply by the largest `limit` the endpoint accepts; that is the subrequest and latency cost of one request.
 7. **Headers, CORS, rate limit.** `cors()` without options is a finding; `CORS_ORIGINS` must be read; `secureHeaders()` present; a `ratelimits` binding in every env block.
 8. **Secrets and logs.** No credential in code, tests, fixtures or `api.http`; logs carry ids, never tokens or bodies with PII.

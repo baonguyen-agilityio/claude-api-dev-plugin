@@ -49,6 +49,15 @@ for (const name of skills) {
   if (body.split("\n").length > 200) err(file, "SKILL.md over 200 lines; move detail to rules/ or references/");
   if (!/## Result|result-block\.md|## Output/.test(body)) err(file, "has neither a Result block nor an ## Output template");
   if (!fm["allowed-tools"]) err(file, "missing allowed-tools (state the permission boundary)");
+  if (!/backend-dev:profile/.test(body)) err(file, "must tell the reader to follow the project profile (backend-dev:profile block)");
+}
+
+// commands: typed by people, so a description and an argument hint are what they see in the menu
+const cmdDir = join(ROOT, "commands");
+for (const f of existsSync(cmdDir) ? readdirSync(cmdDir).filter((x) => x.endsWith(".md")) : []) {
+  const fm = frontmatter(join(cmdDir, f));
+  if (!fm.description) err(join(cmdDir, f), "missing description");
+  if (!fm["allowed-tools"]) err(join(cmdDir, f), "missing allowed-tools");
 }
 
 // agents

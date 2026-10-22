@@ -8,6 +8,8 @@ allowed-tools: Read, Glob, Grep, Bash(curl *), Bash(jq *), Bash(npm run dev*), B
 
 Problem this solves: green tests prove the fake, not the token check, the adapter or the bindings. The answer is a curl record of every declared status against a running Worker, with a verdict. Changes no code and no data in `prod`; a defect it finds is reported with the exact request that showed it. Works on its own or as a step of the process.
 
+Before anything else, follow the project profile: the `backend-dev:profile` block in the repo's `CLAUDE.md`. Where it differs from the defaults below (commands, layering, error style, git and CI conventions), the profile wins. No profile: the defaults below are the template's (`${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`); say in the result that `/backend-dev:kit-setup` has not been run.
+
 Tokens and claims: `references/token-flow.md`. Statuses to drive and what each proves: `references/status-table.md`. Claim script: `scripts/set-claim.mjs`.
 
 ## Procedure

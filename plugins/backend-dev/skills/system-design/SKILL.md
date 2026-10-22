@@ -8,6 +8,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, WebFetch
 
 Problem this solves: a feature brief says what should happen, not where the work runs, what happens on retries, or which platform limit breaks it first. The answer is a design note and an ADR in the reply. Works on its own or as the first step of the process in the README; field-level data design and the endpoint contract are separate skills, not prerequisites.
 
+Before anything else, follow the project profile: the `backend-dev:profile` block in the repo's `CLAUDE.md`. Where it differs from the defaults below (commands, layering, error style, git and CI conventions), the profile wins. No profile: the defaults below are the template's (`${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`); say in the result that `/backend-dev:kit-setup` has not been run.
+
 Decide the shape of the work before anyone writes an endpoint. The output is a design note and an ADR in the reply itself, not a plan file. Primitives and limits: `references/workers-primitives.md`. ADR shape: `references/adr-template.md`.
 
 ## Procedure

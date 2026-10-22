@@ -8,6 +8,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit
 
 Problem this solves: a ticket says what the user wants, not what the API returns, who may call it, which status each failure gets, whether existing clients break, or how QA proves it. The answer is the contract in the reply; no project file changes until someone implements it. Works on its own or as a step of the process; data layout and code are separate skills.
 
+Before anything else, follow the project profile: the `backend-dev:profile` block in the repo's `CLAUDE.md`. Where it differs from the defaults below (commands, layering, error style, git and CI conventions), the profile wins. No profile: the defaults below are the template's (`${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`); say in the result that `/backend-dev:kit-setup` has not been run.
+
 Shapes every endpoint inherits: `references/envelope-and-errors.md`. Who may call what: `references/access-rules.md`. Additive vs breaking, PATCH vs action, versioning, acceptance form: `references/contract-decisions.md`.
 
 ## Procedure

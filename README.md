@@ -42,7 +42,9 @@ In Claude Code 2.1.275 or later:
 
 Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@bao-plugins`. In this repo the plugin is already enabled through `.claude/settings.json`.
 
-Agent: `backend-dev:backend-dev`. Say the job in plain words; you do not need to name a skill.
+Then, once per repository, a lead runs `/backend-dev:kit-setup` (add the API app's path in a monorepo, for example `/backend-dev:kit-setup apps/api`). It reads the repo and drafts a short project profile in `CLAUDE.md` (commands, layering, error style, git and CI conventions), turns off AI attribution in `.claude/settings.json` and lists every fact it could not establish as a question. Review, answer, commit. Every skill follows that profile; projects made from the template get one from the scaffold.
+
+Agent: `backend-dev:backend-dev`, only when asked by name or for an end-to-end run.
 
 ## Maintaining
 

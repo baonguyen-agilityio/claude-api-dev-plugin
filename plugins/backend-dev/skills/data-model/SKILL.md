@@ -8,11 +8,13 @@ allowed-tools: Read, Glob, Grep, Write, Edit, WebFetch
 
 Problem this solves: a feature needs documents, queries and invariants, and Firestore punishes a shape chosen before the access patterns (missing composite, unbounded fan-out, a balance that goes negative under two concurrent writes). The answer is the data design in the reply plus `firestore.indexes.json`, the one file this skill writes. Works on its own or as a step of the process; module boundaries and the HTTP shape are separate skills.
 
+Before anything else, follow the project profile: the `backend-dev:profile` block in the repo's `CLAUDE.md`. Where it differs from the defaults below (commands, layering, error style, git and CI conventions), the profile wins. No profile: the defaults below are the template's (`${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`); say in the result that `/backend-dev:kit-setup` has not been run.
+
 Rules of the store: `references/firestore-modeling.md` (shapes, server fields, consistency, rollout). Queries, indexes and cursors: `references/queries-and-indexes.md`.
 
 ## Procedure
 
-1. **Read what exists before naming a field.** Open the module's `models/`, `firestore.indexes.json` and `core/firestore.ts`; list the collections, their field names and types, the state machine and the cursor format the adapter already produces. A design that renames `ownerId` to `employeeId` or stores a date as a string next to timestamps is a migration, not a design.
+1. **Read what exists before naming a field.** Open the module's models or types, the indexes file and the data access layer the profile names (template: `models/`, `firestore.indexes.json`, `core/firestore.ts`); list the collections, their field names and types, the state machine and the cursor format the adapter already produces. A design that renames `ownerId` to `employeeId` or stores a date as a string next to timestamps is a migration, not a design.
 2. **List the access patterns first, one line each:** actor, filter fields, order, page size, write frequency. Every document shape and every index is justified by a line here; a field nobody filters or reads has no index.
 3. **Choose the shape per pattern** with the embed/reference/duplicate table in the reference: one document per thing the API returns; an unbounded list (history, comments) is a subcollection; a value read on every list (latest decision) is duplicated onto the parent and named as a copy; a thing looked up by a natural key (`balance per employee, year, type`) gets a deterministic id, so a lookup is one `get` and racing creators collide instead of duplicating.
 4. **Mark every field server-owned or client-supplied.** Server-owned: ids, `ownerId` from the token, timestamps (`REQUEST_TIME` transform or adapter), status, derived amounts. Snapshot what a later rule change must not alter (`deductedDays` on approve, so cancel refunds exactly that).
