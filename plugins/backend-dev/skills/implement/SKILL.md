@@ -48,7 +48,8 @@ The design the code follows: `${CLAUDE_PLUGIN_ROOT}/references/architecture.md`.
 **Tests:** <both files by path; cases incl. the 403/404, 400, 409 and ignored-field cases>
 **Gates:** <typecheck / test / check output, pasted>
 **Verified live:** <what was driven with curl, or "not verified">
-**Not done / Blocked by / Next**
+**Not done / Blocked by**
+**Next:** review-and-secure on this change, then live-verify. Inside a ticket, `/backend-dev:ticket <id>` continues the workflow.
 ```
 
 ## Checklist

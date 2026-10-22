@@ -54,6 +54,7 @@ Fix: <one line>
 
 ### MR notes
 <what, core touched, reviewer focus, gates with output>
+**Next:** fix the blocking findings (implement), then live-verify; with no blocking finding, live-verify, then open the MR with the notes above.
 ```
 
 ## Checklist

@@ -49,4 +49,5 @@ Environments, secrets, commands: `references/environments.md`. Pipeline shape an
 **Pipeline:** <workflows added or changed; environments and reviewers still to configure>
 **Rollback:** <command and what it does not undo>
 **Manual steps left:** <Firebase project, indexes, secrets, environment reviewers>
+**Next:** live-verify on the deployed environment, then promote to the next one.
 ```

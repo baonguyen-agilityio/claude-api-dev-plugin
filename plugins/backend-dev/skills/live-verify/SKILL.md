@@ -48,6 +48,7 @@ Tokens and claims: `references/token-flow.md`. Statuses to drive and what each p
 **Statuses not driven:** <which and why>
 **Defects found:** <exact request → expected vs seen> (report with the exact request)
 **Cleanup:** <what was removed or left, where>
+**Next:** VERIFIED → commit and open the MR, or promote to the next environment after a deploy; a defect → incident with the request that showed it.
 ```
 
 `VERIFIED` only when every declared status for the endpoint was driven with the output pasted; `PARTIAL` when some could not be (no admin token, no deployed env); `UNVERIFIED` when nothing was driven. Never `VERIFIED` from tests alone.
