@@ -11,7 +11,7 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 4. Answer the questions in both files, review the diff, commit.
 
 **Developer with a ticket**
-- `/backend-dev:ticket 412` reads GitLab issue #412 (`glab auth login` once), or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
+- `/backend-dev:ticket 412` reads GitLab issue #412 (`glab auth login --hostname <host>` once; on a self-managed GitLab choose Token and paste a personal access token with `read_api`, since browser login needs an OAuth application the instance may not have). If the org blocks your token, start Claude Code with `claude --chrome`: the kit then reads the issue page read-only in your own Chrome session. Or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
 - It restates the ticket, asks only blocking questions, picks the stages the ticket needs and **stops with a workflow card** (`✔ analysis · ▶ api-contract · ○ implement …` and a **Next** line). Reply `go`, change the stage list, or `stop`; `/backend-dev:ticket 412` in a later session resumes from `.backend-dev/tickets/412.md` (self-ignored). After `go` it runs the stages with the skills below, updating the card after each, runs the repo's gates (first on the base branch, so failures that were already there are named), commits in the repo's format and prints the merge request command. Push and MR happen only when you say so.
 
 **Newcomer, first day**
