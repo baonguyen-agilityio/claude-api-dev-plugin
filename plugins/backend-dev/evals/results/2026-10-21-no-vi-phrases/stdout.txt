@@ -1,0 +1,2 @@
+Run: claude plugin eval . --trust-plugin --ablation none -j 4 --model sonnet --case "*-vi"
+Descriptions without Vietnamese phrases. 5/5 cases, 15/15 runs passed.

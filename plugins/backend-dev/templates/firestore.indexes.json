@@ -1,0 +1,9 @@
+{
+  "indexes": [
+    { "collectionGroup": "timeOffRequests", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "ownerId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "timeOffRequests", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "timeOffRequests", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "ownerId", "order": "ASCENDING" }, { "fieldPath": "from", "order": "ASCENDING" } ] },
+    { "collectionGroup": "timeOffRequests", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "from", "order": "ASCENDING" } ] }
+  ],
+  "fieldOverrides": []
+}

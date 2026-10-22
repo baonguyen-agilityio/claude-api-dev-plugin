@@ -1,10 +1,12 @@
 # CLAUDE.md
 
 ## Project
-Repo for the `api-dev` Claude Code plugin: skills, rules, an agent, a template API and evals for building one standalone REST API on Cloudflare Workers. Design lives in `docs/`; the plugin in `plugins/api-dev/`. Everything in source is English: code, comments, docs, commit messages.
+Repo for the `backend-dev` Claude Code plugin: skills, rules, an agent, a template API and evals for building one standalone REST API on Cloudflare Workers. Design lives in `docs/`; the plugin in `plugins/backend-dev/`. Everything in source is English: code, comments, docs, commit messages.
 
 ## Commands
-- No commands yet. Plugin lint and template gates are added as the plugin lands; keep this list current.
+- `node plugins/backend-dev/scripts/check-plugin.mjs` — plugin lint (frontmatter, references, design copy in sync, evals). CI runs it on every PR.
+- `claude plugin validate --strict plugins/backend-dev` and `claude plugin validate --strict .` — manifest and marketplace.
+- After editing `docs/architecture.md`: `cp docs/architecture.md plugins/backend-dev/references/architecture.md` (the lint fails otherwise).
 
 ## Conventions
 - Branches: `feat/<short-desc>`, `docs/<short-desc>`, `chore/<short-desc>`. One branch per pull request, one topic per branch; squash-merge, then delete the branch.

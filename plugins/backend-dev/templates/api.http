@@ -1,0 +1,31 @@
+@base = http://localhost:8787/api/v1
+@token = <Firebase ID token>
+@admin = <Firebase ID token with role=admin>
+
+GET {{base}}/health
+
+###
+GET {{base}}/items?limit=2
+Authorization: Bearer {{token}}
+
+###
+POST {{base}}/items
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "pen", "qty": 3 }
+
+###
+POST {{base}}/timeOffRequests
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "type": "annual", "from": "2026-11-03", "to": "2026-11-05", "reason": "family trip" }
+
+###
+GET {{base}}/timeOffRequests?status=pending
+Authorization: Bearer {{admin}}
+
+###
+POST {{base}}/timeOffRequests/<id>/approve
+Authorization: Bearer {{admin}}
