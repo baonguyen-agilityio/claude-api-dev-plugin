@@ -55,6 +55,7 @@ Shapes every endpoint inherits: `references/envelope-and-errors.md`. Who may cal
 Given … / When … / Then … (one per status per endpoint, concrete values)
 
 ## Open questions (blocking) / Defaults applied
+**Next:** implement from this contract (data-model first when it needs new fields, queries or indexes). Inside a ticket, `/backend-dev:ticket <id>` continues the workflow.
 ```
 
 ## Done when

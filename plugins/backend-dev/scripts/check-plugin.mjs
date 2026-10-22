@@ -49,6 +49,7 @@ for (const name of skills) {
   if (body.split("\n").length > 200) err(file, "SKILL.md over 200 lines; move detail to rules/ or references/");
   if (!/## Result|result-block\.md|## Output/.test(body)) err(file, "has neither a Result block nor an ## Output template");
   if (!fm["allowed-tools"]) err(file, "missing allowed-tools (state the permission boundary)");
+  if (!/\*\*Next:\*\*/.test(body)) err(file, "output must end with a **Next:** line (the following step in the workflow)");
   if (!/backend-dev:profile/.test(body)) err(file, "must tell the reader to follow the project profile (backend-dev:profile block)");
 }
 

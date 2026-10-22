@@ -12,13 +12,13 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 
 **Developer with a ticket**
 - `/backend-dev:ticket 412` reads GitLab issue #412 (`glab auth login` once), or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
-- It restates the ticket, asks only blocking questions, picks the stages the ticket needs, runs them with the skills below, runs the repo's gates (first on the base branch, so failures that were already there are named), commits in the repo's format and prints the merge request command. Push and MR happen only when you say so.
+- It restates the ticket, asks only blocking questions, picks the stages the ticket needs and **stops with a workflow card** (`✔ analysis · ▶ api-contract · ○ implement …` and a **Next** line). Reply `go`, change the stage list, or `stop`; `/backend-dev:ticket 412` in a later session resumes from `.backend-dev/tickets/412.md` (self-ignored). After `go` it runs the stages with the skills below, updating the card after each, runs the repo's gates (first on the base branch, so failures that were already there are named), commits in the repo's format and prints the merge request command. Push and MR happen only when you say so.
 
 **Newcomer, first day**
 1. Read `docs/onboarding.md`; ask anything (`where do I start?`, `how does a request reach Firestore here?`): the `onboard` skill answers from the repo and checks your machine (`node <plugin>/scripts/doctor.mjs . <app path>`: versions, dependencies, env keys present, glab login; never prints values).
 2. First tickets: `/backend-dev:ticket <id> --learn` does the same work and explains each stage, each decision, and the terms on the way.
 
-**Using a skill on its own**: say the job in plain words; every skill works alone and follows the repo's profile.
+**Using a skill on its own**: say the job in plain words; every skill works alone, follows the repo's profile and ends with a **Next** line naming the following step of the workflow.
 
 ## Skills and commands
 

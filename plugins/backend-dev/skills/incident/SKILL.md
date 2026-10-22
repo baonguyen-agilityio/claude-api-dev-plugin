@@ -47,4 +47,5 @@ Before anything else, follow the project profile: the `backend-dev:profile` bloc
 ## Postmortem
 **Timeline:** <first report → mitigation → fix → verified>
 **Cause / Fix / Would have caught it / Prevention:** <one line each>
+**Next:** review-and-secure on the fix, live-verify on the affected environment, then the prevention items as tickets.
 ```
