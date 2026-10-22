@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "bao-plugins",
-  "description": "Plugins by baonguyen-agilityio: backend-dev builds one standalone REST API on Cloudflare Workers from a documented design.",
+  "description": "Plugins by baonguyen-agilityio: backend-dev, a team kit for APIs on Cloudflare Workers + Firestore.",
   "owner": {
     "name": "baonguyen-agilityio"
   },
@@ -10,7 +10,7 @@
       "name": "backend-dev",
       "source": "./plugins/backend-dev",
       "version": "0.1.0",
-      "description": "Build one standalone REST API on Cloudflare Workers (Hono, Effect, Firestore REST, Firebase auth, vitest) from a documented design: scaffold, add endpoints, debug, probe with curl, release.",
+      "description": "Team kit for APIs on Cloudflare Workers + Firestore (Hono, Effect, Firebase auth, vitest), on an existing repo or monorepo or a new one from its template. /backend-dev:kit-setup writes the repo's project profile, /backend-dev:ticket works a GitLab ticket through the stages it needs, onboard maps the repo for newcomers, and eight stage skills cover system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery and incident.",
       "author": {
         "name": "baonguyen-agilityio"
       }
