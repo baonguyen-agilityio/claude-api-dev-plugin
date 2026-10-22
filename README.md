@@ -1,19 +1,43 @@
 # claude-api-dev-plugin
 
-Claude Code plugin `backend-dev`: the backend engineer's process on Cloudflare Workers + Firestore, one skill per stage, plus the design and template they implement.
+Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare Workers + Firestore. It works on the team's existing repositories and on new ones made from its template: a lead sets a repo up once, a developer works a ticket with one command, a newcomer gets a reviewed project map and a guided first ticket.
 
-## The process and its skills
+## Quickstart
 
-| Stage | Skill | Status |
+**Lead, once per repository**
+1. Install the plugin (below).
+2. In the repo root: `/backend-dev:kit-setup` (in a monorepo add the API app's path, `/backend-dev:kit-setup apps/api`). It drafts a project profile in `CLAUDE.md` from the repo (commands, layering, error style, git and CI conventions), turns off AI attribution, pre-approves the repo's exact gate commands and lists every fact it could not establish as a question.
+3. `/backend-dev:onboard` writes `docs/onboarding.md` from the repo.
+4. Answer the questions in both files, review the diff, commit.
+
+**Developer with a ticket**
+- `/backend-dev:ticket 412` reads GitLab issue #412 (`glab auth login` once), or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
+- It restates the ticket, asks only blocking questions, picks the stages the ticket needs, runs them with the skills below, runs the repo's gates (first on the base branch, so failures that were already there are named), commits in the repo's format and prints the merge request command. Push and MR happen only when you say so.
+
+**Newcomer, first day**
+1. Read `docs/onboarding.md`; ask anything (`where do I start?`, `how does a request reach Firestore here?`): the `onboard` skill answers from the repo and checks your machine (`node <plugin>/scripts/doctor.mjs . <app path>`: versions, dependencies, env keys present, glab login; never prints values).
+2. First tickets: `/backend-dev:ticket <id> --learn` does the same work and explains each stage, each decision, and the terms on the way.
+
+**Using a skill on its own**: say the job in plain words; every skill works alone and follows the repo's profile.
+
+## Skills and commands
+
+| Stage | Skill | Output |
 |---|---|---|
-| 1 Requirement → system design | `system-design` | done |
-| 2 Data design | `data-model` | done |
-| 3 API contract | `api-contract` | done |
-| 4 Implementation | `implement` | done |
-| 5 Quality before the MR | `review-and-secure` | done |
-| 6 Live verification | `live-verify` | done |
-| 7 Delivery and operations | `delivery` | done |
-| 8 Incidents | `incident` | done |
+| Requirement → system design | `system-design` | design note and ADR |
+| Data design | `data-model` | collections, indexes, consistency, rollout |
+| API contract | `api-contract` | endpoints, statuses, access, Given/When/Then |
+| Implementation | `implement` | code and tests in the repo's layering, gates green |
+| Quality before the MR | `review-and-secure` | findings with tests, MR notes |
+| Live verification | `live-verify` | curl record of every status, verdict |
+| Delivery and operations | `delivery` | environments, secrets, pipeline, deploy, rollback |
+| Incidents | `incident` | cause, fix, blast radius, proof, postmortem |
+
+| Command | Who | What |
+|---|---|---|
+| `/backend-dev:kit-setup [app]` | lead, once per repo | project profile in `CLAUDE.md`, attribution off, gate permissions |
+| `/backend-dev:ticket <id or text> [--learn]` | developer | the stages a ticket needs, ending in commit and MR draft |
+| `/backend-dev:onboard` | newcomer or lead | `docs/onboarding.md` written or refreshed, machine check |
 
 
 ## Stack
@@ -40,7 +64,7 @@ In Claude Code 2.1.275 or later:
 /plugin install backend-dev --marketplace baonguyen-agilityio/claude-api-dev-plugin
 ```
 
-Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@bao-plugins`. In this repo the plugin is already enabled through `.claude/settings.json`.
+Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@bao-plugins`. Teammates need read access to this repository to install from it. In this repo the plugin is already enabled through `.claude/settings.json`.
 
 Then, once per repository, a lead runs `/backend-dev:kit-setup` (add the API app's path in a monorepo, for example `/backend-dev:kit-setup apps/api`). It reads the repo and drafts a short project profile in `CLAUDE.md` (commands, layering, error style, git and CI conventions), turns off AI attribution in `.claude/settings.json` and lists every fact it could not establish as a question. Review, answer, commit. Every skill follows that profile; projects made from the template get one from the scaffold.
 
@@ -58,5 +82,5 @@ Agent: `backend-dev:backend-dev`, only when asked by name or for an end-to-end r
 
 ## Layout
 
-- `plugins/backend-dev/` — the plugin (skills, rules, agent, template, evals, hooks)
+- `plugins/backend-dev/` — the plugin: `skills/` (nine), `commands/` (kit-setup, ticket), `references/` (project profile format, architecture note), `scripts/` (scaffold, new-module, doctor), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
 - `docs/` — architecture and decisions the plugin and template follow
