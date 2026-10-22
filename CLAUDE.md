@@ -4,7 +4,7 @@
 Repo for the `backend-dev` Claude Code plugin: a team kit for APIs on Cloudflare Workers + Firestore: skills (including the typed `/backend-dev:kit-setup` and `/backend-dev:ticket`), rules, an agent, a template API and evals. It works on existing repos and monorepos through a project profile, and on new repos made from the template. Design lives in `docs/`; the plugin in `plugins/backend-dev/`. GitLab (`origin`) is the source of truth; GitHub (`github`) is a mirror that only receives `main` after a merge. Everything in source is English: code, comments, docs, commit messages.
 
 ## Commands
-- `node plugins/backend-dev/scripts/check-plugin.mjs` — plugin lint (frontmatter, references, design copy in sync, evals). CI runs it on every merge request.
+- `node plugins/backend-dev/scripts/check-plugin.mjs` — plugin lint (frontmatter, references, design copy in sync, evals). Run it before every merge request; GitHub CI runs it again when `main` reaches the mirror.
 - `claude plugin validate --strict plugins/backend-dev` and `claude plugin validate --strict .` — manifest and marketplace.
 - After editing `docs/architecture.md`: `cp docs/architecture.md plugins/backend-dev/references/architecture.md` (the lint fails otherwise).
 
