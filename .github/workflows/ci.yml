@@ -19,7 +19,12 @@ jobs:
         with:
           go-version: '1.23'
       - run: go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@latest
-      - run: for s in plugins/backend-dev/skills/*/; do "$(go env GOPATH)/bin/skill-validator" check "$s" --strict -o compact; done
+      # typed-only skills carry Claude Code fields outside the spec (argument-hint, disable-model-invocation); every other skill stays fully strict
+      - run: |
+          for s in plugins/backend-dev/skills/*/; do
+            x=; grep -q '^disable-model-invocation: true' "$s/SKILL.md" && x=--allow-extra-frontmatter
+            "$(go env GOPATH)/bin/skill-validator" check "$s" --strict $x -o compact
+          done
 
   template-gates:
     runs-on: ubuntu-24.04
