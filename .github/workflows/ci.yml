@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: 22
       - run: node plugins/backend-dev/scripts/check-plugin.mjs
-      - run: node --test plugins/backend-dev/hooks/*.test.mjs
+      - run: node --test plugins/backend-dev/hooks/*.test.mjs plugins/backend-dev/scripts/*.test.mjs
       - uses: actions/setup-go@v5
         with:
           go-version: '1.23'
