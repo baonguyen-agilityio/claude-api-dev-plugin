@@ -8,6 +8,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash(npm run typecheck*), Bash(npm
 
 Problem this solves: something is broken, misbehaving or exposed, and the first fix that comes to mind is a theory about a bug nobody has reproduced on the version that is live. The answer is cause, fix, blast radius, proof and a short postmortem; for a leaked credential, the runbook in `references/leaked-credential.md`. Symptom → cause table: `references/symptoms.md`. Rolling back is a `wrangler rollback` that prompts. Works on its own or as a step of the process.
 
+Before anything else, follow the project profile: the `backend-dev:profile` block in the repo's `CLAUDE.md`. Where it differs from the defaults below (commands, layering, error style, git and CI conventions), the profile wins. No profile: the defaults below are the template's (`${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`); say in the result that `/backend-dev:kit-setup` has not been run.
+
 ## Procedure
 
 1. **Triage in one line:** which env, since when, who is affected, is data exposed or corrupted. Users affected and a previous good version → rollback first (`wrangler rollback`), investigate second. A credential exposed → the runbook, before anything else.
@@ -16,8 +18,8 @@ Problem this solves: something is broken, misbehaving or exposed, and the first 
 4. **Pin it with a failing test** at the lowest layer that shows it (adapter for an encoding or mapping fault, service for logic, route for a guard). Run it on the unfixed code and keep the failure output.
 5. **Cause, not symptom.** Read the table in the reference before touching code. A Firestore 400 caused by a value this API sent is this API's defect, and surfacing it as 502 `UPSTREAM_ERROR` is a second defect in the mapping. A coercion at the boundary (`"7"` → 7) that makes the symptom vanish is a contract decision (who may send strings), not a fix.
 6. **Blast radius:** grep every module for the same pattern (`git grep` the expression); a 200 where 401/403/404 was expected is checked in every sibling and reported with whether data could have been read.
-7. **Fix in the shared place:** `core/firestore.ts`, `core/run.ts`, `authMiddleware`, the model; never the one route in the report. The failing test passes; no assertion loosened.
-8. **Prove:** `npm run typecheck && npm test && npm run check`; the original request re-run with the new status and body pasted; on a deployed env, the `tail` line that used to show the error.
+7. **Fix in the shared place** (the profile names it: the adapter or repository, the error mapper, the auth middleware, the model; in the template `core/firestore.ts`, `core/run.ts`, `authMiddleware`); never the one route in the report. The failing test passes; no assertion loosened.
+8. **Prove:** the profile's gates (template: `npm run typecheck && npm test && npm run check`); the original request re-run with the new status and body pasted; on a deployed env, the `tail` line that used to show the error.
 9. **Postmortem,** short, in the reply: timeline, cause, fix, blast radius, what would have caught it (a test, a review item, a gate), what changes so it does not recur.
 
 ## Gotchas seen on this stack

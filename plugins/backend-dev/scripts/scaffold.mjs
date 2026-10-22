@@ -17,5 +17,8 @@ const SRC = join(dirname(fileURLToPath(import.meta.url)), "..", "templates");
 mkdirSync(target, { recursive: true });
 const SKIP = new Set(["node_modules", ".wrangler", "dist", "coverage", ".dev.vars"]);
 cpSync(SRC, target, { recursive: true, force: false, errorOnExist: false, filter: (p) => !p.slice(SRC.length).split("/").some((seg) => SKIP.has(seg)) });
+// The design note the template code cites ("architecture §N") ships with every project copy.
+mkdirSync(join(target, "docs"), { recursive: true });
+if (!existsSync(join(target, "docs", "architecture.md"))) cpSync(join(SRC, "..", "references", "architecture.md"), join(target, "docs", "architecture.md"));
 const n = readdirSync(target).length;
 console.log(`copied the template into ${target} (${n} top-level entries)\nnext: cd ${target} && npm install && cp .dev.vars.example .dev.vars, then rename (wrangler.toml, package.json, src/core/openapi.ts) and run: npm run typecheck && npm test && npm run check`);

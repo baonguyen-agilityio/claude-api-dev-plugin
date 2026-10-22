@@ -1,0 +1,31 @@
+---
+description: Set up this repository for the backend-dev kit. Drafts the project profile in CLAUDE.md from the repo itself, turns off AI attribution, pre-approves the repo's own gate commands and ignores checkpoint logs. Run once per repo, by a lead; re-run to refresh.
+argument-hint: "[path to the API app inside a monorepo]"
+disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(git check-ignore*), Bash(git rev-parse*), Bash(git ls-files*), Bash(git log*), Bash(git status*), Bash(git diff*), Bash(git branch*), Bash(ls *), Bash(cat *)
+---
+
+Set up this repository for the backend-dev kit. App path hint from the user: "$ARGUMENTS" (empty means find it).
+
+The profile format and the template defaults are in `${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`. Read it first.
+
+Work only from evidence in this repo. Every field you cannot establish from a file stays `?: <question for the lead>`. Never invent a command, a branch name or a tool.
+
+1. **Locate the repo and the API.** `git rev-parse --show-toplevel`; package manager from the lockfile; workspaces (`pnpm-workspace.yaml`, `workspaces` in `package.json`, `turbo.json`); the API app is the package that depends on `hono` and has a `wrangler.toml`. More than one candidate and no hint: list them and ask which.
+2. **Commands.** From the root and app `package.json` scripts: install, dev, lint or typecheck, test (scoped to the app when the repo is a monorepo), build or `wrangler deploy --dry-run`, deploy per env. Quote them exactly as a person would type them from the repo root. In a monorepo, check how the API app consumes shared packages: when it imports them from their built output (`main` or `exports` pointing at `dist/`), the gates start with that build (`pnpm --filter <shared> build` or the turbo build that includes it), otherwise the app's tests run against stale code.
+3. **Layering and style.** Open one representative module end to end (route, controller, service, schema, tests) and the shared package if there is one. Record where a new endpoint's pieces go, how failures are raised (tagged errors, thrown exceptions, `Result` values) and where they become a status, which validation library is used at which boundary, how Firestore is reached (adapter, repository base class), where roles and permissions are checked, and what tests fake.
+4. **Git and tickets.** Base and default branches (`git branch -r`, CI triggers); branch names from `git log --format=%D` and recent merges; commit format from `commitlint.config.*`, `.husky/commit-msg` and the last 20 subjects; MR or PR template paths (`.gitlab/merge_request_templates/`, `.github/pull_request_template.md`); the ticket system from the commit format and templates (`[#123]` and `Closes #123` mean GitLab or GitHub issues).
+5. **CI/CD and environments.** Workflow files (`.gitlab-ci.yml`, `.github/workflows/`), the env blocks in `wrangler.toml`, deploy scripts.
+6. **Watch out.** Three to five facts a newcomer would get wrong, each quoted from a file, never inferred. For git hooks, open each hook file (`.husky/pre-commit`, `.husky/pre-push`, `.husky/commit-msg`, `.pre-commit-config.yaml`) and say what each one runs. Examples: versions that disagree (README vs `.node-version` vs CI), a dev setup that writes to shared data, a README that is a stub, a hook that runs slow checks on push.
+7. **Write the block** between `<!-- backend-dev:profile:start -->` and `<!-- backend-dev:profile:end -->` in the repo-root `CLAUDE.md`: replace an existing block, otherwise append; never touch anything outside the markers; create the file if it does not exist. Under 25 lines.
+8. **Settings.** In `.claude/settings.json` (create if absent, merge if present, keep every existing key): set `attribution.commit` and `attribution.pr` to `""` (the kit never adds AI attribution); add `permissions.allow` entries for the exact gate commands from step 2 (for example `Bash(pnpm --filter space test)`), nothing broader. Do not add deny rules or change other keys. Claude Code asks before writing this file; if the write is declined, print the JSON for the lead under Questions and go on.
+9. **Ignore files.** Check with `git check-ignore -v .claude/checkpoints/x .claude/settings.local.json .claude/settings.json`. Add the first two to `.gitignore` only when nothing ignores them yet. If an existing rule also ignores `.claude/settings.json` (a bare `.claude` line), the team cannot commit its settings: do not rewrite the rule, list it under Questions with the fix (`.claude/*` plus `!.claude/settings.json`).
+10. **Report and stop.** Do not commit. Show:
+
+```markdown
+## Kit setup: <repo>
+**Written:** CLAUDE.md profile block (new | refreshed), .claude/settings.json (keys added), .gitignore (lines added)
+**Profile:** <the block, verbatim>
+**Questions for the lead:** <every ?: field, one line each, with where you looked>
+**Next:** review the diff (`git diff`), answer the questions in the block, commit as one change in the repo's commit format.
+```
