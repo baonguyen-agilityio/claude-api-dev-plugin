@@ -16,7 +16,7 @@ Every repo that uses this kit carries a short profile as a marked block in its `
 **Data:** Firestore via <adapter or repository>; indexes in <file>
 **Auth:** <token check>; roles and permissions in <path>
 **Tests:** <runner> in <path>; <what is faked>
-**Git:** base `<branch>`; branch `<pattern>`; commit `<format>` (enforced by <tool>); MR template `<path>`, target `<branch>`; tickets: <GitLab issues via glab | other>
+**Git:** base `<branch>`; branch `<pattern>`; commit `<format>` (enforced by <tool>); MR template `<path>`, target `<branch>`; tickets: <GitLab issues in `<host>/<group>/<project>` via glab (often a tracker project, not this code project) | other>
 **CI/CD:** <provider and files>; environments <list>
 **Watch out:** <three to five facts a newcomer would get wrong>
 <!-- backend-dev:profile:end -->
