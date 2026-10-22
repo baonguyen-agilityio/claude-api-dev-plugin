@@ -9,13 +9,12 @@ Claude Code plugin `backend-dev`: the backend engineer's process on Cloudflare W
 | 1 Requirement → system design | `system-design` | planned |
 | 2 Data design | `data-model` | planned |
 | 3 API contract | `api-contract` | planned |
-| 4 Implementation | `implement` | planned (replaces `new-api`, `add-endpoint`) |
+| 4 Implementation | `implement` | planned |
 | 5 Quality before the MR | `review-and-secure` | planned |
-| 6 Live verification | `live-verify` | planned (replaces `probe-endpoint`) |
-| 7 Delivery and operations | `delivery` | planned (replaces `release-api`) |
-| 8 Incidents | `incident` | planned (replaces `debug-endpoint`) |
+| 6 Live verification | `live-verify` | planned |
+| 7 Delivery and operations | `delivery` | planned |
+| 8 Incidents | `incident` | planned |
 
-Until a stage lands, its v1 skill stays installed.
 
 ## Stack
 

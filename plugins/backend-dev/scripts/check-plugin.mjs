@@ -32,7 +32,7 @@ if (!entry) err(join(REPO, ".claude-plugin/marketplace.json"), `no entry for ${m
 else if (entry.version !== manifest.version) err(join(REPO, ".claude-plugin/marketplace.json"), `version ${entry.version} != plugin.json ${manifest.version}`);
 
 // skills
-const skills = readdirSync(join(ROOT, "skills")).filter((d) => statSync(join(ROOT, "skills", d)).isDirectory());
+const skills = existsSync(join(ROOT, "skills")) ? readdirSync(join(ROOT, "skills")).filter((d) => statSync(join(ROOT, "skills", d)).isDirectory()) : [];
 for (const name of skills) {
   const file = join(ROOT, "skills", name, "SKILL.md");
   if (!existsSync(file)) { err(file, "missing"); continue; }
@@ -95,7 +95,7 @@ if (existsSync(evalDir)) {
   const text = graders.map(read).join("\n");
   for (const name of skills)
     if (!new RegExp(`\\b${name}\\b`).test(text)) err(evalDir, `no eval grader expects skill ${name}`);
-  if (!/min:\s*0[\s\S]*max:\s*0/.test(text)) err(evalDir, "no negative (near-miss) case: a tool_used grader with min: 0 and max: 0");
+  if (skills.length && !/min:\s*0[\s\S]*max:\s*0/.test(text)) err(evalDir, "no negative (near-miss) case: a tool_used grader with min: 0 and max: 0");
 }
 
 if (problems.length) {
