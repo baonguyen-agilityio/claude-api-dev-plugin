@@ -1,7 +1,7 @@
 {
   "name": "backend-dev",
   "version": "0.1.0",
-  "description": "Backend engineer's process for one standalone API on Cloudflare Workers (Hono + hono-openapi, Effect, Firestore over REST, Firebase ID tokens, vitest): system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery, incident. One Worker repo, not a monorepo.",
+  "description": "Team kit for APIs on Cloudflare Workers + Firestore (Hono, Effect, Firebase auth, vitest), on an existing repo or monorepo or a new one from its template. /backend-dev:kit-setup writes the repo's project profile, /backend-dev:ticket works a GitLab ticket through the stages it needs, onboard maps the repo for newcomers, and eight stage skills cover system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery and incident.",
   "author": {
     "name": "baonguyen-agilityio"
   },

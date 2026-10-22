@@ -1,4 +1,5 @@
 ---
+name: ticket
 description: Work a backend ticket end to end. Reads the GitLab issue (or pasted ticket text), decides which stages it needs, runs them with the kit's skills in order, and ends with a commit and a merge request draft in the repo's own format. Add --learn to have every step explained.
 argument-hint: "<issue id | issue URL | ticket text> [--learn]"
 disable-model-invocation: true
