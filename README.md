@@ -9,7 +9,7 @@ Claude Code plugin `backend-dev`: the backend engineer's process on Cloudflare W
 | 1 Requirement → system design | `system-design` | done |
 | 2 Data design | `data-model` | done |
 | 3 API contract | `api-contract` | done |
-| 4 Implementation | `implement` | planned |
+| 4 Implementation | `implement` | done |
 | 5 Quality before the MR | `review-and-secure` | planned |
 | 6 Live verification | `live-verify` | planned |
 | 7 Delivery and operations | `delivery` | planned |
