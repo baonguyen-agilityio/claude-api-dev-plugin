@@ -1,4 +1,4 @@
-# Architecture — standalone REST API on Cloudflare Workers
+# Architecture — the template API on Cloudflare Workers
 
 This is the source of truth for the template in `plugins/backend-dev/templates/` and for the rules the skills follow. A mismatch between this document and the code is a bug in one of them; fix that one.
 
