@@ -1,4 +1,5 @@
 ---
+name: kit-setup
 description: Set up this repository for the backend-dev kit. Drafts the project profile in CLAUDE.md from the repo itself, turns off AI attribution, pre-approves the repo's own gate commands and ignores checkpoint logs. Run once per repo, by a lead; re-run to refresh.
 argument-hint: "[path to the API app inside a monorepo]"
 disable-model-invocation: true

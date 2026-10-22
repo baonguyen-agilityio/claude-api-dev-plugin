@@ -33,6 +33,7 @@ else if (entry.version !== manifest.version) err(join(REPO, ".claude-plugin/mark
 
 // skills
 const skills = readdirSync(join(ROOT, "skills")).filter((d) => statSync(join(ROOT, "skills", d)).isDirectory());
+const autoSkills = [];
 for (const name of skills) {
   const file = join(ROOT, "skills", name, "SKILL.md");
   if (!existsSync(file)) { err(file, "missing"); continue; }
@@ -40,6 +41,12 @@ for (const name of skills) {
   const body = read(file);
   if (fm.name !== name) err(file, `name "${fm.name}" != folder "${name}"`);
   const desc = fm.description ?? "";
+  if (!fm["allowed-tools"]) err(file, "missing allowed-tools (state the permission boundary)");
+  if (!/\*\*Next:\*\*/.test(body)) err(file, "output must end with a **Next:** line (the following step in the workflow)");
+  if (!/backend-dev:profile/.test(body)) err(file, "must tell the reader to follow the project profile (backend-dev:profile block)");
+  // typed by people only (/backend-dev:<name>): the description is the menu text, so the trigger rules and evals do not apply
+  if (fm["disable-model-invocation"] === "true") { if (!desc) err(file, "missing description"); continue; }
+  autoSkills.push(name);
   if (!/\bUse when\b/.test(desc)) err(file, "description must say when to use it, spec form: \"<what it does>. Use when …\" (agentskills.io specification)");
   
   if (desc.length > 1024) err(file, `description over 1024 chars (${desc.length})`);
@@ -48,17 +55,6 @@ for (const name of skills) {
   
   if (body.split("\n").length > 200) err(file, "SKILL.md over 200 lines; move detail to rules/ or references/");
   if (!/## Result|result-block\.md|## Output/.test(body)) err(file, "has neither a Result block nor an ## Output template");
-  if (!fm["allowed-tools"]) err(file, "missing allowed-tools (state the permission boundary)");
-  if (!/\*\*Next:\*\*/.test(body)) err(file, "output must end with a **Next:** line (the following step in the workflow)");
-  if (!/backend-dev:profile/.test(body)) err(file, "must tell the reader to follow the project profile (backend-dev:profile block)");
-}
-
-// commands: typed by people, so a description and an argument hint are what they see in the menu
-const cmdDir = join(ROOT, "commands");
-for (const f of existsSync(cmdDir) ? readdirSync(cmdDir).filter((x) => x.endsWith(".md")) : []) {
-  const fm = frontmatter(join(cmdDir, f));
-  if (!fm.description) err(join(cmdDir, f), "missing description");
-  if (!fm["allowed-tools"]) err(join(cmdDir, f), "missing allowed-tools");
 }
 
 // agents
@@ -103,7 +99,7 @@ const evalDir = join(ROOT, "evals");
 if (existsSync(evalDir)) {
   const graders = walk(evalDir).filter((f) => /\/graders\/[^/]+\.md$/.test(f) && !f.includes("/results/"));
   const text = graders.map(read).join("\n");
-  for (const name of skills)
+  for (const name of autoSkills)
     if (!new RegExp(`\\b${name}\\b`).test(text)) err(evalDir, `no eval grader expects skill ${name}`);
   if (!/min:\s*0[\s\S]*max:\s*0/.test(text)) err(evalDir, "no negative (near-miss) case: a tool_used grader with min: 0 and max: 0");
 }
@@ -112,4 +108,4 @@ if (problems.length) {
   console.error(`✖ ${problems.length} problem(s)\n  ${problems.join("\n  ")}`);
   process.exit(1);
 }
-console.log(`✔ ${manifest.name}: ${skills.length} skills, agent, rules, references in sync`);
+console.log(`✔ ${manifest.name}: ${skills.length} skills (${skills.length - autoSkills.length} typed only), agent, rules, references in sync`);
