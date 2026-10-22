@@ -1,8 +1,8 @@
-# Architecture — standalone REST API on Cloudflare Workers
+# Architecture — the template API on Cloudflare Workers
 
 This is the source of truth for the template in `plugins/backend-dev/templates/` and for the rules the skills follow. A mismatch between this document and the code is a bug in one of them; fix that one.
 
-Scope: one Worker, one repo, Firestore as the only datastore, Firebase ID tokens for callers. Not a monorepo, no Durable Objects, Queues or D1.
+Scope of the template: one Worker, one repo, Firestore as the only datastore, Firebase ID tokens for callers; no Durable Objects, Queues or D1. An existing repo, a monorepo included, keeps its own conventions: its project profile (the `backend-dev:profile` block in its `CLAUDE.md`) wins where the two differ.
 
 ## 1. Request pipeline
 

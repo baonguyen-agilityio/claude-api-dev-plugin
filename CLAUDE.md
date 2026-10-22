@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 ## Project
-Repo for the `backend-dev` Claude Code plugin: skills, rules, an agent, a template API and evals for building one standalone REST API on Cloudflare Workers. Design lives in `docs/`; the plugin in `plugins/backend-dev/`. Everything in source is English: code, comments, docs, commit messages.
+Repo for the `backend-dev` Claude Code plugin: a team kit for APIs on Cloudflare Workers + Firestore: skills (including the typed `/backend-dev:kit-setup` and `/backend-dev:ticket`), rules, an agent, a template API and evals. It works on existing repos and monorepos through a project profile, and on new repos made from the template. Design lives in `docs/`; the plugin in `plugins/backend-dev/`. Everything in source is English: code, comments, docs, commit messages.
 
 ## Commands
 - `node plugins/backend-dev/scripts/check-plugin.mjs` — plugin lint (frontmatter, references, design copy in sync, evals). CI runs it on every PR.
@@ -13,7 +13,7 @@ Repo for the `backend-dev` Claude Code plugin: skills, rules, an agent, a templa
 - Commits: Conventional Commits, lowercase imperative (`feat: add ...`, `docs: update ...`).
 - Design before code: `docs/architecture.md` is the source of truth; plugin rules cite it, the template implements it. A mismatch is a bug in one of them, fix that one.
 - Prefer Node built-ins over npm packages; say why before adding a dependency.
-- Review before merge: every PR gets a review pass (`/review-checklist` or `/code-review`) posted on the PR; a thread resolves only after the fix is verified; the verdict line is quoted in the merge body.
+- Review before merge: every PR gets a review pass (`/review-checklist` or `/code-review`) posted on the PR, with its verdict in the PR description; a thread resolves only after the fix is verified.
 - Known gaps of the push guard: it only sees Claude's tool calls, not your terminal; a bare `git push` while on `main`, `git --git-dir=… push`, and commands built from shell variables are not matched. This private repo has no server-side branch protection.
 
 ## Never
