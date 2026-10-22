@@ -10,7 +10,7 @@ The plugin's hooks append rows automatically: `invoked` when a skill is loaded (
 - [x] understand — behaviour per endpoint stated; bug reproduced with curl, or "not reproducible"
 - [x] plan — contract impact classified (additive/breaking), access rule decided
 - [x] build — typecheck + test + check green, output pasted
-- [ ] verify — every declared status driven with curl (probe-endpoint); undriven ones named
+- [ ] verify — every declared status driven with curl (live-verify); undriven ones named
 - [ ] ship — reviewed, PR open, or deployed and smoke-tested
 ```
 
