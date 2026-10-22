@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Team kit for APIs on Cloudflare Workers + Firestore (Hono, Effect, Firebase auth, vitest), on an existing repo or monorepo or a new one from its template. /backend-dev:kit-setup writes the repo's project profile, /backend-dev:ticket works a GitLab ticket through the stages it needs, onboard maps the repo for newcomers, and eight stage skills cover system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery and incident.",
   "author": {
-    "name": "baonguyen-agilityio"
+    "name": "bao.nguyen"
   },
-  "repository": "https://github.com/baonguyen-agilityio/claude-api-dev-plugin",
+  "repository": "https://gitlab.asoft-python.com/bao.nguyen/claude-api-dev-plugin",
   "license": "MIT",
   "keywords": [
     "cloudflare-workers",
