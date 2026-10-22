@@ -1,0 +1,28 @@
+# Same checks as .github/workflows/ci.yml, on merge requests and main. Jobs wait until the project has a runner.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+plugin-lint:
+  image: node:22-bookworm
+  script:
+    - node plugins/backend-dev/scripts/check-plugin.mjs
+    - node --test plugins/backend-dev/hooks/*.test.mjs plugins/backend-dev/scripts/*.test.mjs
+
+skill-validator:
+  image: golang:1.23-bookworm
+  script:
+    - go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@latest
+    # typed-only skills carry Claude Code fields outside the spec (argument-hint, disable-model-invocation); every other skill stays fully strict
+    - |
+      for s in plugins/backend-dev/skills/*/; do
+        x=; grep -q '^disable-model-invocation: true' "$s/SKILL.md" && x=--allow-extra-frontmatter
+        "$(go env GOPATH)/bin/skill-validator" check "$s" --strict $x -o compact
+      done
+
+template-gates:
+  image: node:22-bookworm
+  script:
+    - tmp=$(mktemp -d) && cp -R plugins/backend-dev/templates/. "$tmp" && (cd "$tmp" && npm ci && npm run typecheck && npm test && npm run check)
+    - tmp=$(mktemp -d) && cp -R plugins/backend-dev/templates/. "$tmp" && node plugins/backend-dev/scripts/new-module.mjs "$tmp" tags tag && (cd "$tmp" && npm ci && npm run typecheck && npm test)
