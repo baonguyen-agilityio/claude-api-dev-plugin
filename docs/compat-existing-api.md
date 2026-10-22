@@ -90,3 +90,15 @@ Findings:
 1. **Trigger gap on a foreign repo (open):** on this monorepo none of the four prompts fired a skill, against 2/2 on the template for the same two stages. The answers were still right because the model reads the repo and `CLAUDE.md`. The descriptions name "a Cloudflare Workers + Firestore API"; the repo is one, inside a pnpm monorepo with its own shared package, which is enough for Sonnet to answer directly. A `CLAUDE.md` section that names the skills per stage made `live-verify` fire (1/2); it is the mitigation to ship with the plugin's install notes, not a fix in the descriptions.
 2. **Open CORS (unchanged since the first run):** `cors()` with no options on every route; low severity with bearer auth and no credentials, still a scanner finding. Reported, not changed.
 3. **Read-only discipline:** plan mode kept both skills from writing; the incident answer wrote its plan to a user-level plan file, as the template runs did. The Result template in the skill asks for the reply to carry the whole answer.
+
+## With the team kit (2026-10-22)
+
+Same repository, clean clones, Sonnet, `--setting-sources project`. The kit adds a project profile (`/backend-dev:kit-setup`), `/backend-dev:ticket` and the `onboard` skill.
+
+| Persona | Before the kit | With the kit |
+|---|---|---|
+| Developer, ticket #412, plan it the team's way | no skill; good plan from scratch; planned a `Co-Authored-By: Claude` trailer and a "Generated with Claude Code" MR footer | after `kit-setup`: gates and commit format from the profile, no attribution; with `/backend-dev:ticket`: api-contract, data-model and implement invoked in order, branch in the team's pattern, stopped at a red gate without committing |
+| Newcomer, first day, same free-text question | no skill; good answer written to a user-level plan file nobody else reads | `onboard` fired; `docs/onboarding.md` written for a lead to review; a second run refreshed three facts and caught a profile line that contradicted the hook files |
+| Newcomer, first ticket | n/a | `/backend-dev:ticket … --learn`: purpose, what to check and the file to copy for every stage, glossary, Remember list |
+
+What the runs taught the kit: the profile's gates must build the shared package first when the app imports it from `dist`; the gates must run once on the base branch before any change, because some tests already fail there; hooks are quoted from their files, never inferred. Repository findings, reported and not changed: a bare `.claude` line in `.gitignore` keeps team settings out of git; deploy workflows described in a migration guide do not exist; versions disagree between the app README, `packageManager` and CI.
