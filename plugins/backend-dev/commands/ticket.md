@@ -31,6 +31,7 @@ Choose the stages from the table and say why in one line each. Skip a stage only
 
 ## 3. Run the stages
 - **Branch.** With a clean working tree, create the branch from the profile's base with the profile's pattern and the ticket id (`git switch -c <name>`). Uncommitted changes: ask first.
+- **Baseline before any change:** run the profile's gates once on the base branch and keep the result. A test that already fails there is reported as pre-existing, not fixed in passing and not blamed on the ticket.
 - **One stage at a time:** invoke the skill (`backend-dev:<stage>`), deliver its output in the reply, then tick the checkpoint. Stop at a decision the skill cannot default (a contract or data choice the ticket does not settle) and ask.
 - Gates are the profile's, after implement and after every fix, output shown. A red gate stops the run with the output.
 
@@ -40,7 +41,7 @@ Choose the stages from the table and say why in one line each. Skip a stage only
 
 ## 5. Learning mode (`--learn`)
 For someone on their first tickets in this repo. Do the same work, never skip a gate or a stage to save time, and add:
-- **Before each stage**, three lines: what this stage is for, what an experienced backend engineer checks here, and the file in this repo that shows the pattern to copy.
+- **Before each stage**, three lines, also when you only plan or stop for a question (then for every stage you chose): what this stage is for, what an experienced backend engineer checks here, and the file in this repo that shows the pattern to copy.
 - **At each decision**, the options and why you pick one, in plain words.
 - **After each stage**, one or two lines under "Remember", and any new term in a running glossary (`apiHandlerEffect`: the shared handler that turns exceptions into statuses).
 - Answer "why" questions before moving on.
@@ -49,7 +50,7 @@ For someone on their first tickets in this repo. Do the same work, never skip a 
 ```markdown
 ## Ticket #<id>: <title>
 **Goal / acceptance / out of scope / defaults:** <four lines>
-**Stages:** <stage → why>, one per line
+**Stages:** <stage → why>, one per line (learning mode: plus what this stage is for, what to check, the file that shows the pattern)
 <each stage's output, in order>
 
 ## Result
