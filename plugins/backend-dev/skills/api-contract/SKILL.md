@@ -1,7 +1,7 @@
 ---
 name: api-contract
 description: "Turns a ticket or feature request into the API contract for a Cloudflare Workers + Firestore API: endpoints, request and response shapes, statuses, access rules, additive or breaking classification, and Given/When/Then acceptance criteria. Use when a requirement will add or change endpoints and nobody has pinned down what they return or who may call them, even if the user just says add an API or asks what a client will get."
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(npx @redocly/cli lint *), Bash(oasdiff breaking *), Bash(curl -s *openapi*)
 ---
 
 # API contract
@@ -20,9 +20,10 @@ Shapes every endpoint inherits: `references/envelope-and-errors.md`. Who may cal
 4. **Fill the access matrix for every endpoint,** every cell a status: anonymous, owner, other user, admin, plus any new role. Apply the 403/404 rule from the reference. A cell left "whichever you choose" is a rule that ships as "everyone"; put a default in it.
 5. **List the statuses per endpoint** from the error table: 400 with the message rule, 401, the 403/404 choice, 409 for every transition not in the state machine, 502. Name the current state in the 409 message.
 6. **Separate what the contract needs from what it designs.** A rule that depends on data the system does not have (who is someone's manager, a team) is a decision outside the contract (module boundaries, data layout): state the dependency and the field the contract assumes (`managerId` on the request), do not design the collection here.
-7. **Note the write paths the new rules touch.** A transition whose check and write are two steps (read `pending`, then update) gives two concurrent callers both a 200; the contract promises exactly one 200 and one 409 and marks the precondition as implementation work.
+7. **Guard the write paths the new rules touch.** A transition or edit whose check and write are two steps gives two concurrent callers both a 200. Put `ETag` on the resource and `If-Match` → 412 on the writes (optional on existing endpoints, required on new ones); a create that clients retry takes an `Idempotency-Key`. Both are in `references/contract-decisions.md`; the Firestore precondition behind them is implementation work.
 8. **Write acceptance criteria** as Given/When/Then with concrete values, one per status per endpoint, in the order QA will run them: 401, the 403/404 rule, 400 on the body, 409 on each wrong state, the happy path with the fields the response must show, and the server-owned field ignored.
-9. **Decide with defaults.** Open questions get a default in brackets; only a question that changes the access rule or breaks a consumer blocks.
+9. **Check the generated spec by machine** when the code exists: lint it and diff it against the base branch with `oasdiff breaking` (commands in the reference). A breaking finding goes back to step 2: stage it with `Deprecation` and `Sunset`, or name the consumers who agreed.
+10. **Decide with defaults.** Open questions get a default in brackets; only a question that changes the access rule or breaks a consumer blocks.
 
 ## Gotchas seen on this stack
 
@@ -49,6 +50,8 @@ Shapes every endpoint inherits: `references/envelope-and-errors.md`. Who may cal
 **State machine:** <transitions touched, 409 cases with their message>
 **Access matrix:** <anonymous / owner / other / admin (/ new role) per endpoint, a status in every cell>
 **Depends on:** <architecture or data-layout decisions this contract assumes, with the assumed field>
+**Concurrency and retries:** <ETag/If-Match per write (optional | required), Idempotency-Key per create>
+**Deprecations:** <old → new, Deprecation and Sunset dates, or none>
 **For implementation:** <preconditions, indexes, new tagged errors the contract relies on>
 
 ## Acceptance
@@ -64,3 +67,4 @@ Given … / When … / Then … (one per status per endpoint, concrete values)
 - [ ] Every transition not in the state machine has a 409 line.
 - [ ] No server-owned field appears in a request DTO.
 - [ ] Acceptance covers 401, the 403/404 rule, 400, 409, success and the ignored field, with values.
+- [ ] Every write that two people can race has an `If-Match` rule; every create that clients retry has an `Idempotency-Key` rule.
