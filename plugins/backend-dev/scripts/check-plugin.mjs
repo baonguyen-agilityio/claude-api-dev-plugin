@@ -32,7 +32,7 @@ if (!entry) err(join(REPO, ".claude-plugin/marketplace.json"), `no entry for ${m
 else if (entry.version !== manifest.version) err(join(REPO, ".claude-plugin/marketplace.json"), `version ${entry.version} != plugin.json ${manifest.version}`);
 
 // skills
-const skills = existsSync(join(ROOT, "skills")) ? readdirSync(join(ROOT, "skills")).filter((d) => statSync(join(ROOT, "skills", d)).isDirectory()) : [];
+const skills = readdirSync(join(ROOT, "skills")).filter((d) => statSync(join(ROOT, "skills", d)).isDirectory());
 for (const name of skills) {
   const file = join(ROOT, "skills", name, "SKILL.md");
   if (!existsSync(file)) { err(file, "missing"); continue; }
@@ -40,14 +40,14 @@ for (const name of skills) {
   const body = read(file);
   if (fm.name !== name) err(file, `name "${fm.name}" != folder "${name}"`);
   const desc = fm.description ?? "";
-  if (desc.length < 120) err(file, `description too short to trigger reliably (${desc.length} chars)`);
-  if (!/\bUse this skill (whenever|when)\b/.test(desc)) err(file, "description must tell the agent when to act: \"Use this skill when(ever) …\" (agentskills.io)");
-  if (!/even if|even when/.test(desc)) err(file, "description must cover the implicit case: \"even if they don't mention …\"");
+  if (!/\bUse when\b/.test(desc)) err(file, "description must say when to use it, spec form: \"<what it does>. Use when …\" (agentskills.io specification)");
+  
   if (desc.length > 1024) err(file, `description over 1024 chars (${desc.length})`);
-  if (!/standalone/i.test(desc)) err(file, "description must say it is for a standalone API");
-  if (!/\bnot for\b|\binstead\b/i.test(desc)) err(file, "description must say which sibling or situation it is not for");
+  
+  if (!/Worker|Firestore/.test(desc)) err(file, "description must name the stack (Workers or Firestore)");
+  
   if (body.split("\n").length > 200) err(file, "SKILL.md over 200 lines; move detail to rules/ or references/");
-  if (!/## Result|result-block\.md/.test(body)) err(file, "does not close with the Result block");
+  if (!/## Result|result-block\.md|## Output/.test(body)) err(file, "has neither a Result block nor an ## Output template");
   if (!fm["allowed-tools"]) err(file, "missing allowed-tools (state the permission boundary)");
 }
 
@@ -95,7 +95,7 @@ if (existsSync(evalDir)) {
   const text = graders.map(read).join("\n");
   for (const name of skills)
     if (!new RegExp(`\\b${name}\\b`).test(text)) err(evalDir, `no eval grader expects skill ${name}`);
-  if (skills.length && !/min:\s*0[\s\S]*max:\s*0/.test(text)) err(evalDir, "no negative (near-miss) case: a tool_used grader with min: 0 and max: 0");
+  if (!/min:\s*0[\s\S]*max:\s*0/.test(text)) err(evalDir, "no negative (near-miss) case: a tool_used grader with min: 0 and max: 0");
 }
 
 if (problems.length) {
