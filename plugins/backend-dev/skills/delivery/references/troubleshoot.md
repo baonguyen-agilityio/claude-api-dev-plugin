@@ -6,7 +6,7 @@
 | 401 only after deploy | secret missing in that env (`wrangler secret list --env`) | `wrangler secret put` for that env, redeploy |
 | 403 where 200 expected | `role` claim missing on the token; claims are only as fresh as the token | set the claim with the Admin SDK, sign in again |
 | 404 on a path you just added | module not in `src/modules/index.ts`, or wrong `path` | register it; check `basePath` |
-| 200 where 403/404 expected | guard or ownership check not wired | this is a security defect; fix with debug-endpoint and check siblings |
+| 200 where 403/404 expected | guard or ownership check not wired | a security defect: fix it with the incident skill and check every sibling module |
 | 400 "Invalid cursor" on a valid cursor | cursor from a different query shape | cursors are per query; do not reuse across filters |
 | 502 `UPSTREAM_ERROR` | Firestore or OAuth failed | read the `firestore` line in `wrangler tail`; check IAM and the private key newlines |
 | `FAILED_PRECONDITION` in the firestore log | missing composite index | add it to `firestore.indexes.json`, deploy indexes |
