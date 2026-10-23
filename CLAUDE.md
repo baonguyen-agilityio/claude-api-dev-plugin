@@ -14,7 +14,7 @@ Repo for the `backend-dev` Claude Code plugin: a team kit for APIs on Cloudflare
 - Design before code: `docs/architecture.md` is the source of truth; plugin rules cite it, the template implements it. A mismatch is a bug in one of them, fix that one.
 - Prefer Node built-ins over npm packages; say why before adding a dependency.
 - Review before merge: every pull request gets a review pass (the Claude review workflow, or `/review-checklist` / `/code-review`) posted on the pull request, with its verdict in its description; a thread resolves only after the fix is verified.
-- Push guards: `.claude/settings.json` denies `git push … main` by pattern, and the plugin's git guard hook parses the command (so `git -C … push`, `HEAD:main`, a bare `git push` while on `main` and `$VAR` targets are caught too). Both only see Claude's tool calls, not your terminal. The GitHub repo has no server-side branch protection; on GitLab, `main` is protected (Maintainers push, no force push), so `main` there only ever fast-forwards to GitHub's.
+- Known gaps of the push guard: it only sees Claude's tool calls, not your terminal; a bare `git push` while on `main`, `git --git-dir=… push`, and commands built from shell variables are not matched. The GitHub repo has no server-side branch protection; on GitLab, `main` is protected (Maintainers push, no force push), so `main` there only ever fast-forwards to GitHub's.
 
 ## Never
 - Never commit secrets, `.dev.vars`, service-account files or tokens; read them from env vars or Wrangler secrets.
