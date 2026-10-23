@@ -39,6 +39,18 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 | `/backend-dev:ticket <id or text> [--learn]` | developer | the stages a ticket needs, ending in commit and MR draft |
 | `/backend-dev:onboard` | newcomer or lead | `docs/onboarding.md` written or refreshed, machine check |
 
+## Hooks
+
+The plugin's hooks act on Claude's own tool calls in any repo where it is enabled. They read two lines of the project profile; the repo's own git hooks (husky, commitlint, lint-staged) and CI still apply to everyone.
+
+| Hook | When | What |
+|---|---|---|
+| git guard | before every `Bash` call | blocks `--no-verify`, AI attribution in a commit message, a push to a protected branch (profile **Protected branches**; default `main`, `master`), `--all`/`--mirror`, force pushes other than `--force-with-lease`, and push targets built from `$VAR` |
+| format on edit | after `Edit`/`Write` | runs the profile's **On edit** format and lint commands on the changed file; lint errors go back to Claude so they are fixed before the commit |
+| checkpoints | after a skill loads, at the end of a turn | one row in `.claude/checkpoints/` |
+
+`kit-setup` also denies the Read and Edit tools on `.dev.vars`, `.env` and `.env.local`, so secret values stay out of the session.
+
 
 ## Stack
 

@@ -18,11 +18,13 @@ Every repo that uses this kit carries a short profile as a marked block in its `
 **Tests:** <runner> in <path>; <what is faked>
 **Git:** base `<branch>`; branch `<pattern>`; commit `<format>` (enforced by <tool>); MR template `<path>`, target `<branch>`; tickets: <GitLab issues in `<host>/<group>/<project>` via glab (often a tracker project, not this code project) | other>
 **CI/CD:** <provider and files>; environments <list>
+**On edit:** format `<cmd with {file}>`; lint `<cmd with {file}>`; files `<.ext .ext>` | none
+**Protected branches:** `<branch>`, `<branch>`
 **Watch out:** <three to five facts a newcomer would get wrong>
 <!-- backend-dev:profile:end -->
 ```
 
-Keep it under 25 lines: it is read in every session. Detail goes to `docs/onboarding.md` (`/backend-dev:onboard`).
+Keep it under 25 lines: it is read in every session. Two lines are also read by the kit's hooks, so keep their shape exactly: **On edit** (after Claude edits a file, run `format` then `lint` on it from the repo root, `{file}` being its path; lint errors go back to Claude) and **Protected branches** (Claude's `git push` to any of them is blocked, as are `--no-verify` and force pushes). Without them the hooks fall back to: no format or lint on edit, protected `main` and `master`. Detail goes to `docs/onboarding.md` (`/backend-dev:onboard`).
 
 ## Defaults for a project made from this kit's template
 
@@ -40,3 +42,5 @@ Used when a repo has no profile block, and written into `CLAUDE.md` by the scaff
 | Tests | vitest; `makeFakeFirestore()` for services, `testApp()` for routes |
 | Git | base `main`; `feat/<slug>`; conventional commits; pull request to `main` |
 | CI/CD | GitHub Actions; envs `dev`, `stag`, `prod` in `wrangler.toml` |
+| On edit | none: the template has no formatter or linter; `npm run typecheck` runs in the gates |
+| Protected branches | `main` |
