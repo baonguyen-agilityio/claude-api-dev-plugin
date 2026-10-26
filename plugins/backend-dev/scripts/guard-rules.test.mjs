@@ -45,10 +45,25 @@ test("blocks the spellings seen in real sessions and lets feature work through",
   ]) assert.ok(!denied(rules, cmd), cmd);
 });
 
+test("a prefix-* entry covers a family of environment branches, not feature branches that mention it", () => {
+  const rules = guardRules(["dev", "stag", "main", "dev-*", "stag-*", "prod-*"]).deny;
+  for (const cmd of [
+    "git push origin prod-flash-job", "git push origin HEAD:prod-kitchen", "git push -u origin stag-flash",
+    "git -C apps/space push origin dev-flash", "git push origin refs/heads/prod-flash", "git push origin stag",
+  ]) assert.ok(denied(rules, cmd), cmd);
+  for (const cmd of [
+    "git push origin feat/prod-x", "git push -u origin fix/stag-login", "git push origin feat/dev-flash-retry",
+    "git push origin production-notes",
+  ]) assert.ok(!denied(rules, cmd), cmd);
+});
+
 test("cli prints the rules as JSON and refuses no branch or a branch name with shell characters", () => {
   const ok = spawnSync("node", [SCRIPT, "main", "prod-flash"], { encoding: "utf8" });
   assert.equal(ok.status, 0);
   assert.ok(JSON.parse(ok.stdout).deny.includes("Bash(git push *:prod-flash)"));
   assert.equal(spawnSync("node", [SCRIPT], { encoding: "utf8" }).status, 1);
   assert.equal(spawnSync("node", [SCRIPT, "$(rm -rf x)"], { encoding: "utf8" }).status, 1);
+  // A family keeps its wildcard; a bare or inner * would block every push or match too much, so it is refused.
+  assert.ok(JSON.parse(spawnSync("node", [SCRIPT, "prod-*"], { encoding: "utf8" }).stdout).deny.includes("Bash(git push * prod-*)"));
+  for (const bad of ["*", "pro*d"]) assert.equal(spawnSync("node", [SCRIPT, bad], { encoding: "utf8" }).status, 1, bad);
 });

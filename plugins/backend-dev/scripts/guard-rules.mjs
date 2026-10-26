@@ -6,7 +6,9 @@
 //         (checked in real sessions); an interpreter that opens it (`node -e "...readFileSync('.dev.vars')..."`) is not
 //         recognised as a read, so a person approves those.
 // The harness matches a rule against the whole command with * as a wildcard, hence one rule per spelling.
-// Usage: node guard-rules.mjs <protected branch>...   (prints {"deny": [...], "ask": [...]})
+// A branch may end in * to cover a family: `prod-*` blocks prod-flash and prod-flash-job. The rules then read
+// `git push * prod-*`, so a feature branch that only contains the name (`feat/prod-x`) still pushes.
+// Usage: node guard-rules.mjs <protected branch | prefix-*>...   (prints {"deny": [...], "ask": [...]})
 import { fileURLToPath } from "node:url";
 
 const PER_BRANCH = [
@@ -36,9 +38,9 @@ export function guardRules(branches) {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const branches = process.argv.slice(2).filter((b) => /^[\w./-]+$/.test(b));
+  const branches = process.argv.slice(2).filter((b) => /^[\w./-]+\*?$/.test(b));
   if (!branches.length) {
-    console.error("usage: guard-rules.mjs <protected branch>...");
+    console.error("usage: guard-rules.mjs <protected branch | prefix-*>...");
     process.exit(1);
   }
   console.log(JSON.stringify(guardRules(branches), null, 2));
