@@ -46,6 +46,28 @@ Skipped: system-design (one module, no background work)
 
 ✔ done, ▶ next, ○ planned, ✗ stopped on a blocker (say which). The state file holds what a new session needs: the restated ticket, the chosen stages with their reasons and status, the branch, the decisions taken (question → answer), and the last gate result. Update it after every stage and every decision.
 
+## 3b. Ticket record
+The state file is the developer's own progress and is never committed. What the team needs to review the change and to understand it later goes into the **ticket record**, `docs/tickets/<id>.md` (pasted text without an id: `docs/tickets/<short-slug>.md`; a different folder only when the profile names one for design records). Write it as soon as the first stage settles something, whether or not the branch exists yet (an uncommitted file moves with you when the branch is created), update it after every stage and every decision, and commit it with the code. It holds outcomes, not transcripts: what was decided and why, in the shape below, each section only when its stage ran. Write each section out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record.
+
+```markdown
+# #<id> · <title>
+Ticket: <link>  ·  Branch: `<branch>`  ·  Status: <in progress | ready for review>
+
+## Goal and acceptance
+<goal in one line>; acceptance as Given/When/Then, one per line (inferred ones marked)
+Out of scope: <list>
+
+## Decisions
+- <question> → <answer> (<who decided, date>)
+
+## Design            (system-design: the chosen shape, primitives, what was rejected and why)
+## Data              (data-model: documents and fields, indexes, consistency rule, rollout or backfill)
+## API contract      (api-contract: a table of method and path | who may call | statuses | additive or breaking, then each changed request or response field)
+## Cause and fix     (incident: reproduction, cause, the failing test that now passes)
+## Verification      (gates output in one line each; live-verify: each status driven and its result)
+## Follow-ups        (anything left for another ticket)
+```
+
 ## 3. Run the stages
 - **Branch.** With a clean working tree, create the branch from the profile's base with the profile's pattern and the ticket id (`git switch -c <name>`). Uncommitted changes: ask first.
 - **Baseline before any change:** run the profile's gates once on the base branch and keep the result. A test that already fails there is reported as pre-existing, not fixed in passing and not blamed on the ticket.
@@ -53,8 +75,8 @@ Skipped: system-design (one module, no background work)
 - Gates are the profile's, after implement and after every fix, output shown. A red gate stops the run with the output.
 
 ## 4. Finish
-- **Commit** in the profile's format with the ticket id (`[#412] feat(employees): …` where the profile says so). No AI attribution in the message. Show the commit; never push without the user.
-- **Merge request draft:** fill the profile's MR template with what changed, why (link the ticket, `Closes #412`), how it was tested (the gate output, what was driven with curl), and the type of change. Print the exact command, for example `glab mr create -t "<title>" --target-branch <profile target> --description "<filled template>"`, and run it only when the user says so.
+- **Commit** in the profile's format with the ticket id (`[#412] feat(employees): …` where the profile says so), the ticket record included in the same commit with its status set to ready for review. No AI attribution in the message. Show the commit; never push without the user.
+- **Merge request draft:** fill the profile's MR template with what changed, why (link the ticket, `Closes #412`), how it was tested (the gate output, what was driven with curl), the type of change, and a link to the ticket record for the decisions behind it. Print the exact command, for example `glab mr create -t "<title>" --target-branch <profile target> --description "<filled template>"`, and run it only when the user says so.
 
 ## 5. Learning mode (`--learn`)
 For someone on their first tickets in this repo. Do the same work, never skip a gate or a stage to save time, and add:
@@ -73,6 +95,7 @@ For someone on their first tickets in this repo. Do the same work, never skip a 
 
 ## Result
 **Branch / commit:** <name> / <hash and message>
+**Ticket record:** `docs/tickets/<id>.md` (<sections written>)
 **Gates:** <output>
 **Merge request draft:** <title, filled template, the command to run>
 **Open questions:** <blocking first>
