@@ -10,7 +10,7 @@ Set up this repository for the backend-dev kit. App path hint from the user: "$A
 
 The profile format and the template defaults are in `${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`. Read it first.
 
-Work only from evidence in this repo. Every field you cannot establish from a file stays `?: <question for the lead>`. Never invent a command, a branch name or a tool.
+Work only from evidence in this repo. Every field you cannot establish from a file stays `?: <question for the lead>`. Never invent a command, a branch name or a tool. Never open `.dev.vars`, `.env` or `.env.local`: the deny and ask rules this skill writes are not in force yet, and their samples (`.dev.vars.example`, `.env.example`) carry every key name you need.
 
 1. **Locate the repo and the API.** `git rev-parse --show-toplevel`; package manager from the lockfile; workspaces (`pnpm-workspace.yaml`, `workspaces` in `package.json`, `turbo.json`); the API app is the package that depends on `hono` and has a `wrangler.toml`. More than one candidate and no hint: list them and ask which.
 2. **Commands.** From the root and app `package.json` scripts: install, dev, lint or typecheck, test (scoped to the app when the repo is a monorepo), build or `wrangler deploy --dry-run`, deploy per env. Quote them exactly as a person would type them from the repo root. In a monorepo, check how the API app consumes shared packages: when it imports them from their built output (`main` or `exports` pointing at `dist/`), the gates start with that build (`pnpm --filter <shared> build` or the turbo build that includes it), otherwise the app's tests run against stale code.
