@@ -1,23 +1,25 @@
 name: Claude Code Review
 
+# One review per ready pull request, re-run on every push: bugs in code (hooks, scripts, the template's TypeScript)
+# and the kit's own rules for instructions (skills, references). It ends in a VERDICT line and the last step fails the
+# check on NEEDS_CHANGES or when the review did not run.
+# Why one job and not the code-review plugin: the plugin stops once Claude has commented on a pull request, so later
+# commits went unreviewed (PR #29: seven runs, one review). For a deep multi-agent bug hunt on a risky change, ask
+# @claude in the pull request or run /code-review locally.
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+    paths-ignore:
+      - "plugins/backend-dev/evals/results/**"
+
+# A new push cancels the review of the commit it replaces.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,17 +31,100 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      # A rebase onto a newer base (to clear a conflict or catch up) need not pay for a new review when it left the
+      # pull request's own changes exactly as reviewed: same patch-id as the previous head, and that head's review
+      # passed. A conflict fix changes the patch, so it is reviewed again. CI still re-runs lint, tests and gates.
+      - name: Skip when a rebase left the reviewed changes as they were
+        id: same
+        if: github.event.action == 'synchronize'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.pull_request.head.sha }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          prev=$(gh api "repos/$GITHUB_REPOSITORY/commits/$BEFORE/check-runs" --jq '[.check_runs[] | select(.name == "claude-review")][0].conclusion' 2>/dev/null || true)
+          if [ "$prev" != "success" ]; then echo "previous review: ${prev:-none}"; exit 0; fi
+          git fetch -q origin "$BEFORE" "$BASE" || exit 0
+          pid() { git diff "$(git merge-base "origin/$BASE" "$1")" "$1" | git patch-id --stable | cut -d' ' -f1; }
+          if [ -n "$(pid "$BEFORE")" ] && [ "$(pid "$BEFORE")" = "$(pid "$AFTER")" ]; then
+            echo "same=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Only a rebase: the pull request's changes are identical to ${BEFORE:0:7}, whose review passed. That review stands."
+          fi
 
       - name: Run Claude Code Review
         id: claude-review
+        if: steps.same.outputs.same != 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          track_progress: true
+          use_sticky_comment: true
+          claude_args: '--allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),mcp__github_inline_comment__create_inline_comment"'
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            Review the whole pull request as it stands now (gh pr diff), not only the last commit.
+            This repo holds the backend-dev Claude Code plugin. Read CLAUDE.md first and check the change against
+            every rule in it. Then review each changed file by its kind.
 
+            Code (plugins/backend-dev/hooks/*.mjs, plugins/backend-dev/scripts/*.mjs, skill scripts,
+            plugins/backend-dev/templates/**/*.ts, eval *.sh, .github/workflows/*):
+            - Bugs in the changed lines: wrong logic, unhandled errors, off-by-one, wrong exit codes, broken paths.
+            - Security: shell input not quoted, secrets printed or logged, a write outside the repo, a token in a URL.
+            - Hooks and scripts never stop the user's work on their own failure, and each changed behaviour has a test.
+            - Template code follows docs/architecture.md (tagged errors mapped once, schema validation at the boundary,
+              ownership checked in the service).
+
+            Instructions (plugins/backend-dev/skills/**, references, rules, agents, README, CLAUDE.md): another Claude
+            follows these, so review them as instructions.
+            - Every skill, file, script, command or tool they refer to exists in this repo or is a standard Claude Code
+              tool. A reference to something that only exists in another open pull request is blocking.
+            - No two skills or references contradict each other, or the profile format and guard rules in
+              plugins/backend-dev/references/project-profile.md.
+            - No skill tells Claude to read .dev.vars or .env, push to a protected branch, use --no-verify, force push,
+              or add AI attribution; anything a skill tells Claude to run is covered by its allowed-tools.
+            - Anything a skill relies on that may be missing (a profile line, a CLI login, Chrome) has a stated fallback.
+            - Outputs have a fixed shape (template, file name), so two runs give the same result.
+            - A change in what users see or run comes with the README updated.
+
+            The pull request description says what changed and how it was checked; an empty one is blocking.
+            Do not repeat what CI already checks (check-plugin lint, skill-validator, plugin validate, node tests,
+            template gates).
+            Blocking means a concrete problem you can point to with file and line and explain how it breaks something.
+            Anything you are unsure of goes under Minor, never Blocking.
+            Write the review in English: first a one-line verdict (Ready to merge / Needs changes), then
+            "Blocking" and "Minor" lists, each item with file and line. If there is nothing to flag, say so in one line.
+            Any blocking item means Needs changes.
+            Also post each Blocking item as an inline comment on its line (mcp__github_inline_comment__create_inline_comment),
+            one per item; Minor items stay in the summary only.
+            End your final message with one line: "VERDICT:" then a space, then READY or NEEDS_CHANGES.
+            The next CI step reads that line and fails the check on NEEDS_CHANGES.
+
+      # A review that did not run must not pass silently. The one exception is a pull request that edits this
+      # workflow: claude-code-action refuses to run a workflow file that differs from main's, so it cannot review it.
+      - name: Fail when the review asks for changes or did not run
+        if: always()
+        env:
+          OUT: ${{ steps.claude-review.outputs.execution_file }}
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          SAME: ${{ steps.same.outputs.same }}
+        run: |
+          if [ "$SAME" = "true" ]; then echo "review skipped: rebase only, previous review passed"; exit 0; fi
+          if [ -z "$OUT" ] || [ ! -f "$OUT" ]; then
+            if gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only | grep -qx '.github/workflows/claude-code-review.yml'; then
+              echo "::notice::This pull request edits the review workflow, which the action will not run on. Review it by hand; the new review runs from the next pull request."
+              exit 0
+            fi
+            echo "::error::The Claude review did not run (see the step above). Re-run this job; a pull request cannot pass without a review."
+            exit 1
+          fi
+          verdict=$(jq -r '.. | strings' "$OUT" | grep -oE 'VERDICT: (READY|NEEDS_CHANGES)' | tail -1 || true)
+          echo "${verdict:-no verdict found}"
+          if [ "$verdict" != "VERDICT: READY" ]; then
+            echo "::error::Claude review did not approve this pull request. Read its comment, fix the blocking items, push again."
+            exit 1
+          fi
