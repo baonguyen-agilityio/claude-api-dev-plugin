@@ -1,23 +1,14 @@
 name: Claude Code Review
 
+# Reviews every pull request against this repo's own rules and fails the check when the verdict is NEEDS_CHANGES,
+# so the review is a gate, not a comment to skim. CI (plugin-lint, template-gates) already covers what a script can
+# check; this covers what needs reading.
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -36,10 +27,45 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          track_progress: true
+          use_sticky_comment: true
+          claude_args: '--allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*)"'
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            Review this pull request. This repo holds the backend-dev Claude Code plugin. Skills in
+            plugins/backend-dev/skills/<skill>/SKILL.md and their references are instructions another Claude follows:
+            review them as instructions, not as code. Hooks (plugins/backend-dev/hooks/) and scripts are Node code.
+            Read CLAUDE.md first and check the change against every rule in it. Then check:
+            - Every skill, file, script, command or tool a changed file refers to exists in this repo or is a standard
+              Claude Code tool. A reference to something that only exists in another open pull request is blocking.
+            - No two skills or references contradict each other, or the project profile format and guard rules in
+              plugins/backend-dev/references/project-profile.md.
+            - No skill tells Claude to read .dev.vars or .env, push to a protected branch, use --no-verify, force push,
+              or add AI attribution, and anything a skill tells Claude to run is covered by its allowed-tools.
+            - Anything a skill relies on that may be missing (a profile line, a CLI login, Chrome) has a stated fallback.
+            - Outputs have a fixed shape (template, file name), so two runs give the same result.
+            - Hooks and scripts never stop the user's work on their own failure, quote what they pass to a shell,
+              and have a test for each changed behaviour.
+            - A change in what users see or run comes with the README updated.
+            - The pull request description says what changed and how it was checked (commands, real-session runs)
+              and carries a review verdict. An empty description is blocking.
+            Do not repeat what CI already checks (check-plugin lint, skill-validator, plugin validate, node tests,
+            template gates).
+            Write the review in English: first a one-line verdict (Ready to merge / Needs changes), then
+            "Blocking" and "Minor" lists, each item with file and line. If there is nothing to flag, say so in one line.
+            Any blocking item means Needs changes.
+            End your final message with one line: "VERDICT:" then a space, then READY or NEEDS_CHANGES.
+            The next CI step reads that line and fails the check on NEEDS_CHANGES.
 
+      - name: Fail when the review asks for changes
+        if: always() && steps.claude-review.outputs.execution_file != ''
+        env:
+          OUT: ${{ steps.claude-review.outputs.execution_file }}
+        run: |
+          verdict=$(jq -r '.. | strings' "$OUT" | grep -oE 'VERDICT: (READY|NEEDS_CHANGES)' | tail -1 || true)
+          echo "${verdict:-no verdict found}"
+          if [ "$verdict" != "VERDICT: READY" ]; then
+            echo "::error::Claude review did not approve this pull request. Read its comment, fix the blocking items, push again."
+            exit 1
+          fi
