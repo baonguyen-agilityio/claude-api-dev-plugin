@@ -6,7 +6,7 @@
 //         (checked in real sessions); an interpreter that opens it (`node -e "...readFileSync('.dev.vars')..."`) is not
 //         recognised as a read, so a person approves those.
 // The harness matches a rule against the whole command with * as a wildcard, hence one rule per spelling.
-// A branch may end in * to cover a family: `prod-*` blocks prod-flash and prod-flash-job. The rules then read
+// A branch may end in * to cover a family: `prod-*` blocks prod-eu and prod-eu-job. The rules then read
 // `git push * prod-*`, so a feature branch that only contains the name (`feat/prod-x`) still pushes.
 // Usage: node guard-rules.mjs <protected branch | prefix-*>...   (prints {"deny": [...], "ask": [...]})
 import { fileURLToPath } from "node:url";

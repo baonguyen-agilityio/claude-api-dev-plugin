@@ -48,11 +48,11 @@ test("blocks the spellings seen in real sessions and lets feature work through",
 test("a prefix-* entry covers a family of environment branches, not feature branches that mention it", () => {
   const rules = guardRules(["dev", "stag", "main", "dev-*", "stag-*", "prod-*"]).deny;
   for (const cmd of [
-    "git push origin prod-flash-job", "git push origin HEAD:prod-kitchen", "git push -u origin stag-flash",
-    "git -C apps/space push origin dev-flash", "git push origin refs/heads/prod-flash", "git push origin stag",
+    "git push origin prod-eu-job", "git push origin HEAD:prod-us", "git push -u origin stag-eu",
+    "git -C apps/space push origin dev-eu", "git push origin refs/heads/prod-eu", "git push origin stag",
   ]) assert.ok(denied(rules, cmd), cmd);
   for (const cmd of [
-    "git push origin feat/prod-x", "git push -u origin fix/stag-login", "git push origin feat/dev-flash-retry",
+    "git push origin feat/prod-x", "git push -u origin fix/stag-login", "git push origin feat/dev-eu-retry",
     "git push origin production-notes",
   ]) assert.ok(!denied(rules, cmd), cmd);
 });
