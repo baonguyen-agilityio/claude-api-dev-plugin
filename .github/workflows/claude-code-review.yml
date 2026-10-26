@@ -62,7 +62,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
           use_sticky_comment: true
-          claude_args: '--allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*)"'
+          claude_args: '--allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),mcp__github_inline_comment__create_inline_comment"'
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
@@ -98,6 +98,8 @@ jobs:
             Write the review in English: first a one-line verdict (Ready to merge / Needs changes), then
             "Blocking" and "Minor" lists, each item with file and line. If there is nothing to flag, say so in one line.
             Any blocking item means Needs changes.
+            Also post each Blocking item as an inline comment on its line (mcp__github_inline_comment__create_inline_comment),
+            one per item; Minor items stay in the summary only.
             End your final message with one line: "VERDICT:" then a space, then READY or NEEDS_CHANGES.
             The next CI step reads that line and fails the check on NEEDS_CHANGES.
 
