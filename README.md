@@ -39,6 +39,18 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 | `/backend-dev:ticket <id or text> [--learn]` | developer | the stages a ticket needs, ending in commit and MR draft |
 | `/backend-dev:onboard` | newcomer or lead | `docs/onboarding.md` written or refreshed, machine check |
 
+## Hooks
+
+The plugin's hooks act on Claude's own tool calls in any repo where it is enabled; the repo's own git hooks (husky, commitlint, lint-staged) and CI still apply to everyone.
+
+| Hook | When | What |
+|---|---|---|
+| format on edit | after `Edit`/`Write` | runs the profile's **On edit** format and lint commands on the changed file; lint errors go back to Claude so they are fixed before the commit |
+| ticket resume | after the context is compacted | points Claude back at the ticket in progress (`.backend-dev/tickets/<id>.md`) and tells it a summary is not the developer's go |
+| checkpoints | after a skill loads, at the end of a turn | one row in `.claude/checkpoints/` |
+
+Commits and pushes are guarded by the harness, not by a hook: `kit-setup` writes `permissions.deny` rules into the repo's `.claude/settings.json` that block Claude from pushing to the profile's **Protected branches**, `--no-verify`, force pushes other than `--force-with-lease`, AI attribution in a commit message, and the Read and Edit tools on `.dev.vars` and `.env` files; the Read deny also covers `cat`, `grep`, `head` and `cp` on them, and `permissions.ask` rules make a person approve any other shell command that names one, such as a `node -e` script. The rule set and its known gaps are in `plugins/backend-dev/references/project-profile.md`.
+
 
 ## Stack
 
@@ -97,5 +109,5 @@ Agent: `backend-dev:backend-dev`, only when asked by name or for an end-to-end r
 
 ## Layout
 
-- `plugins/backend-dev/` — the plugin: `skills/` (eleven: nine Claude starts on its own, plus `ticket` and `kit-setup`, which only run when typed), `references/` (project profile format, architecture note), `scripts/` (scaffold, new-module, doctor), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
+- `plugins/backend-dev/` — the plugin: `skills/` (eleven: nine Claude starts on its own, plus `ticket` and `kit-setup`, which only run when typed), `references/` (project profile format, architecture note), `scripts/` (scaffold, new-module, doctor, guard-rules), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
 - `docs/` — architecture and decisions the plugin and template follow
