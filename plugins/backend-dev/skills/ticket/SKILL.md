@@ -3,7 +3,7 @@ name: ticket
 description: Work a backend ticket end to end. Reads the GitLab issue (or pasted ticket text), decides which stages it needs, runs them with the kit's skills in order, and ends with a commit and a merge request draft in the repo's own format. Add --learn to have every step explained.
 argument-hint: "<issue id | issue URL | ticket text> [--learn]"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Skill, Bash(glab issue view*), Bash(glab auth status*), Bash(git remote get-url*), mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git switch -c *), Bash(git rev-parse*)
+allowed-tools: Read, Glob, Grep, Write, Edit, Skill, Bash(glab issue view*), Bash(glab auth status*), Bash(git remote get-url*), mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git switch -c *), Bash(git add *), Bash(git commit *), Bash(git rev-parse*)
 ---
 
 Work this backend ticket: "$ARGUMENTS"
@@ -47,7 +47,7 @@ Skipped: system-design (one module, no background work)
 ✔ done, ▶ next, ○ planned, ✗ stopped on a blocker (say which). The state file holds what a new session needs: the restated ticket, the chosen stages with their reasons and status, the branch, the decisions taken (question → answer), and the last gate result. Update it after every stage and every decision.
 
 ## 3b. Ticket record
-The state file is the developer's own progress and is never committed. What the team needs to review the change and to understand it later goes into the **ticket record**, `docs/tickets/<id>.md` (pasted text without an id: `docs/tickets/<short-slug>.md`; a different folder only when the profile names one for design records). Write it as soon as the first stage settles something, whether or not the branch exists yet (an uncommitted file moves with you when the branch is created), update it after every stage and every decision, and commit it with the code. It holds outcomes, not transcripts: what was decided and why, in the shape below, each section only when its stage ran. Write each section out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record.
+The state file is the developer's own progress and is never committed. What the team needs to review the change and to understand it later goes into the **ticket record**, `docs/tickets/<id>.md` (pasted text without an id: `docs/tickets/<short-slug>.md`). Write it as soon as the first stage settles something, whether or not the branch exists yet (an uncommitted file moves with you when the branch is created), update it after every stage and every decision, and commit it with the code. It holds outcomes, not transcripts: what was decided and why, in the shape below, each section only when its stage ran. Write each section out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record.
 
 ```markdown
 # #<id> · <title>
@@ -69,7 +69,7 @@ Out of scope: <list>
 ```
 
 ## 3. Run the stages
-- **Branch.** With a clean working tree, create the branch from the profile's base with the profile's pattern and the ticket id (`git switch -c <name>`). Uncommitted changes: ask first.
+- **Branch.** Create the branch from the profile's base with the profile's pattern and the ticket id (`git switch -c <name>`). The ticket record this run wrote does not count as a change; any other uncommitted change: ask first.
 - **Baseline before any change:** run the profile's gates once on the base branch and keep the result. A test that already fails there is reported as pre-existing, not fixed in passing and not blamed on the ticket.
 - **One stage at a time:** invoke the skill (`backend-dev:<stage>`), deliver its output in the reply, update the state file, show the card, and go on to the next stage. Stop only at a decision the skill cannot default (a contract or data choice the ticket does not settle) or a red gate; the card then shows ✗ and the question. A gate that could not run (no permission, missing dependencies) does not stop the design stages (system-design, data-model, api-contract); it stops the run before implement, with the command the developer has to run or approve.
 - Gates are the profile's, after implement and after every fix, output shown. A red gate stops the run with the output.
