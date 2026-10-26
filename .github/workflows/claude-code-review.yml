@@ -31,10 +31,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      # A rebase onto a newer base (to clear a conflict or catch up) need not pay for a new review when it left the
+      # pull request's own changes exactly as reviewed: same patch-id as the previous head, and that head's review
+      # passed. A conflict fix changes the patch, so it is reviewed again. CI still re-runs lint, tests and gates.
+      - name: Skip when a rebase left the reviewed changes as they were
+        id: same
+        if: github.event.action == 'synchronize'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.pull_request.head.sha }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          prev=$(gh api "repos/$GITHUB_REPOSITORY/commits/$BEFORE/check-runs" --jq '[.check_runs[] | select(.name == "claude-review")][0].conclusion' 2>/dev/null || true)
+          if [ "$prev" != "success" ]; then echo "previous review: ${prev:-none}"; exit 0; fi
+          git fetch -q origin "$BEFORE" "$BASE" || exit 0
+          pid() { git diff "$(git merge-base "origin/$BASE" "$1")" "$1" | git patch-id --stable | cut -d' ' -f1; }
+          if [ -n "$(pid "$BEFORE")" ] && [ "$(pid "$BEFORE")" = "$(pid "$AFTER")" ]; then
+            echo "same=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Only a rebase: the pull request's changes are identical to ${BEFORE:0:7}, whose review passed. That review stands."
+          fi
 
       - name: Run Claude Code Review
         id: claude-review
+        if: steps.same.outputs.same != 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -87,7 +109,9 @@ jobs:
           OUT: ${{ steps.claude-review.outputs.execution_file }}
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
+          SAME: ${{ steps.same.outputs.same }}
         run: |
+          if [ "$SAME" = "true" ]; then echo "review skipped: rebase only, previous review passed"; exit 0; fi
           if [ -z "$OUT" ] || [ ! -f "$OUT" ]; then
             if gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only | grep -qx '.github/workflows/claude-code-review.yml'; then
               echo "::notice::This pull request edits the review workflow, which the action will not run on. Review it by hand; the new review runs from the next pull request."
