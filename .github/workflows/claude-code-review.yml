@@ -58,11 +58,23 @@ jobs:
             End your final message with one line: "VERDICT:" then a space, then READY or NEEDS_CHANGES.
             The next CI step reads that line and fails the check on NEEDS_CHANGES.
 
-      - name: Fail when the review asks for changes
-        if: always() && steps.claude-review.outputs.execution_file != ''
+      # A review that did not run must not pass silently. The one exception is a pull request that edits this
+      # workflow: claude-code-action refuses to run a workflow file that differs from main's, so it cannot review it.
+      - name: Fail when the review asks for changes or did not run
+        if: always()
         env:
           OUT: ${{ steps.claude-review.outputs.execution_file }}
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
         run: |
+          if [ -z "$OUT" ] || [ ! -f "$OUT" ]; then
+            if gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only | grep -qx '.github/workflows/claude-code-review.yml'; then
+              echo "::notice::This pull request edits the review workflow, which the action will not run on. Review it by hand; the new review runs from the next pull request."
+              exit 0
+            fi
+            echo "::error::The Claude review did not run (see the step above). Re-run this job; a pull request cannot pass without a review."
+            exit 1
+          fi
           verdict=$(jq -r '.. | strings' "$OUT" | grep -oE 'VERDICT: (READY|NEEDS_CHANGES)' | tail -1 || true)
           echo "${verdict:-no verdict found}"
           if [ "$verdict" != "VERDICT: READY" ]; then
