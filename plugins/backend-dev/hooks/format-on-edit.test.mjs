@@ -50,12 +50,18 @@ test("lint errors (exit 1) go back to Claude with exit 2; other lint failures sa
   assert.match(failed.message, /Lint errors in src\/a b\.ts[\s\S]*no-var/);
   assert.deepEqual(handle({ tool_input: { file_path: "src/a b.ts" } }, fakeExec(2).exec), { code: 0 });
   assert.deepEqual(handle({ tool_input: { file_path: "src/a b.ts" } }, fakeExec(127).exec), { code: 0 });
+  const npxMissing = (cmd) => (cmd.startsWith("lint") ? { status: 1, stdout: "", stderr: "npm error could not determine executable to run\n" } : { status: 0 });
+  assert.deepEqual(handle({ tool_input: { file_path: "src/a b.ts" } }, npxMissing), { code: 0 });
   delete process.env.CLAUDE_PROJECT_DIR;
 });
 
 test("skips unlisted file types, files outside the project, deleted files and repos without the line", () => {
   const dir = repo();
   process.env.CLAUDE_PROJECT_DIR = dir;
+  writeFileSync(join(dir, "..notes.ts"), "x\n");
+  const inside = fakeExec(0);
+  handle({ tool_input: { file_path: join(dir, "..notes.ts") } }, inside.exec);
+  assert.equal(inside.calls.length, 2, "a file named ..notes.ts inside the project is still formatted and linted");
   for (const file_path of [join(dir, "README.md"), "/etc/hosts", join(dir, "src", "gone.ts")]) {
     const { calls, exec } = fakeExec(1);
     assert.deepEqual(handle({ tool_input: { file_path } }, exec), { code: 0 }, file_path);

@@ -8,7 +8,7 @@
 // a formatting hook never stops the work.
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { extname, isAbsolute, relative, resolve } from "node:path";
+import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { field, projectDir, readProfile } from "./profile.mjs";
 
@@ -21,25 +21,27 @@ export function onEditConfig(profile) {
   return config.format || config.lint ? config : null;
 }
 
+const MISSING_TOOL = /could not determine executable|command not found|not found: |ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL/i;
 const quote = (path) => `'${path.replace(/'/g, `'\\''`)}'`;
 const fill = (command, file) => command.replaceAll("{file}", quote(file));
 const tail = (text, n = 40) => text.trim().split("\n").slice(-n).join("\n");
 
 // Returns { code, message }: code 2 means "tell Claude", 0 means "say nothing".
-export function handle(input, exec = (cmd, cwd) => spawnSync(cmd, { cwd, shell: true, encoding: "utf8", timeout: 60_000 })) {
+export function handle(input, exec = (cmd, cwd) => spawnSync(cmd, { cwd, shell: true, encoding: "utf8", timeout: 40_000 })) {
   const dir = projectDir(input);
   const config = onEditConfig(readProfile(dir));
   const path = input?.tool_input?.file_path;
   if (!config || typeof path !== "string") return { code: 0 };
   const abs = isAbsolute(path) ? path : resolve(dir, path);
   const rel = relative(dir, abs);
-  if (!rel || rel.startsWith("..") || isAbsolute(rel) || !existsSync(abs)) return { code: 0 };
+  if (!rel || rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel) || !existsSync(abs)) return { code: 0 };
   if (config.exts.length && !config.exts.includes(extname(abs))) return { code: 0 };
 
   if (config.format) exec(fill(config.format, rel), dir);
   if (config.lint) {
     const r = exec(fill(config.lint, rel), dir);
-    if (r.status === 1) {
+    // Exit 1 is a lint error, unless the runner could not find the tool (npx exits 1 for that too).
+    if (r.status === 1 && !MISSING_TOOL.test(`${r.stdout ?? ""}${r.stderr ?? ""}`)) {
       return { code: 2, message: `Lint errors in ${rel} (${config.lint.replaceAll("{file}", rel)}). Fix them before going on:\n${tail(`${r.stdout ?? ""}${r.stderr ?? ""}`)}` };
     }
   }

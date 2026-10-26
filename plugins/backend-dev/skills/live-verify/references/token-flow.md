@@ -29,4 +29,4 @@ Checks that save an hour:
 - Tokens last one hour.
 - `set-claim.mjs` needs `firebase-admin` resolvable: run it from a folder where `npm i firebase-admin` was done, or pass `NODE_PATH`. The script never runs on the Worker.
 
-Deployed targets: `BASE=https://<env>-<name>.<account>.workers.dev/api/v1`; the token comes from that env's Firebase project. Local: `BASE=http://localhost:8787/api/v1`, project from `.dev.vars`.
+Deployed targets: `BASE=https://<env>-<name>.<account>.workers.dev/api/v1`; the token comes from that env's Firebase project. Local: `BASE=http://localhost:8787/api/v1`, the project the developer names (the one in their `.dev.vars`, which stays closed to Claude).
