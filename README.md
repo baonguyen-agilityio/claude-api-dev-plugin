@@ -31,7 +31,7 @@ Type the full names: Claude Code has its own `/verify`, so a bare `/verify` runs
 
 **Newcomer, first day**
 1. Read `docs/onboarding.md`; ask anything (`where do I start?`, `how does a request reach Firestore here?`): the `onboard` skill answers from the repo and checks your machine (`node <plugin>/scripts/doctor.mjs . <app path>`: versions, dependencies, env keys present, glab login; never prints values).
-2. First tickets: add `--learn` to each command (`/backend-dev:ticket <id> --learn`): the same work, with each stage, each decision and the terms explained on the way.
+2. First tickets: add `--learn` to `ticket`, `plan`, `build` and `verify` (`/backend-dev:ticket <id> --learn`): the same work, with each stage, each decision and the terms explained on the way.
 
 **Using a skill on its own**: say the job in plain words; every skill works alone, follows the repo's profile and ends with a **Next** line naming the following step of the workflow.
 
