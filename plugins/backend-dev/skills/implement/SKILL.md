@@ -49,7 +49,7 @@ The design the code follows: `${CLAUDE_PLUGIN_ROOT}/references/architecture.md`.
 **Gates:** <typecheck / test / check output, pasted>
 **Verified live:** <what was driven with curl, or "not verified">
 **Not done / Blocked by**
-**Next:** review-and-secure on this change, then live-verify. Inside a ticket, `/backend-dev:ticket <id>` continues the workflow.
+**Next:** review-and-secure on this change, then live-verify. Inside a ticket, the card's Next line names the following command.
 ```
 
 ## Checklist

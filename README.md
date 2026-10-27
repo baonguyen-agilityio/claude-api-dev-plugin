@@ -1,6 +1,6 @@
 # claude-api-dev-plugin
 
-Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare Workers + Firestore. It works on the team's existing repositories and on new ones made from its template: a lead sets a repo up once, a developer works a ticket with one command, a newcomer gets a reviewed project map and a guided first ticket.
+Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare Workers + Firestore. It works on the team's existing repositories and on new ones made from its template: a lead sets a repo up once, a developer works a ticket with one command per phase, a newcomer gets a reviewed project map and a guided first ticket.
 
 ## Quickstart
 
@@ -11,12 +11,25 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 4. Answer the questions in both files, review the diff, commit.
 
 **Developer with a ticket**
-- `/backend-dev:ticket 412` reads GitLab issue #412 (`glab auth login --hostname <host>` once; on a self-managed GitLab choose Token and paste a personal access token with `read_api`, since browser login needs an OAuth application the instance may not have). If the org blocks your token, start Claude Code with `claude --chrome`: the kit then reads the issue page read-only in your own Chrome session. Or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
-- It restates the ticket, asks only blocking questions, picks the stages the ticket needs and **stops with a workflow card** (`✔ analysis · ▶ api-contract · ○ implement …` and a **Next** line). Reply `go`, change the stage list, or `stop`; `/backend-dev:ticket 412` in a later session resumes from `.backend-dev/tickets/412.md` (self-ignored). What the team should see goes to `docs/tickets/412/`, committed with the code and linked from the MR: `intent.md` (goal and acceptance, readable by the BA and tester), `spec.md` (decisions, design, data, API contract) and `plan.md` (stages, changed files, the test for each acceptance line, verification). After `go` it runs the stages with the skills below, updating the card after each, runs the repo's gates (first on the base branch, so failures that were already there are named), commits in the repo's format and prints the merge request command. Push and MR happen only when you say so.
+A ticket goes through five commands, one phase each. Each one stops with a workflow card (`✔ ticket · ✔ plan · ▶ build · ○ verify · ○ settle`) and a **Next** line naming the following command, so a phase can run in a later session; progress lives in `.backend-dev/tickets/412.md` (self-ignored).
+
+| Command | Phase | Writes |
+|---|---|---|
+| `/backend-dev:ticket 412` | reads the issue, explores the code, settles open questions with you, fixes the acceptance criteria, picks the stages | `docs/tickets/412/intent.md` |
+| `/backend-dev:plan 412` | the design stages the ticket needs (api-contract, data-model, system-design, or the diagnosis for a bug), then the plan | `spec.md`, `plan.md` |
+| `/backend-dev:build 412` | branch, the repo's gates on the base first (so failures already there are named), the change and its tests, gates green | code, tests |
+| `/backend-dev:verify 412` | review in a subagent that sees only the code, each finding checked; live verification | `plan.md` Verification |
+| `/backend-dev:settle 412` | commit with the ticket record, push the feature branch and open the MR, each only on your word | the commit, the MR |
+
+`docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. The first command reads GitLab issue #412 (`glab auth login --hostname <host>` once; on a self-managed GitLab choose Token and paste a personal access token with `read_api`, since browser login needs an OAuth application the instance may not have). If the org blocks your token, start Claude Code with `claude --chrome`: the kit then reads the issue page read-only in your own Chrome session. Or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
+
+Type the full names: Claude Code has its own `/verify`, so a bare `/verify` runs that one, not the kit's.
+
+`/backend-dev:review 87` reviews a teammate's MR !87: reads it and its ticket record, reviews the diff in a fresh context, checks each finding and drafts the comments; it posts only when you say so.
 
 **Newcomer, first day**
 1. Read `docs/onboarding.md`; ask anything (`where do I start?`, `how does a request reach Firestore here?`): the `onboard` skill answers from the repo and checks your machine (`node <plugin>/scripts/doctor.mjs . <app path>`: versions, dependencies, env keys present, glab login; never prints values).
-2. First tickets: `/backend-dev:ticket <id> --learn` does the same work and explains each stage, each decision, and the terms on the way.
+2. First tickets: add `--learn` to each command (`/backend-dev:ticket <id> --learn`): the same work, with each stage, each decision and the terms explained on the way.
 
 **Using a skill on its own**: say the job in plain words; every skill works alone, follows the repo's profile and ends with a **Next** line naming the following step of the workflow.
 
@@ -36,7 +49,9 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 | Command | Who | What |
 |---|---|---|
 | `/backend-dev:kit-setup [app]` | lead, once per repo | project profile in `CLAUDE.md`, attribution off, gate permissions |
-| `/backend-dev:ticket <id or text> [--learn]` | developer | the stages a ticket needs, ending in commit and MR draft |
+| `/backend-dev:ticket <id or text> [--learn]` | developer | reads the ticket, settles it, writes the acceptance criteria |
+| `/backend-dev:plan <id>` · `build <id>` · `verify <id>` · `settle <id>` | developer | the ticket's next phases, in that order |
+| `/backend-dev:review <MR>` | reviewer | a teammate's merge request reviewed, comments drafted |
 | `/backend-dev:onboard` | newcomer or lead | `docs/onboarding.md` written or refreshed, machine check |
 
 ## Hooks
