@@ -37,7 +37,7 @@ claude -w 412          # creates .claude/worktrees/412 on a new branch worktree-
 Then `/backend-dev:ticket 412` in that session. Claude Code copies the files listed in `.worktreeinclude` (`kit-setup` lists `.dev.vars`) into a new worktree, so the local secrets arrive without anyone reading them; the dependencies are installed once per worktree with the profile's install command. `claude -w 412` later reopens the same worktree, with the ticket's state file and uncommitted record in it.
 
 - A new worktree starts from whatever commit the main checkout had; `build` always creates the ticket branch from the profile's base, never from the current commit.
-- Two `wrangler dev` runs cannot share port 8787: the second ticket's live verification uses the next free port and records it in the state file.
+- Two `wrangler dev` runs cannot share port 8787: the second ticket's live verification uses the next free port.
 - Both worktrees talk to the same dev Firestore project: live verification names what it creates after the ticket (`lv-412-…`) and deletes only that.
 - After the MR is merged, remove the worktree from the main checkout (the commands are in `settle`'s output). A worktree made by `claude -w` is locked, so it is unlocked first.
 
