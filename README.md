@@ -31,7 +31,7 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 | Quality before the MR | `review-and-secure` | findings with tests, MR notes |
 | Live verification | `live-verify` | curl record of every status, verdict |
 | Delivery and operations | `delivery` | environments, secrets, pipeline, deploy, rollback |
-| Incidents | `incident` | cause, fix, blast radius, proof, postmortem |
+| Incidents | `incident` | cause, fix, blast radius, proof, postmortem; an incident record committed in `docs/incidents/<date>-<slug>.md` (or the ticket's folder) |
 
 | Command | Who | What |
 |---|---|---|
