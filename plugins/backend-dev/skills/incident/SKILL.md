@@ -12,7 +12,7 @@ Before anything else, follow the project profile: the `backend-dev:profile` bloc
 
 ## Procedure
 
-1. **Triage in one line:** which env, since when, who is affected, is data exposed or corrupted. Users affected and a previous good version → rollback first (`wrangler rollback`), investigate second. A credential exposed → the runbook, before anything else.
+1. **Triage in one line:** which env, since when, who is affected, is data exposed or corrupted. Open the incident record (below) with Status `open` and this line as Impact; update it after every later step. Users affected and a previous good version → rollback first (`wrangler rollback`), investigate second. A credential exposed → the runbook, before anything else.
 2. **Establish what is live before reading code.** `npx wrangler deployments list --env <env>` (or `versions list`) for the deployed version and its source SHA; `git log -1` for the checkout. A checkout that cannot produce the logged error is not wrong, it is a different version; say so and get the right one.
 3. **Reproduce** with the exact request (method, path, body, role, env) against `wrangler dev` with that env's project, or against the env with `npx wrangler tail --env` open. Not reproducible: say so and stop; a speculative fix cannot be shown to work.
 4. **Pin it with a failing test** at the lowest layer that shows it (adapter for an encoding or mapping fault, service for logic, route for a guard). Run it on the unfixed code and keep the failure output.
@@ -20,7 +20,41 @@ Before anything else, follow the project profile: the `backend-dev:profile` bloc
 6. **Blast radius:** grep every module for the same pattern (`git grep` the expression); a 200 where 401/403/404 was expected is checked in every sibling and reported with whether data could have been read.
 7. **Fix in the shared place** (the profile names it: the adapter or repository, the error mapper, the auth middleware, the model; in the template `core/firestore.ts`, `core/run.ts`, `authMiddleware`); never the one route in the report. The failing test passes; no assertion loosened.
 8. **Prove:** the profile's gates (template: `npm run typecheck && npm test && npm run check`); the original request re-run with the new status and body pasted; on a deployed env, the `tail` line that used to show the error.
-9. **Postmortem,** short, in the reply: timeline, cause, fix, blast radius, what would have caught it (a test, a review item, a gate), what changes so it does not recur.
+9. **Postmortem:** finish the incident record (Timeline, Prevention, Status) and give the short version in the reply. A run that stops early (not reproduced, blocked, rolled back with the cause open) still leaves the record with what was tried and what is open.
+
+## Incident record
+
+The reply is gone after the session; the record is what the team keeps. One markdown file per incident, committed with the fix (or on its own when there is no fix yet):
+- run as a step of `/backend-dev:ticket`: `docs/tickets/<id>/incident.md`, next to the ticket's `intent.md`, `spec.md` and `plan.md`;
+- otherwise: `docs/incidents/<YYYY-MM-DD>-<short-slug>.md`, dated by the first report, the slug from the symptom (`2026-10-27-orders-502-on-qty`).
+
+It holds facts as they were established, each section written out in full ("see above" is a hole), each only once its step ran. **Never a secret value**, in any section: a key is named by its variable, service account and key id, a token by its type and owner.
+
+```markdown
+# <YYYY-MM-DD> · <the symptom in one line>
+Status: open | mitigated | fixed | verified | not reproduced  ·  Ticket: <link | none>
+
+## Impact
+<env, since when, who is affected, requests failing, data exposed or corrupted: yes/no and what>
+## Timeline
+- <YYYY-MM-DD HH:MM> <event>   (first report, triage, rollback, cause found, fix merged, deployed, verified)
+## Live version
+<env → version id → SHA>; checkout <SHA>
+## Reproduction
+<method, path, role, env, body> → <status and body seen>   (or: not reproduced, and what was tried)
+## Cause
+<one paragraph, at the layer where it lives, and why it got through>
+## Blast radius
+<pattern searched> → <paths checked> → clean | same defect at <path>; data exposure: yes/no
+## Fix
+<path → what changed>; failing test `<file>`: <name> (failed before, passes after)
+## Proof
+<gates, one line each>; <original request re-run → status and body>; <tail line>
+## Prevention
+- <what would have caught it> → <action> (<ticket or owner>)
+```
+
+A leaked credential uses the same file with Reproduction, Cause and Fix replaced by: **Exposure** (where it appeared, when, how long, who could see it), **Rotation** (each env, time rotated, the old key deleted by id), **Audit** (the window reviewed, what was found), **Notifications** (who was told, when).
 
 ## Gotchas seen on this stack
 
@@ -43,6 +77,7 @@ Before anything else, follow the project profile: the `backend-dev:profile` bloc
 **Blast radius:** <siblings checked → clean | same defect at <path>; data exposure yes/no>
 **Proof:** <failing test output before, passing after; original request re-run with status and body; tail line>
 **Still open:** <anything not proven>
+**Incident record:** `<path>` (Status: <status>)
 
 ## Postmortem
 **Timeline:** <first report → mitigation → fix → verified>

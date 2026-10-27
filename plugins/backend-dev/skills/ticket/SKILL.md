@@ -47,12 +47,13 @@ Skipped: system-design (one module, no background work)
 ✔ done, ▶ next, ○ planned, ✗ stopped on a blocker (say which). The state file holds what a new session needs: the restated ticket, the chosen stages with their reasons and status, the branch, the decisions taken (question → answer), and the last gate result. Update it after every stage and every decision.
 
 ## 3b. Ticket record
-The state file is the developer's own progress and is never committed. What the team needs to review the change and to understand it later goes into the **ticket record**, the folder `docs/tickets/<id>/` (pasted text without an id: `docs/tickets/<short-slug>/`), committed with the code. Three files, each with one reader and one moment to be written:
+The state file is the developer's own progress and is never committed. What the team needs to review the change and to understand it later goes into the **ticket record**, the folder `docs/tickets/<id>/` (pasted text without an id: `docs/tickets/<short-slug>/`), committed with the code. Three files (four for a bug or security ticket), each with one reader and one moment to be written:
 
 | File | Answers | Read by | Written |
 |---|---|---|---|
 | `intent.md` | what and why | anyone, the BA and tester included | when the developer accepts the analysis (the first `go`); again only if the goal or acceptance changes |
-| `spec.md` | how it behaves | the reviewer | after each design stage (system-design, data-model, api-contract) and the incident's diagnosis, and at every decision (the answered question then leaves `intent.md` Open questions) |
+| `spec.md` | how it behaves | the reviewer | after each design stage (system-design, data-model, api-contract), and at every decision (the answered question then leaves `intent.md` Open questions) |
+| `incident.md` | what broke, why, and how it was proven fixed | the reviewer and whoever meets the symptom again | by the incident stage, from triage on (its own Incident record section) |
 | `plan.md` | how it is built and proven | the developer and the reviewer | when implement is the next stage, before the card stops for `go`, so the developer approves the plan; then after the gates, review-and-secure and live-verify |
 
 Write a file whether or not the branch exists yet (uncommitted files move with you when the branch is created). They hold outcomes, not transcripts, each section only when its stage ran, and each written out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record. One fact lives in one file; the others link to it (`spec.md#api-contract`) instead of repeating it.
@@ -83,7 +84,6 @@ Ticket: <link>  ·  Status: <in progress | ready for review>
 ## Design            (system-design: the chosen shape, primitives, what was rejected and why)
 ## Data              (data-model: documents and fields, indexes, consistency rule, rollout or backfill)
 ## API contract      (api-contract: a table of method and path | who may call | statuses | additive or breaking, then each changed request or response field)
-## Cause             (incident: reproduction, cause, blast radius)
 ```
 No acceptance section in `spec.md`: acceptance lives in `intent.md`, and the request-level checks a stage produces (each status, each field) go to `plan.md` Tests.
 
@@ -130,7 +130,7 @@ For someone on their first tickets in this repo. Do the same work, never skip a 
 
 ## Result
 **Branch / commit:** <name> / <hash and message>
-**Ticket record:** `docs/tickets/<id>/` (intent, spec, plan: the sections written in each)
+**Ticket record:** `docs/tickets/<id>/` (intent, spec, plan, and incident for a bug: the sections written in each)
 **Gates:** <output>
 **Merge request draft:** <title, filled template, the command to run>
 **Open questions:** <blocking first>
