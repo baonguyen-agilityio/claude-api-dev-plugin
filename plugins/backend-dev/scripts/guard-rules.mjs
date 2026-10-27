@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Prints the permission rules kit-setup writes into a repo's .claude/settings.json:
-//   deny: pushes to protected branches, skipping the repo's git hooks, force pushes, AI attribution, and the Read and
-//         Edit tools on secret files;
+//   deny: pushes to protected branches, a push that names no branch (its target comes from git config, which no rule
+//         can see, so on a protected branch or one tracking it the push would reach it), skipping the repo's git
+//         hooks, force pushes, AI attribution, and the Read and Edit tools on secret files;
 //   ask:  any Bash command that names a secret file. The Read deny already stops cat, grep, head and cp on the file
 //         (checked in real sessions); an interpreter that opens it (`node -e "...readFileSync('.dev.vars')..."`) is not
 //         recognised as a read, so a person approves those.
@@ -21,6 +22,9 @@ const ONCE = [
   "git commit *--no-verify*", "git commit -n*", "git commit * -n*", "git push *--no-verify*",
   "git push *--force", "git push *--force *", "git push *-f", "git push *-f *", "git push * +*",
   "git push *--all*", "git push *--mirror*",
+  // A push with no branch: exact commands, so `git push origin feat/x` and `git push -u origin feat/x` stay allowed.
+  "git push", "git push origin", "git push -u", "git push -u origin", "git push --set-upstream origin",
+  "git -C * push", "git -C * push origin",
   "git commit *Co-Authored-By: Claude*", "git commit *Generated with*Claude*",
 ];
 const SECRET_FILES = [".dev.vars", ".env", ".env.local"];
