@@ -27,6 +27,8 @@ Type the full names: Claude Code has its own `/verify`, so a bare `/verify` runs
 
 `/backend-dev:review 87` reviews a teammate's MR !87: reads it and its ticket record, reviews the diff in a fresh context, checks each finding and drafts the comments; it posts only when you say so.
 
+**Several tickets at once**: one git worktree per ticket, so their branches and edits never mix. Start the session with `claude -w 412` (it creates `.claude/worktrees/412`, or reopens it later) and run the ticket's commands there. `kit-setup` writes `.worktreeinclude` so Claude Code copies the app's `.dev.vars` into each new worktree without anyone reading it; install the dependencies once per worktree. `/backend-dev:ticket` stops and gives you that command when the checkout already holds another ticket; `settle` prints the cleanup once the MR is merged.
+
 **Newcomer, first day**
 1. Read `docs/onboarding.md`; ask anything (`where do I start?`, `how does a request reach Firestore here?`): the `onboard` skill answers from the repo and checks your machine (`node <plugin>/scripts/doctor.mjs . <app path>`: versions, dependencies, env keys present, glab login; never prints values).
 2. First tickets: add `--learn` to each command (`/backend-dev:ticket <id> --learn`): the same work, with each stage, each decision and the terms explained on the way.

@@ -25,7 +25,7 @@ if (!existsSync(join(target, "docs", "architecture.md"))) cpSync(join(SRC, "..",
 const settings = join(target, ".claude", "settings.json");
 if (!existsSync(settings)) {
   const { deny, ask } = guardRules(["main"]);
-  const allow = ["npm run typecheck", "npm test", "npm run check"].map((c) => `Bash(${c})`);
+  const allow = ["npm install", "npm run typecheck", "npm test", "npm run check"].map((c) => `Bash(${c})`);
   mkdirSync(dirname(settings), { recursive: true });
   writeFileSync(settings, JSON.stringify({ attribution: { commit: "", pr: "" }, permissions: { allow, deny, ask } }, null, 2) + "\n");
 }
