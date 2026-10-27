@@ -117,7 +117,7 @@ Branch: `<branch>`  ·  Base: `<base>`
 
 ## Learning mode (`--learn`)
 
-Any of the commands takes `--learn`, for someone on their first tickets in this repo. Do the same work, never skip a gate or a stage to save time, and add:
+`ticket`, `plan`, `build` and `verify` take `--learn`, for someone on their first tickets in this repo. Do the same work, never skip a gate or a stage to save time, and add:
 - **Before each stage**, three lines: what this stage is for, what an experienced backend engineer checks here, and the file in this repo that shows the pattern to copy.
 - **At each decision**, the options and why you pick one, in plain words.
 - **After each stage**, one or two lines under "Remember", and any new term in a running glossary (`apiHandlerEffect`: the shared handler that turns exceptions into statuses).
