@@ -22,8 +22,9 @@ Risk table with the template's status: `references/security-checklist.md`. Reads
 6. **Reads per request.** Count the Firestore calls on the hot path: a `get` inside a loop over a list, a list fetched twice, a lookup per row. Multiply by the largest `limit` the endpoint accepts; that is the subrequest and latency cost of one request.
 7. **Headers, CORS, rate limit.** `cors()` without options is a finding; `CORS_ORIGINS` must be read; `secureHeaders()` present; a `ratelimits` binding in every env block.
 8. **Secrets and logs.** No credential in code, tests, fixtures or `api.http`; logs carry ids, never tokens or bodies with PII.
-9. **Tests for each finding.** Name the existing test that should fail on the finding, or the test to add; a finding without a test is a finding that will come back.
-10. **Write the MR notes:** what changed, core touched, what reviewers should look at, which gates ran with their output. Never claim a gate that did not run.
+9. **Tests loosened to pass.** Read the diff of every test file in the change (`git diff <base> -- '*.test.*' '*.spec.*'` and the test folders): an assertion removed or relaxed (`toBe(403)` → `toBeLessThan(500)`, `toEqual` → `toBeDefined`, a value replaced by `expect.anything()`), an expected value changed in the same diff as the code it checks, a new `.skip`, `.only`, `.todo` or `xit`, a test case or file deleted, a timeout raised or a retry added. Each one is a finding, blocking when the test covered access, input or errors, unless the ticket or spec says that behaviour changed: then cite that line.
+10. **Tests for each finding.** Name the existing test that should fail on the finding, or the test to add; a finding without a test is a finding that will come back.
+11. **Write the MR notes:** what changed, core touched, what reviewers should look at, which gates ran with their output. Never claim a gate that did not run.
 
 ## Gotchas seen on this stack
 
@@ -60,6 +61,7 @@ Fix: <one line>
 ## Checklist
 - [ ] Every endpoint in the diff has its access cell verified in code, not in the route doc.
 - [ ] Every finding names a location, what breaks, and a test.
+- [ ] Every changed, skipped or removed assertion in the diff is backed by a behaviour change in the spec, or reported.
 - [ ] Reads per request counted on the list endpoints with the maximum `limit`.
 - [ ] Core findings carry their blast radius.
 - [ ] Gates reported with output or as not run.
