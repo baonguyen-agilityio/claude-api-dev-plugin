@@ -46,8 +46,11 @@ The plugin's hooks act on Claude's own tool calls in any repo where it is enable
 | Hook | When | What |
 |---|---|---|
 | format on edit | after `Edit`/`Write` | runs the profile's **On edit** format and lint commands on the changed file; lint errors go back to Claude so they are fixed before the commit |
+| gates on stop | at the end of a turn in which Claude edited a file other than Markdown | off until the profile's **On stop** line holds a command (the gates, or a faster part of them); then it runs that command and sends a failure back to Claude, once per turn, so a turn does not end red. Turn it on when the base branch is green |
 | ticket resume | after the context is compacted | points Claude back at the ticket in progress (`.backend-dev/tickets/<id>.md`) and tells it a summary is not the developer's go |
 | checkpoints | after a skill loads, at the end of a turn | one row in `.claude/checkpoints/` |
+
+To let a ticket's stages run after `go` without a prompt per command, start the session in auto mode (`claude --permission-mode auto`), not `bypassPermissions`: the deny rules below and the hooks still apply, and with **On stop** set the gates are checked at every stop.
 
 Commits and pushes are guarded by the harness, not by a hook: `kit-setup` writes `permissions.deny` rules into the repo's `.claude/settings.json` that block Claude from pushing to the profile's **Protected branches**, `--no-verify`, force pushes other than `--force-with-lease`, AI attribution in a commit message, and the Read and Edit tools on `.dev.vars` and `.env` files; the Read deny also covers `cat`, `grep`, `head` and `cp` on them, and `permissions.ask` rules make a person approve any other shell command that names one, such as a `node -e` script. The rule set and its known gaps are in `plugins/backend-dev/references/project-profile.md`.
 

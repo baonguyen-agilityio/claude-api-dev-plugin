@@ -14,6 +14,7 @@
 **Git:** base `main`; branch `feat/<slug>`; conventional commits; pull request to `main`; tickets: ?: which tracker
 **CI/CD:** ?: provider; environments `dev`, `stag`, `prod` in `wrangler.toml`
 **On edit:** none
+**On stop:** none
 **Protected branches:** `main`
 **Watch out:** `wrangler.toml` project ids are placeholders until renamed; bindings and vars are not inherited between envs; no Firestore emulator, `npm run dev` talks to the project in `.dev.vars`
 <!-- backend-dev:profile:end -->
