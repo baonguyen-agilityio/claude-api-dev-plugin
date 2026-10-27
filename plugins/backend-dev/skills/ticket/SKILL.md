@@ -3,7 +3,7 @@ name: ticket
 description: Work a backend ticket end to end. Reads the GitLab issue (or pasted ticket text), decides which stages it needs, runs them with the kit's skills in order, and ends with a commit and a merge request draft in the repo's own format. Add --learn to have every step explained.
 argument-hint: "<issue id | issue URL | ticket text> [--learn]"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Skill, Bash(glab issue view*), Bash(glab auth status*), Bash(git remote get-url*), mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git switch -c *), Bash(git add *), Bash(git commit *), Bash(git rev-parse*)
+allowed-tools: Read, Glob, Grep, Write, Edit, Skill, Agent, Bash(glab issue view*), Bash(glab auth status*), Bash(git remote get-url*), mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git switch -c *), Bash(git add *), Bash(git commit *), Bash(git rev-parse*)
 ---
 
 Work this backend ticket: "$ARGUMENTS"
@@ -107,6 +107,7 @@ Branch: `<branch>`  ·  Base: `<base>`
 - **Branch.** Create the branch from the profile's base with the profile's pattern and the ticket id (`git switch -c <name>`). The ticket record files this run wrote do not count as a change; any other uncommitted change: ask first.
 - **Baseline before any change:** run the profile's gates once on the base branch and keep the result. A test that already fails there is reported as pre-existing, not fixed in passing and not blamed on the ticket.
 - **One stage at a time:** invoke the skill (`backend-dev:<stage>`), deliver its output in the reply, update the state file, show the card, and go on to the next stage. Stop only at a decision the skill cannot default (a contract or data choice the ticket does not settle) or a red gate; the card then shows ✗ and the question. A gate that could not run (no permission, missing dependencies) does not stop the design stages (system-design, data-model, api-contract); it stops the run before implement, with the command the developer has to run or approve.
+- **review-and-secure runs in a fresh context.** This conversation built the change and argues for it, so the review goes to a subagent (Agent tool, `general-purpose`) that sees only the code. Its prompt names the repo path, the base branch and the ticket record folder, and says: run the `backend-dev:review-and-secure` skill on the diff from the base, read `intent.md` and `spec.md` for what was asked and decided, and return the Review block verbatim. Nothing about how the change was built or why. When it returns, check each finding against the code before it goes into the reply: one that does not hold is dropped with the reason, and a severity you change says why.
 - Gates are the profile's, after implement and after every fix, output shown. A red gate stops the run with the output.
 
 ## 4. Finish
