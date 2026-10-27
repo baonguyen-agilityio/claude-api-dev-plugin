@@ -12,9 +12,9 @@
     ]
   },
   "extraKnownMarketplaces": {
-    "bao-plugins": { "source": { "source": "directory", "path": "." } }
+    "team-plugins": { "source": { "source": "directory", "path": "." } }
   },
   "enabledPlugins": {
-    "backend-dev@bao-plugins": true
+    "backend-dev@team-plugins": true
   }
 }
