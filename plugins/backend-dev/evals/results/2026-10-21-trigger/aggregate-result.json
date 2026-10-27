@@ -6,7 +6,7 @@
   "costUsd": 2.7167201999999997,
   "partial": false,
   "suite": {
-    "root": "/Users/baonguyen/Desktop/trainings/claude-api-dev-plugin/plugins/backend-dev",
+    "root": "<repo>/plugins/backend-dev",
     "ablation": "none",
     "modelOverride": "sonnet",
     "tagFilters": [
@@ -19,7 +19,7 @@
       {
         "name": "backend-dev",
         "version": "0.1.0",
-        "path": "/Users/baonguyen/Desktop/trainings/claude-api-dev-plugin/plugins/backend-dev"
+        "path": "<repo>/plugins/backend-dev"
       }
     ]
   },

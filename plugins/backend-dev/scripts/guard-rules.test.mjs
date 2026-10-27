@@ -25,7 +25,7 @@ test("deny: nine rules per branch, then the fixed set and the secret files; ask:
 
 test("ask covers any shell command naming a secret file, interpreters included; ordinary commands stay free", () => {
   const { ask } = guardRules(["main"]);
-  for (const cmd of ["cat .dev.vars", `node -e "require('fs').readFileSync('apps/space/.dev.vars','utf8')"`, "python3 -c \"open('.env').read()\"", "source .env.local && npm run dev", "cat .dev.vars.example"])
+  for (const cmd of ["cat .dev.vars", `node -e "require('fs').readFileSync('apps/api/.dev.vars','utf8')"`, "python3 -c \"open('.env').read()\"", "source .env.local && npm run dev", "cat .dev.vars.example"])
     assert.ok(denied(ask, cmd), cmd);
   for (const cmd of ["npm test", "pnpm --filter space test", "npx wrangler deploy --env dev", "git status"])
     assert.ok(!denied(ask, cmd), cmd);
@@ -38,12 +38,12 @@ test("blocks the spellings seen in real sessions and lets feature work through",
     "git push --force origin feat/x", "git push -f origin feat/x", "git push origin feat/x --force", "git push origin +feat/x",
     "git commit --allow-empty --no-verify -m x", "git commit -nm x", "git push --all origin",
     "git commit -m 'feat: x\n\nCo-Authored-By: Claude <noreply@anthropic.com>'",
-    "git push", "git push origin", "git push -u origin", "git -C apps/space push", "git push --force-with-lease", "git push origin -u",
+    "git push", "git push origin", "git push -u origin", "git -C apps/api push", "git push --force-with-lease", "git push origin -u",
   ]) assert.ok(denied(rules, cmd), cmd);
   for (const cmd of [
     "git push origin feat/x", "git push --force-with-lease origin feat/x", "git push origin feat/x --force-with-lease",
-    "git push origin feat/dev", "git push origin dev-flash", "git commit -m 'feat: add level'",
-    "git push -u origin feat/x", "git push --set-upstream origin feat/x", "git -C apps/space push origin feat/x",
+    "git push origin feat/dev", "git push origin dev-eu-v2", "git commit -m 'feat: add level'",
+    "git push -u origin feat/x", "git push --set-upstream origin feat/x", "git -C apps/api push origin feat/x",
   ]) assert.ok(!denied(rules, cmd), cmd);
 });
 
@@ -51,7 +51,7 @@ test("a prefix-* entry covers a family of environment branches, not feature bran
   const rules = guardRules(["dev", "stag", "main", "dev-*", "stag-*", "prod-*"]).deny;
   for (const cmd of [
     "git push origin prod-eu-job", "git push origin HEAD:prod-us", "git push -u origin stag-eu",
-    "git -C apps/space push origin dev-eu", "git push origin refs/heads/prod-eu", "git push origin stag",
+    "git -C apps/api push origin dev-eu", "git push origin refs/heads/prod-eu", "git push origin stag",
   ]) assert.ok(denied(rules, cmd), cmd);
   for (const cmd of [
     "git push origin feat/prod-x", "git push -u origin fix/stag-login", "git push origin feat/dev-eu-retry",
@@ -60,9 +60,9 @@ test("a prefix-* entry covers a family of environment branches, not feature bran
 });
 
 test("cli prints the rules as JSON and refuses no branch or a branch name with shell characters", () => {
-  const ok = spawnSync("node", [SCRIPT, "main", "prod-flash"], { encoding: "utf8" });
+  const ok = spawnSync("node", [SCRIPT, "main", "prod-eu"], { encoding: "utf8" });
   assert.equal(ok.status, 0);
-  assert.ok(JSON.parse(ok.stdout).deny.includes("Bash(git push *:prod-flash)"));
+  assert.ok(JSON.parse(ok.stdout).deny.includes("Bash(git push *:prod-eu)"));
   assert.equal(spawnSync("node", [SCRIPT], { encoding: "utf8" }).status, 1);
   assert.equal(spawnSync("node", [SCRIPT, "$(rm -rf x)"], { encoding: "utf8" }).status, 1);
   // A family keeps its wildcard; a bare or inner * would block every push or match too much, so it is refused.

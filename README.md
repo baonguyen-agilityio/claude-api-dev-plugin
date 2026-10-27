@@ -92,19 +92,19 @@ In Claude Code 2.1.275 or later:
 
 ```
 /plugin marketplace add git@gitlab.asoft-python.com:bao.nguyen/claude-api-dev-plugin.git
-/plugin install backend-dev@bao-plugins
+/plugin install backend-dev@team-plugins
 ```
 
-Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@bao-plugins`. Teammates need read access (Reporter) to the GitLab project and an SSH key on that GitLab to install from it.
+Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@team-plugins`. Installed under the marketplace's old name `bao-plugins`: run `claude plugin marketplace remove bao-plugins`, then the two commands above, and change `bao-plugins` to `team-plugins` in any repository's `.claude/settings.json`. Teammates need read access (Reporter) to the GitLab project and an SSH key on that GitLab to install from it.
 
 To turn the plugin on for everyone who opens a repository, commit this to its `.claude/settings.json`:
 
 ```json
 {
   "extraKnownMarketplaces": {
-    "bao-plugins": { "source": { "source": "git", "url": "git@gitlab.asoft-python.com:bao.nguyen/claude-api-dev-plugin.git" } }
+    "team-plugins": { "source": { "source": "git", "url": "git@gitlab.asoft-python.com:bao.nguyen/claude-api-dev-plugin.git" } }
   },
-  "enabledPlugins": { "backend-dev@bao-plugins": true }
+  "enabledPlugins": { "backend-dev@team-plugins": true }
 }
 ```
 

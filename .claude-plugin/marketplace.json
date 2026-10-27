@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "bao-plugins",
-  "description": "Plugins by bao.nguyen: backend-dev, a team kit for APIs on Cloudflare Workers + Firestore.",
+  "name": "team-plugins",
+  "description": "Team plugins: backend-dev, a kit for APIs on Cloudflare Workers + Firestore.",
   "owner": {
     "name": "bao.nguyen"
   },
