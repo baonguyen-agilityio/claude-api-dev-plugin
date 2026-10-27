@@ -17,6 +17,7 @@ The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`. Th
 4. **Push**, only when the developer says so: `git push -u origin <branch>`, the feature branch only, never a protected branch (the guard rules block those anyway).
 5. **Merge request:** fill the profile's MR template with what changed, why (link the ticket, `Closes #412`), how it was tested (the gate output, what was driven with curl), the type of change, and links to the ticket record: `intent.md` for what was asked, `spec.md` for the decisions, `plan.md` for how it was proven. Print the exact command, for example `glab mr create -t "<title>" --target-branch <profile target> --description "<filled template>"`, and run it only when the developer says so.
 6. Update the state file (settled, the commit, the MR link once opened) and show the card.
+7. **In a worktree** (the state file names one): once the MR is merged, the worktree is removed from the main checkout with `git worktree unlock .claude/worktrees/<id>`, `git worktree remove .claude/worktrees/<id>` and `git branch -D worktree-<id>`. Print them for the developer; never remove a worktree that still has uncommitted changes.
 
 ## Output
 ```markdown
@@ -26,5 +27,6 @@ The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`. Th
 **Ticket record:** `docs/tickets/<id>/` (intent, spec, plan, and incident for a bug)
 **Push:** <done: branch → remote | waiting for your word: the command>
 **Merge request:** <link | the filled template and the command, waiting for your word>
+**Worktree:** <none | the cleanup commands, for after the merge>
 **Next:** <say `push` / `open the MR`, or nothing left: the MR is open for review>
 ```

@@ -26,9 +26,24 @@ Running a command is the developer's go for that phase. A command whose prerequi
 
 A security finding or an exposed secret does not wait for phases: `/backend-dev:ticket` says so and points to `/backend-dev:incident` now (the leaked-credential runbook first).
 
+## Several tickets at once: one worktree each
+
+Two tickets in one checkout share a branch, a working tree and a state folder, so one ticket's edits end up in the other's commit. Each ticket in progress at the same time gets its own git worktree, and the whole ticket, from `/backend-dev:ticket` to `/backend-dev:settle`, runs in a Claude Code session started in it:
+
+```bash
+claude -w 412          # creates .claude/worktrees/412 on a new branch worktree-412, or reopens it
+```
+
+Then `/backend-dev:ticket 412` in that session. Claude Code copies the files listed in `.worktreeinclude` (`kit-setup` lists `.dev.vars`) into a new worktree, so the local secrets arrive without anyone reading them; the dependencies are installed once per worktree with the profile's install command. `claude -w 412` later reopens the same worktree, with the ticket's state file and uncommitted record in it.
+
+- A new worktree starts from whatever commit the main checkout had; `build` always creates the ticket branch from the profile's base, never from the current commit.
+- Two `wrangler dev` runs cannot share port 8787: the second ticket's live verification uses the next free port and records it in the state file.
+- Both worktrees talk to the same dev Firestore project: live verification names what it creates after the ticket (`lv-412-…`) and deletes only that.
+- After the MR is merged, remove the worktree from the main checkout (the commands are in `settle`'s output). A worktree made by `claude -w` is locked, so it is unlocked first.
+
 ## State file
 
-The ticket's progress lives in `.backend-dev/tickets/<id>.md` at the repo root (pasted text without an id: `<short-slug>.md`). The folder ignores itself: create `.backend-dev/.gitignore` containing `*` the first time, so nothing there is ever committed (Claude Code protects `.claude/`, so the state does not go there). It holds what a new session needs: the restated ticket, the chosen stages with their reasons, the status of each phase, the branch, the decisions taken (question → answer), the last gate result and the card's **Next** line. Every command reads it first and updates it before it stops. If the working tree disagrees with it (branch missing, files already changed or reverted), trust the tree and say what differs.
+The ticket's progress lives in `.backend-dev/tickets/<id>.md` at the repo root (pasted text without an id: `<short-slug>.md`). The folder ignores itself: create `.backend-dev/.gitignore` containing `*` the first time, so nothing there is ever committed (Claude Code protects `.claude/`, so the state does not go there). It holds what a new session needs: the restated ticket, the worktree when there is one, the chosen stages with their reasons, the status of each phase, the branch, the decisions taken (question → answer), the last gate result and the card's **Next** line. Every command reads it first and updates it before it stops. If the working tree disagrees with it (branch missing, files already changed or reverted), trust the tree and say what differs.
 
 ## Workflow card
 
