@@ -19,12 +19,13 @@ Every repo that uses this kit carries a short profile as a marked block in its `
 **Git:** base `<branch>`; branch `<pattern>`; commit `<format>` (enforced by <tool>); MR template `<path>`, target `<branch>`; tickets: <GitLab issues in `<host>/<group>/<project>` via glab (often a tracker project, not this code project) | other>
 **CI/CD:** <provider and files>; environments <list>
 **On edit:** format `<cmd with {file}>`; lint `<cmd with {file}>`; files `<.ext .ext>` | none
+**On stop:** `<gates command>` | none
 **Protected branches:** `<branch>`, `<prefix>-*`
 **Watch out:** <three to five facts a newcomer would get wrong>
 <!-- backend-dev:profile:end -->
 ```
 
-Keep it under 25 lines: it is read in every session. Two lines drive more than the skills, so keep their shape exactly: **On edit** is read by the edit hook (after Claude edits a file it runs `format` then `lint` on it from the repo root, `{file}` being its path; lint errors go back to Claude; `none` turns it off), and **Protected branches** is what `kit-setup` turns into the deny rules below (exact names, plus `prefix-*` for a family of environment branches).
+Keep it under 25 lines: it is read in every session. Three lines drive more than the skills, so keep their shape exactly: **On edit** is read by the edit hook (after Claude edits a file it runs `format` then `lint` on it from the repo root, `{file}` being its path; lint errors go back to Claude; `none` turns it off), **On stop** by the stop hook (when Claude ends a turn in which it edited a file other than Markdown, it runs the command from the repo root; a failure goes back to Claude once per turn; `none` turns it off, and it is off until a lead turns it on, because the whole suite then runs at the end of every such turn), and **Protected branches** is what `kit-setup` turns into the deny rules below (exact names, plus `prefix-*` for a family of environment branches).
 
 ## Guard rules
 
@@ -49,4 +50,5 @@ Used when a repo has no profile block, and written into `CLAUDE.md` by the scaff
 | Git | base `main`; `feat/<slug>`; conventional commits; pull request to `main` |
 | CI/CD | GitHub Actions; envs `dev`, `stag`, `prod` in `wrangler.toml` |
 | On edit | none: the template has no formatter or linter; `npm run typecheck` runs in the gates |
+| On stop | none; to turn it on, `npm run typecheck && npm test` |
 | Protected branches | `main` |
