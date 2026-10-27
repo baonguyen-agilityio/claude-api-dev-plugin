@@ -11,19 +11,17 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 4. Answer the questions in both files, review the diff, commit.
 
 **Developer with a ticket**
-A ticket goes through five commands, one phase each. Each one stops with a workflow card (`✔ ticket · ✔ plan · ▶ build · ○ verify · ○ settle`) and a **Next** line naming the following command, so a phase can run in a later session; progress lives in `.backend-dev/tickets/412.md` (self-ignored).
+A ticket goes through five commands, one phase each. Each one stops with a workflow card (`✔ ticket · ✔ plan · ▶ build · ○ prove · ○ settle`) and a **Next** line naming the following command, so a phase can run in a later session; progress lives in `.backend-dev/tickets/412.md` (self-ignored).
 
 | Command | Phase | Writes |
 |---|---|---|
 | `/backend-dev:ticket 412` | reads the issue, explores the code, settles open questions with you, fixes the acceptance criteria, picks the stages | `docs/tickets/412/intent.md` |
 | `/backend-dev:plan 412` | the design stages the ticket needs (api-contract, data-model, system-design, or the diagnosis for a bug), then the plan | `spec.md`, `plan.md` |
 | `/backend-dev:build 412` | branch, the repo's gates on the base first (so failures already there are named), the change and its tests, gates green | code, tests |
-| `/backend-dev:verify 412` | review in a subagent that sees only the code, each finding checked; live verification | `plan.md` Verification |
+| `/backend-dev:prove 412` | review in a subagent that sees only the code, each finding checked; live verification | `plan.md` Verification |
 | `/backend-dev:settle 412` | commit with the ticket record, push the feature branch and open the MR, each only on your word | the commit, the MR |
 
 `docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. The first command reads GitLab issue #412 (`glab auth login --hostname <host>` once; on a self-managed GitLab choose Token and paste a personal access token with `read_api`, since browser login needs an OAuth application the instance may not have). If the org blocks your token, start Claude Code with `claude --chrome`: the kit then reads the issue page read-only in your own Chrome session. Or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
-
-Type the full names: Claude Code has its own `/verify`, so a bare `/verify` runs that one, not the kit's.
 
 `/backend-dev:review 87` reviews a teammate's MR !87: reads it and its ticket record, reviews the diff in a fresh context, checks each finding and drafts the comments; it posts only when you say so.
 
@@ -31,9 +29,9 @@ Type the full names: Claude Code has its own `/verify`, so a bare `/verify` runs
 
 **Newcomer, first day**
 1. Read `docs/onboarding.md`; ask anything (`where do I start?`, `how does a request reach Firestore here?`): the `onboard` skill answers from the repo and checks your machine (`node <plugin>/scripts/doctor.mjs . <app path>`: versions, dependencies, env keys present, glab login; never prints values).
-2. First tickets: add `--learn` to `ticket`, `plan`, `build` and `verify` (`/backend-dev:ticket <id> --learn`): the same work, with each stage, each decision and the terms explained on the way.
+2. First tickets: add `--learn` to `ticket`, `plan`, `build` and `prove` (`/backend-dev:ticket <id> --learn`): the same work, with each stage, each decision and the terms explained on the way.
 
-**Using a skill on its own**: say the job in plain words; every skill works alone, follows the repo's profile and ends with a **Next** line naming the following step of the workflow.
+**Using a skill on its own**: say the job in plain words ("add a level filter to employees"); Claude picks the skill. The menu shows only the commands people type (`kit-setup`, `onboard`, `ticket`, `plan`, `build`, `prove`, `settle`, `review`, `incident`); the stage skills below stay out of it and are run by those commands or by Claude.
 
 ## Skills and commands
 
@@ -52,7 +50,7 @@ Type the full names: Claude Code has its own `/verify`, so a bare `/verify` runs
 |---|---|---|
 | `/backend-dev:kit-setup [app]` | lead, once per repo | project profile in `CLAUDE.md`, attribution off, gate permissions |
 | `/backend-dev:ticket <id or text> [--learn]` | developer | reads the ticket, settles it, writes the acceptance criteria |
-| `/backend-dev:plan <id>` · `build <id>` · `verify <id>` · `settle <id>` | developer | the ticket's next phases, in that order |
+| `/backend-dev:plan <id>` · `build <id>` · `prove <id>` · `settle <id>` | developer | the ticket's next phases, in that order |
 | `/backend-dev:review <MR>` | reviewer | a teammate's merge request reviewed, comments drafted |
 | `/backend-dev:onboard` | newcomer or lead | `docs/onboarding.md` written or refreshed, machine check |
 
@@ -129,5 +127,5 @@ Agent: `backend-dev:backend-dev`, only when asked by name or for an end-to-end r
 
 ## Layout
 
-- `plugins/backend-dev/` — the plugin: `skills/` (eleven: nine Claude starts on its own, plus `ticket` and `kit-setup`, which only run when typed), `references/` (project profile format, architecture note), `scripts/` (scaffold, new-module, doctor, guard-rules), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
+- `plugins/backend-dev/` — the plugin: `skills/` (sixteen: seven commands that only run when typed, `kit-setup`, `ticket`, `plan`, `build`, `prove`, `settle`, `review`; `onboard` and `incident`, typed or started by Claude; seven stage skills kept out of the menu, started by the commands or by Claude), `references/` (project profile format, ticket flow, architecture note), `scripts/` (scaffold, new-module, doctor, guard-rules), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
 - `docs/` — architecture and decisions the plugin and template follow

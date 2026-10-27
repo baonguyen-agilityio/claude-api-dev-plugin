@@ -1,6 +1,7 @@
 ---
 name: api-contract
 description: "Turns a ticket or feature request into the API contract for a Cloudflare Workers + Firestore API: endpoints, request and response shapes, statuses, access rules, additive or breaking classification, and Given/When/Then acceptance criteria. Use when a requirement will add or change endpoints and nobody has pinned down what they return or who may call them, even if the user just says add an API or asks what a client will get."
+user-invocable: false
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(npx @redocly/cli lint *), Bash(oasdiff breaking *), Bash(curl -s *openapi*)
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: data-model
 description: "Designs Firestore data for a Cloudflare Workers API: document shapes from the access patterns, server-owned fields, composite indexes as firestore.indexes.json, cursor rules, consistency under concurrent writes, and a rollout plan for existing data. Use when a feature needs to store, query, filter, sort, count or migrate data, even if the user only asks for a field, an index or a filter, or asks how to store something."
+user-invocable: false
 allowed-tools: Read, Glob, Grep, Write, Edit, WebFetch
 ---
 

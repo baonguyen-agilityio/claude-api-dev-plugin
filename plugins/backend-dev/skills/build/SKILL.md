@@ -1,6 +1,6 @@
 ---
 name: build
-description: Build a planned backend ticket after /backend-dev:plan. Creates the branch, runs the gates on the base branch first, makes the change and its tests the way plan.md says, and ends with the gates green; then /backend-dev:verify.
+description: Build a planned backend ticket after /backend-dev:plan. Creates the branch, runs the gates on the base branch first, makes the change and its tests the way plan.md says, and ends with the gates green; then /backend-dev:prove.
 argument-hint: "<ticket id> [--learn]"
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Skill, Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git switch*), Bash(git rev-parse*), Bash(git fetch origin *)
@@ -28,5 +28,5 @@ The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`. Th
 <the skill's output>
 **Gates:** <typecheck / lint / test / build output, pasted>
 **Changed from the plan:** <none | file → why>
-**Next:** `/backend-dev:verify <id>`.
+**Next:** `/backend-dev:prove <id>`.
 ```

@@ -1,6 +1,7 @@
 ---
 name: implement
 description: "Implements features in a Cloudflare Workers API on Hono, Effect and Firestore the way the template does it: scaffolds a new project, generates modules, writes models, schemas, services, controllers, routes and both test layers, and runs the gates. Use when code has to be written or changed in such an API, from an empty folder to a new field or endpoint, even if the user only says build it or add it."
+user-invocable: false
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(node * scaffold.mjs *), Bash(node * new-module.mjs *), Bash(npm install*), Bash(npm ci*), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(git status*), Bash(git diff*)
 ---
 

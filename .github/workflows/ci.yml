@@ -22,7 +22,7 @@ jobs:
       # typed-only skills carry Claude Code fields outside the spec (argument-hint, disable-model-invocation); every other skill stays fully strict
       - run: |
           for s in plugins/backend-dev/skills/*/; do
-            x=; grep -q '^disable-model-invocation: true' "$s/SKILL.md" && x=--allow-extra-frontmatter
+            x=; grep -qE '^(disable-model-invocation: true|user-invocable: false)' "$s/SKILL.md" && x=--allow-extra-frontmatter
             "$(go env GOPATH)/bin/skill-validator" check "$s" --strict $x -o compact
           done
 
