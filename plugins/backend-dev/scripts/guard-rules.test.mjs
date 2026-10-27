@@ -16,7 +16,7 @@ const denied = (rules, command) => rules.some((r) => matches(r, command));
 
 test("deny: nine rules per branch, then the fixed set and the secret files; ask: shell commands naming a secret file", () => {
   const { deny, ask } = guardRules(["main", "dev"]);
-  assert.equal(deny.length, 2 * 9 + 20 + 6);
+  assert.equal(deny.length, 2 * 9 + 25 + 6);
   assert.ok(deny.includes("Bash(git push * dev)"));
   assert.ok(deny.includes("Read(**/.dev.vars)"));
   assert.ok(!deny.some((r) => r.includes("{b}")));
@@ -38,7 +38,7 @@ test("blocks the spellings seen in real sessions and lets feature work through",
     "git push --force origin feat/x", "git push -f origin feat/x", "git push origin feat/x --force", "git push origin +feat/x",
     "git commit --allow-empty --no-verify -m x", "git commit -nm x", "git push --all origin",
     "git commit -m 'feat: x\n\nCo-Authored-By: Claude <noreply@anthropic.com>'",
-    "git push", "git push origin", "git push -u origin", "git -C apps/space push",
+    "git push", "git push origin", "git push -u origin", "git -C apps/space push", "git push --force-with-lease", "git push origin -u",
   ]) assert.ok(denied(rules, cmd), cmd);
   for (const cmd of [
     "git push origin feat/x", "git push --force-with-lease origin feat/x", "git push origin feat/x --force-with-lease",

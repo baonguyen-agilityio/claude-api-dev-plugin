@@ -23,8 +23,9 @@ const ONCE = [
   "git push *--force", "git push *--force *", "git push *-f", "git push *-f *", "git push * +*",
   "git push *--all*", "git push *--mirror*",
   // A push with no branch: exact commands, so `git push origin feat/x` and `git push -u origin feat/x` stay allowed.
-  "git push", "git push origin", "git push -u", "git push -u origin", "git push --set-upstream origin",
-  "git -C * push", "git -C * push origin",
+  "git push", "git push origin", "git push -u", "git push -u origin", "git push origin -u", "git push --set-upstream",
+  "git push --set-upstream origin", "git push --force-with-lease", "git push origin --force-with-lease",
+  "git -C * push", "git -C * push origin", "git -C * push -u origin",
   "git commit *Co-Authored-By: Claude*", "git commit *Generated with*Claude*",
 ];
 const SECRET_FILES = [".dev.vars", ".env", ".env.local"];
