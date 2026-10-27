@@ -47,36 +47,71 @@ Skipped: system-design (one module, no background work)
 ✔ done, ▶ next, ○ planned, ✗ stopped on a blocker (say which). The state file holds what a new session needs: the restated ticket, the chosen stages with their reasons and status, the branch, the decisions taken (question → answer), and the last gate result. Update it after every stage and every decision.
 
 ## 3b. Ticket record
-The state file is the developer's own progress and is never committed. What the team needs to review the change and to understand it later goes into the **ticket record**, `docs/tickets/<id>.md` (pasted text without an id: `docs/tickets/<short-slug>.md`). Write it as soon as the first stage settles something, whether or not the branch exists yet (an uncommitted file moves with you when the branch is created), update it after every stage and every decision, and commit it with the code. It holds outcomes, not transcripts: what was decided and why, in the shape below, each section only when its stage ran. Write each section out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record.
+The state file is the developer's own progress and is never committed. What the team needs to review the change and to understand it later goes into the **ticket record**, the folder `docs/tickets/<id>/` (pasted text without an id: `docs/tickets/<short-slug>/`), committed with the code. Three files, each with one reader and one moment to be written:
 
+| File | Answers | Read by | Written |
+|---|---|---|---|
+| `intent.md` | what and why | anyone, the BA and tester included | when the developer accepts the analysis (the first `go`); again only if the goal or acceptance changes |
+| `spec.md` | how it behaves | the reviewer | after each design stage (system-design, data-model, api-contract) and the incident's diagnosis, and at every decision (the answered question then leaves `intent.md` Open questions) |
+| `plan.md` | how it is built and proven | the developer and the reviewer | when implement is the next stage, before the card stops for `go`, so the developer approves the plan; then after the gates, review-and-secure and live-verify |
+
+Write a file whether or not the branch exists yet (uncommitted files move with you when the branch is created). They hold outcomes, not transcripts, each section only when its stage ran, and each written out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record. One fact lives in one file; the others link to it (`spec.md#api-contract`) instead of repeating it.
+
+`intent.md`, in words the ticket's author would use, no code, no field types:
 ```markdown
 # #<id> · <title>
-Ticket: <link>  ·  Branch: `<branch>`  ·  Status: <in progress | ready for review>
+Ticket: <link>  ·  Status: <in progress | ready for review>
 
-## Goal and acceptance
-<goal in one line>; acceptance as Given/When/Then, one per line (inferred ones marked)
-Out of scope: <list>
+## Goal
+<one or two lines: the outcome for the user, and why it is wanted>
 
+## Acceptance
+- Given <state>, When <action>, Then <observable result>   (one per line; inferred ones marked "(inferred)")
+
+## Out of scope
+- <item>
+
+## Open questions
+- <question> (<who can answer>)   (removed once answered; the answer goes to spec.md Decisions)
+```
+
+`spec.md`:
+```markdown
+# #<id> · Spec
 ## Decisions
 - <question> → <answer> (<who decided, date>)
-
 ## Design            (system-design: the chosen shape, primitives, what was rejected and why)
 ## Data              (data-model: documents and fields, indexes, consistency rule, rollout or backfill)
 ## API contract      (api-contract: a table of method and path | who may call | statuses | additive or breaking, then each changed request or response field)
-## Cause and fix     (incident: reproduction, cause, the failing test that now passes)
-## Verification      (gates output in one line each; live-verify: each status driven and its result)
+## Cause             (incident: reproduction, cause, blast radius)
+```
+No acceptance section in `spec.md`: acceptance lives in `intent.md`, and the request-level checks a stage produces (each status, each field) go to `plan.md` Tests.
+
+`plan.md`:
+```markdown
+# #<id> · Plan
+Branch: `<branch>`  ·  Base: `<base>`
+
+## Stages
+- <stage> → <why>   (skipped ones with their reason)
+## Changes
+- `<path>`: <what changes and why>
+## Tests
+- <acceptance line, by its Given> → `<test file>`: <test name>   (every acceptance line in intent.md has one; an incident's failing test first)
+- <request-level check from api-contract or live-verify: request → expected status and body>
+## Verification      (gates output in one line each; review-and-secure findings and how each was settled; live-verify: each status driven and its result)
 ## Follow-ups        (anything left for another ticket)
 ```
 
 ## 3. Run the stages
-- **Branch.** Create the branch from the profile's base with the profile's pattern and the ticket id (`git switch -c <name>`). The ticket record this run wrote does not count as a change; any other uncommitted change: ask first.
+- **Branch.** Create the branch from the profile's base with the profile's pattern and the ticket id (`git switch -c <name>`). The ticket record files this run wrote do not count as a change; any other uncommitted change: ask first.
 - **Baseline before any change:** run the profile's gates once on the base branch and keep the result. A test that already fails there is reported as pre-existing, not fixed in passing and not blamed on the ticket.
 - **One stage at a time:** invoke the skill (`backend-dev:<stage>`), deliver its output in the reply, update the state file, show the card, and go on to the next stage. Stop only at a decision the skill cannot default (a contract or data choice the ticket does not settle) or a red gate; the card then shows ✗ and the question. A gate that could not run (no permission, missing dependencies) does not stop the design stages (system-design, data-model, api-contract); it stops the run before implement, with the command the developer has to run or approve.
 - Gates are the profile's, after implement and after every fix, output shown. A red gate stops the run with the output.
 
 ## 4. Finish
-- **Commit** in the profile's format with the ticket id (`[#412] feat(employees): …` where the profile says so), the ticket record included in the same commit with its status set to ready for review. No AI attribution in the message. Show the commit; never push without the user.
-- **Merge request draft:** fill the profile's MR template with what changed, why (link the ticket, `Closes #412`), how it was tested (the gate output, what was driven with curl), the type of change, and a link to the ticket record for the decisions behind it. Print the exact command, for example `glab mr create -t "<title>" --target-branch <profile target> --description "<filled template>"`, and run it only when the user says so.
+- **Commit** in the profile's format with the ticket id (`[#412] feat(employees): …` where the profile says so), the ticket record folder included in the same commit, with `intent.md` Status set to ready for review and `plan.md` Verification filled in. No AI attribution in the message. Show the commit; never push without the user.
+- **Merge request draft:** fill the profile's MR template with what changed, why (link the ticket, `Closes #412`), how it was tested (the gate output, what was driven with curl), the type of change, and links to the ticket record: `intent.md` for what was asked, `spec.md` for the decisions, `plan.md` for how it was proven. Print the exact command, for example `glab mr create -t "<title>" --target-branch <profile target> --description "<filled template>"`, and run it only when the user says so.
 
 ## 5. Learning mode (`--learn`)
 For someone on their first tickets in this repo. Do the same work, never skip a gate or a stage to save time, and add:
@@ -95,7 +130,7 @@ For someone on their first tickets in this repo. Do the same work, never skip a 
 
 ## Result
 **Branch / commit:** <name> / <hash and message>
-**Ticket record:** `docs/tickets/<id>.md` (<sections written>)
+**Ticket record:** `docs/tickets/<id>/` (intent, spec, plan: the sections written in each)
 **Gates:** <output>
 **Merge request draft:** <title, filled template, the command to run>
 **Open questions:** <blocking first>
