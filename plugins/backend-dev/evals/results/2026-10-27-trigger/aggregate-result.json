@@ -1,0 +1,1413 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.311",
+  "startedAt": "2026-10-27T10:26:29.076Z",
+  "durationSeconds": 238,
+  "costUsd": 2.5402365,
+  "partial": false,
+  "suite": {
+    "root": "<repo>/plugins/backend-dev",
+    "ablation": "none",
+    "modelOverride": "sonnet",
+    "tagFilters": [
+      "train"
+    ],
+    "threshold": 1,
+    "concurrency": 4,
+    "plugins": [
+      {
+        "name": "backend-dev",
+        "version": "0.4.0",
+        "path": "<repo>/plugins/backend-dev"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "ac-add-an-api",
+      "dir": "evals/ac-add-an-api",
+      "source": "prose",
+      "promptMarkdown": "add an API for suppliers to our worker api (hono + effect + firestore)",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?(?:api-contract|implement)\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.0837708,
+            "judgeCostUsd": 0,
+            "durationSeconds": 30,
+            "startedAt": "2026-10-27T10:26:29.164Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-cMAC9g/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.0834358,
+            "judgeCostUsd": 0,
+            "durationSeconds": 38,
+            "startedAt": "2026-10-27T10:26:29.164Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-ELAnzT/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "ac-vague-ticket",
+      "dir": "evals/ac-vague-ticket",
+      "source": "prose",
+      "promptMarkdown": "ticket from product: 'managers need to approve leave; sometimes they need to add a note'. what's the api for this on our worker api? no code yet",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?api-contract\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.0599349,
+            "judgeCostUsd": 0,
+            "durationSeconds": 15,
+            "startedAt": "2026-10-27T10:26:29.164Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-DBuYpJ/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.09265500000000002,
+            "judgeCostUsd": 0,
+            "durationSeconds": 35,
+            "startedAt": "2026-10-27T10:26:29.164Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-5QDrLz/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "dl-neg-frontend-deploy",
+      "dir": "evals/dl-neg-frontend-deploy",
+      "source": "prose",
+      "promptMarkdown": "deploy our next.js app to vercel with preview deployments per PR",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 4,
+      "graders": [
+        {
+          "name": "no-delivery",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?delivery\"",
+            "min": 0,
+            "max": 0
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.0405879,
+            "judgeCostUsd": 0,
+            "durationSeconds": 10,
+            "startedAt": "2026-10-27T10:26:43.943Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-xmEhv8/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-delivery",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.0406735,
+            "judgeCostUsd": 0,
+            "durationSeconds": 10,
+            "startedAt": "2026-10-27T10:26:54.163Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-JN8fRR/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-delivery",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "dl-push-live",
+      "dir": "evals/dl-push-live",
+      "source": "prose",
+      "promptMarkdown": "push this worker api live to stag",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?delivery\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.056044199999999995,
+            "judgeCostUsd": 0,
+            "durationSeconds": 23,
+            "startedAt": "2026-10-27T10:26:58.823Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-r5lfny/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.06417149999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 25,
+            "startedAt": "2026-10-27T10:27:03.975Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-z0nDeC/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "dl-rotate-secret",
+      "dir": "evals/dl-rotate-secret",
+      "source": "prose",
+      "promptMarkdown": "we rotate the firebase service account key every 90 days. the time is now, do the rotation for all envs of this api",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?delivery\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.06658939999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 21,
+            "startedAt": "2026-10-27T10:27:04.579Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-ZfQdka/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 10,
+            "costUsd": 0.07796990000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 32,
+            "startedAt": "2026-10-27T10:27:06.687Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-wpK88I/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "dm-feature-data",
+      "dir": "evals/dm-feature-data",
+      "source": "prose",
+      "promptMarkdown": "we're adding a leave balance per employee (annual, sick) to our worker api on firestore. approving a request deducts days, cancelling gives them back, and it must never go negative. how should the data be stored?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?data-model\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0831063,
+            "judgeCostUsd": 0,
+            "durationSeconds": 34,
+            "startedAt": "2026-10-27T10:27:21.824Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-ArS4qj/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.09626030000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 41,
+            "startedAt": "2026-10-27T10:27:25.968Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-qKWluf/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "im-empty-folder",
+      "dir": "evals/im-empty-folder",
+      "source": "prose",
+      "promptMarkdown": "empty folder here. I need a new worker api for our inventory app, hono + effect + firestore like our other services. get it going.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?implement\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.06229610000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 23,
+            "startedAt": "2026-10-27T10:27:29.470Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-yxUbVG/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0682995,
+            "judgeCostUsd": 0,
+            "durationSeconds": 22,
+            "startedAt": "2026-10-27T10:27:39.159Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-DITwuE/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "im-neg-contract-question",
+      "dir": "evals/im-neg-contract-question",
+      "source": "prose",
+      "promptMarkdown": "before we build it: should reject take the reason in the body or as a query param, and should it be 200 or 204? what would you expose to the client?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 4,
+      "graders": [
+        {
+          "name": "no-implement",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?implement\"",
+            "min": 0,
+            "max": 0
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.0596868,
+            "judgeCostUsd": 0,
+            "durationSeconds": 21,
+            "startedAt": "2026-10-27T10:27:52.748Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-g8AtjH/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-implement",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.067308,
+            "judgeCostUsd": 0,
+            "durationSeconds": 22,
+            "startedAt": "2026-10-27T10:27:56.289Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-93eyX0/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-implement",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "im-new-module",
+      "dir": "evals/im-new-module",
+      "source": "prose",
+      "promptMarkdown": "add a suppliers module: name, email, status active|archived, users see their own, admins all, POST /suppliers/:id/archive with 409 when already archived. tests too.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?implement\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0633498,
+            "judgeCostUsd": 0,
+            "durationSeconds": 15,
+            "startedAt": "2026-10-27T10:28:01.545Z",
+            "error": "exit 1: Reached maximum number of turns (6)",
+            "tracePath": "/private/tmp/e-8LQt0L/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.06575500000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 26,
+            "startedAt": "2026-10-27T10:28:06.589Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-P15NqK/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "in-500",
+      "dir": "evals/in-500",
+      "source": "prose",
+      "promptMarkdown": "prod: PATCH /api/v1/items/:id returns 502 for some clients since this morning. tail shows firestore PATCH documents/items/abc 400 INVALID_ARGUMENT integer_value \"7\". handle it",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?incident\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.0764589,
+            "judgeCostUsd": 0,
+            "durationSeconds": 25,
+            "startedAt": "2026-10-27T10:28:13.410Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-toZJEZ/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 10,
+            "costUsd": 0.08689029999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 29,
+            "startedAt": "2026-10-27T10:28:16.337Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-ATHwEq/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "in-cors-open",
+      "dir": "evals/in-cors-open",
+      "source": "prose",
+      "promptMarkdown": "security scan says our worker api answers access-control-allow-origin: * to any origin. that's bad right? fix it",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?(?:incident|review-and-secure)\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.0752124,
+            "judgeCostUsd": 0,
+            "durationSeconds": 28,
+            "startedAt": "2026-10-27T10:28:18.775Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-jUKT9Q/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.0628442,
+            "judgeCostUsd": 0,
+            "durationSeconds": 19,
+            "startedAt": "2026-10-27T10:28:32.355Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-Oldqbv/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "in-neg-feature",
+      "dir": "evals/in-neg-feature",
+      "source": "prose",
+      "promptMarkdown": "add a reject reason to the time off request, required, returned on GET",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 4,
+      "graders": [
+        {
+          "name": "no-incident",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?incident\"",
+            "min": 0,
+            "max": 0
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.0541623,
+            "judgeCostUsd": 0,
+            "durationSeconds": 10,
+            "startedAt": "2026-10-27T10:28:38.193Z",
+            "error": "exit 1: Reached maximum number of turns (4)",
+            "tracePath": "/private/tmp/e-HQmLrr/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-incident",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.054992,
+            "judgeCostUsd": 0,
+            "durationSeconds": 15,
+            "startedAt": "2026-10-27T10:28:45.703Z",
+            "error": "exit 1: Reached maximum number of turns (4)",
+            "tracePath": "/private/tmp/e-eJQzDg/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-incident",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "lv-neg-broken",
+      "dir": "evals/lv-neg-broken",
+      "source": "prose",
+      "promptMarkdown": "approve returns 500 on prod since this morning, log says FirestoreError 400 integer_value. find and fix it",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 4,
+      "graders": [
+        {
+          "name": "no-live-verify",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?live-verify\"",
+            "min": 0,
+            "max": 0
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.054141999999999996,
+            "judgeCostUsd": 0,
+            "durationSeconds": 11,
+            "startedAt": "2026-10-27T10:28:46.429Z",
+            "error": "exit 1: Reached maximum number of turns (4)",
+            "tracePath": "/private/tmp/e-ge2sUB/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-live-verify",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0599829,
+            "judgeCostUsd": 0,
+            "durationSeconds": 12,
+            "startedAt": "2026-10-27T10:28:48.183Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-0dpHYL/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-live-verify",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "lv-prove-approve",
+      "dir": "evals/lv-prove-approve",
+      "source": "prose",
+      "promptMarkdown": "tests are green but I want proof: show me POST /timeOffRequests/:id/approve really gives 403 to a user, 200 to an admin and 409 the second time, against wrangler dev with curl",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?live-verify\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.0738396,
+            "judgeCostUsd": 0,
+            "durationSeconds": 22,
+            "startedAt": "2026-10-27T10:28:51.035Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-iIgnEo/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0660639,
+            "judgeCostUsd": 0,
+            "durationSeconds": 21,
+            "startedAt": "2026-10-27T10:28:57.183Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-WhEBO9/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "ob-neg-concept",
+      "dir": "evals/ob-neg-concept",
+      "source": "prose",
+      "promptMarkdown": "in general, not for any repo: how do firestore composite indexes work and when do I need one?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 4,
+      "graders": [
+        {
+          "name": "no-onboard",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?onboard\"",
+            "min": 0,
+            "max": 0
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.039786,
+            "judgeCostUsd": 0,
+            "durationSeconds": 11,
+            "startedAt": "2026-10-27T10:29:00.664Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-wZx657/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-onboard",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.04055,
+            "judgeCostUsd": 0,
+            "durationSeconds": 13,
+            "startedAt": "2026-10-27T10:29:01.051Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-4O5Iov/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-onboard",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "ob-new-joiner",
+      "dir": "evals/ob-new-joiner",
+      "source": "prose",
+      "promptMarkdown": "first day on the team. our backend is a worker api (hono + firestore). where do I start, how do I run it, and how is the code organised?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?onboard\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.05725820000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 16,
+            "startedAt": "2026-10-27T10:29:12.131Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-eOvX2p/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.053262500000000004,
+            "judgeCostUsd": 0,
+            "durationSeconds": 18,
+            "startedAt": "2026-10-27T10:29:13.217Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-EjDKiu/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "rs-ok-to-merge",
+      "dir": "evals/rs-ok-to-merge",
+      "source": "prose",
+      "promptMarkdown": "items module is done on this worker api, is this ok to merge?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?review-and-secure\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.0578293,
+            "judgeCostUsd": 0,
+            "durationSeconds": 14,
+            "startedAt": "2026-10-27T10:29:13.811Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-KtBnIV/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.05840440000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 15,
+            "startedAt": "2026-10-27T10:29:17.683Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-puFJiD/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "sd-feature-brief",
+      "dir": "evals/sd-feature-brief",
+      "source": "prose",
+      "promptMarkdown": "product wants: employees submit leave requests, managers approve, employee gets an email on each decision, HR gets a monthly CSV. this is our worker api (hono + effect + firestore). how do we structure this before coding?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 6,
+      "graders": [
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?system-design\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 9,
+            "costUsd": 0.1162627,
+            "judgeCostUsd": 0,
+            "durationSeconds": 60,
+            "startedAt": "2026-10-27T10:29:27.579Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-Gdm52o/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0936285,
+            "judgeCostUsd": 0,
+            "durationSeconds": 42,
+            "startedAt": "2026-10-27T10:29:28.242Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-EUP89n/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "sd-neg-field-index",
+      "dir": "evals/sd-neg-field-index",
+      "source": "prose",
+      "promptMarkdown": "should leave requests store the manager's uid on the document or look it up each time? and what index do i need for 'my requests newest first'?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 4,
+      "graders": [
+        {
+          "name": "no-system-design",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?system-design\"",
+            "min": 0,
+            "max": 0
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.062208700000000006,
+            "judgeCostUsd": 0,
+            "durationSeconds": 19,
+            "startedAt": "2026-10-27T10:29:31.215Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-G8c2rt/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-system-design",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.06456300000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 18,
+            "startedAt": "2026-10-27T10:29:33.075Z",
+            "error": null,
+            "tracePath": "/private/tmp/e-w2Ub0H/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "no-system-design",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 0x (expected 0..0)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 19,
+    "casesPassed": 19,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}
