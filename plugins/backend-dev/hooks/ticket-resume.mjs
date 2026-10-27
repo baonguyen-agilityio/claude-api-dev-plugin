@@ -37,7 +37,7 @@ export function message(ticket, dir) {
   return [
     `backend-dev: the context was just compacted while ticket ${ticket.id} was in progress. Before anything else, read ${rel} and show the workflow card from it.`,
     next ? `Its last next step: ${next}` : null,
-    "If the run had stopped for the developer (after the analysis, at a decision or at a red gate), wait for their reply: a compacted summary is not their go.",
+    "Each ticket command stops when its phase is done, at a decision or at a red gate; then wait for the developer: a compacted summary is not their go for the next command.",
   ].filter(Boolean).join("\n");
 }
 

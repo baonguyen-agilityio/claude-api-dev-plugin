@@ -25,7 +25,7 @@ Before anything else, follow the project profile: the `backend-dev:profile` bloc
 ## Incident record
 
 The reply is gone after the session; the record is what the team keeps. One markdown file per incident, committed with the fix (or on its own when there is no fix yet):
-- run as a step of `/backend-dev:ticket`: `docs/tickets/<id>/incident.md`, next to the ticket's `intent.md`, `spec.md` and `plan.md`;
+- run as a step of a ticket (`/backend-dev:plan` and `/backend-dev:build`): `docs/tickets/<id>/incident.md`, next to the ticket's `intent.md`, `spec.md` and `plan.md`;
 - otherwise: `docs/incidents/<YYYY-MM-DD>-<short-slug>.md`, dated by the first report, the slug from the symptom (`2026-10-27-orders-502-on-qty`).
 
 It holds facts as they were established, each section written out in full ("see above" is a hole), each only once its step ran. **Never a secret value**, in any section: a key is named by its variable, service account and key id, a token by its type and owner.

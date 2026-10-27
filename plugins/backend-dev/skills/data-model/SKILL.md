@@ -64,7 +64,7 @@ Not queryable as asked: <pattern → why → the shape offered instead>
 <PII / free text / retention / cross-owner exposure>
 
 ## Assumptions (defaults applied) / Open questions (blocking only)
-**Next:** api-contract for the endpoints that read and write this data, or implement when the contract is already settled. Inside a ticket, `/backend-dev:ticket <id>` continues the workflow.
+**Next:** api-contract for the endpoints that read and write this data, or implement when the contract is already settled. Inside a ticket, the card's Next line names the following command.
 ````
 
 ## Done when

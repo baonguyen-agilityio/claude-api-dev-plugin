@@ -7,7 +7,7 @@ Every repo that uses this kit carries a short profile as a marked block in its `
 ```markdown
 <!-- backend-dev:profile:start -->
 ## Backend profile
-**Kit:** backend-dev plugin. Use its skills for backend work (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery, incident); `/backend-dev:ticket <id>` works a ticket, `/backend-dev:onboard` maps the project.
+**Kit:** backend-dev plugin. Use its skills for backend work (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery, incident); a ticket goes `/backend-dev:ticket <id>` → `plan` → `build` → `verify` → `settle`, `/backend-dev:review <MR>` reviews a teammate's MR, `/backend-dev:onboard` maps the project.
 **Repo:** <single app | monorepo: apps in <path>, shared code in <path>>; API app: <path>
 **Commands:** install `<cmd>`; dev `<cmd>`; gates `<lint or typecheck>` && `<test>` && `<build or dry-run>`; deploy `<cmd per env>` (only with the user)
 **Layering:** <route → controller → service → repository>; a new endpoint touches <files>

@@ -52,7 +52,7 @@ Decide the shape of the work before anyone writes an endpoint. The output is a d
 
 ## ADR <nnnn> — <decision>
 <per references/adr-template.md>
-**Next:** data-model for the collections and indexes this design implies, then api-contract. Inside a ticket, `/backend-dev:ticket <id>` continues the workflow.
+**Next:** data-model for the collections and indexes this design implies, then api-contract. Inside a ticket, the card's Next line names the following command.
 ```
 
 ## Done when
