@@ -127,5 +127,5 @@ Agent: `backend-dev:backend-dev`, only when asked by name or for an end-to-end r
 
 ## Layout
 
-- `plugins/backend-dev/` — the plugin: `skills/` (eleven: nine Claude starts on its own, plus `ticket` and `kit-setup`, which only run when typed), `references/` (project profile format, architecture note), `scripts/` (scaffold, new-module, doctor, guard-rules), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
+- `plugins/backend-dev/` — the plugin: `skills/` (sixteen: seven commands that only run when typed, `kit-setup`, `ticket`, `plan`, `build`, `prove`, `settle`, `review`; `onboard` and `incident`, typed or started by Claude; seven stage skills kept out of the menu, started by the commands or by Claude), `references/` (project profile format, ticket flow, architecture note), `scripts/` (scaffold, new-module, doctor, guard-rules), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
 - `docs/` — architecture and decisions the plugin and template follow
