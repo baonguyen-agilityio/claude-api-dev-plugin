@@ -5,3 +5,4 @@ dist/
 service-account*.json
 coverage/
 .claude/checkpoints/
+.claude/settings.local.json

@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Copy the template into a new API folder. A Node script instead of `cp -R` because `cp` with flags
 // always needs a manual approval in Claude Code, while `node <script>` can be pre-approved.
-// Usage: node scaffold.mjs <dir>   (dir must be absent or empty apart from .git, .claude and .DS_Store; existing files are never overwritten;
+// Usage: node scaffold.mjs <dir>   (writes .claude/settings.json unless present; dir must be absent or empty apart from .git, .claude and .DS_Store; existing files are never overwritten;
 // build and install artefacts are never copied)
-import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { guardRules } from "./guard-rules.mjs";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: scaffold.mjs <dir>"); process.exit(1); }
@@ -20,5 +21,13 @@ cpSync(SRC, target, { recursive: true, force: false, errorOnExist: false, filter
 // The design note the template code cites ("architecture §N") ships with every project copy.
 mkdirSync(join(target, "docs"), { recursive: true });
 if (!existsSync(join(target, "docs", "architecture.md"))) cpSync(join(SRC, "..", "references", "architecture.md"), join(target, "docs", "architecture.md"));
+// The settings kit-setup writes, so a new project has no AI attribution and the guard rules before anyone runs kit-setup.
+const settings = join(target, ".claude", "settings.json");
+if (!existsSync(settings)) {
+  const { deny, ask } = guardRules(["main"]);
+  const allow = ["npm run typecheck", "npm test", "npm run check"].map((c) => `Bash(${c})`);
+  mkdirSync(dirname(settings), { recursive: true });
+  writeFileSync(settings, JSON.stringify({ attribution: { commit: "", pr: "" }, permissions: { allow, deny, ask } }, null, 2) + "\n");
+}
 const n = readdirSync(target).length;
 console.log(`copied the template into ${target} (${n} top-level entries)\nnext: cd ${target} && npm install && cp .dev.vars.example .dev.vars, then rename (wrangler.toml, package.json, src/core/openapi.ts) and run: npm run typecheck && npm test && npm run check`);
