@@ -1,6 +1,7 @@
 ---
 name: delivery
 description: "Sets up and operates delivery for a Cloudflare Workers + Firestore API: CI gates, environments with their vars, secrets and bindings, wrangler deploy and rollback, smoke tests after a deploy, logs, cost and limits. Use when the API has to be shipped, promoted or restored, when an environment or pipeline is added, or when a secret is created, rotated or removed, even if the user only says push it live."
+user-invocable: false
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npm audit*), Bash(npx wrangler secret list*), Bash(npx wrangler deployments*), Bash(npx wrangler versions list*), Bash(npx wrangler tail*), Bash(git status*), Bash(git log*)
 ---
 

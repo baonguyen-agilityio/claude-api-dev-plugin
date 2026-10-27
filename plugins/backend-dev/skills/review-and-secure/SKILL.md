@@ -1,6 +1,7 @@
 ---
 name: review-and-secure
 description: "Reviews a change to a Cloudflare Workers + Firestore API before the merge request: contract against code, access control per endpoint, input handling, error leakage, reads per request, CORS and headers, secrets and tests, and writes the findings with the MR notes. Use when a change should be checked, hardened or made ready for review, even if the user only asks whether it is ok to merge."
+user-invocable: false
 allowed-tools: Read, Glob, Grep, Bash(npx @redocly/cli lint *), Bash(oasdiff breaking *), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npm audit*), Bash(git diff*), Bash(git status*), Bash(git log*)
 ---
 

@@ -7,8 +7,8 @@ A ticket goes through five commands, one phase each. Each command reads what the
 | `/backend-dev:ticket <id>` | read the ticket, explore the code, settle open questions, fix the acceptance criteria, choose the stages | state file, `intent.md` | the profile |
 | `/backend-dev:plan <id>` | the design stages the ticket needs, then the plan | `spec.md` (and `incident.md` for a bug), `plan.md` | `intent.md` with acceptance |
 | `/backend-dev:build <id>` | branch, baseline gates, the change and its tests, gates green | code and tests, `plan.md` Changes | `plan.md` |
-| `/backend-dev:verify <id>` | review in a fresh context, live verification | `plan.md` Verification | build done, gates green |
-| `/backend-dev:settle <id>` | commit, push the feature branch, merge request | the commit | verify with no open blocking finding |
+| `/backend-dev:prove <id>` | review in a fresh context, live verification | `plan.md` Verification | build done, gates green |
+| `/backend-dev:settle <id>` | commit, push the feature branch, merge request | the commit | prove with no open blocking finding |
 
 `/backend-dev:review <MR>` reviews somebody else's merge request and is not part of a ticket's run.
 
@@ -16,7 +16,7 @@ Running a command is the developer's go for that phase. A command whose prerequi
 
 ## What each phase runs, by kind of ticket
 
-| The ticket is | plan | build | verify |
+| The ticket is | plan | build | prove |
 |---|---|---|---|
 | a new feature or endpoint | api-contract → data-model (new collection, query, index or invariant) → system-design (background work, notifications, exports, more than one module) | implement | review-and-secure → live-verify |
 | a field, filter or response change | api-contract (additive or breaking) → data-model (index, backfill) | implement | review-and-secure → live-verify |
@@ -50,7 +50,7 @@ The ticket's progress lives in `.backend-dev/tickets/<id>.md` at the repo root (
 Shown at the end of every command and on resume:
 
 ```markdown
-**#412 · <title>**  ✔ ticket · ✔ plan (api-contract, data-model) · ▶ build · ○ verify · ○ settle
+**#412 · <title>**  ✔ ticket · ✔ plan (api-contract, data-model) · ▶ build · ○ prove · ○ settle
 Skipped: system-design (one module, no background work)
 **Next:** `/backend-dev:build 412`: <what it will do in one line>. Or change the plan first.
 ```
@@ -66,7 +66,7 @@ The state file is the developer's own progress and is never committed. What the 
 | `intent.md` | what and why | anyone, the BA and tester included | `ticket`; again only if the goal or acceptance changes |
 | `spec.md` | how it behaves | the reviewer | `plan`, after each design stage and at every decision (the answered question then leaves `intent.md` Open questions) |
 | `incident.md` | what broke, why, and how it was proven fixed | the reviewer and whoever meets the symptom again | the incident skill, from triage on (its own Incident record section) |
-| `plan.md` | how it is built and proven | the developer and the reviewer | `plan`; then `build` (Changes as made), `verify` (Verification) |
+| `plan.md` | how it is built and proven | the developer and the reviewer | `plan`; then `build` (Changes as made), `prove` (Verification) |
 
 Write a file whether or not the branch exists yet (uncommitted files move with you when the branch is created). They hold outcomes, not transcripts, each section only when its stage ran, and each written out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record. One fact lives in one file; the others link to it (`spec.md#api-contract`) instead of repeating it.
 
@@ -117,7 +117,7 @@ Branch: `<branch>`  ·  Base: `<base>`
 
 ## Learning mode (`--learn`)
 
-`ticket`, `plan`, `build` and `verify` take `--learn`, for someone on their first tickets in this repo. Do the same work, never skip a gate or a stage to save time, and add:
+`ticket`, `plan`, `build` and `prove` take `--learn`, for someone on their first tickets in this repo. Do the same work, never skip a gate or a stage to save time, and add:
 - **Before each stage**, three lines: what this stage is for, what an experienced backend engineer checks here, and the file in this repo that shows the pattern to copy.
 - **At each decision**, the options and why you pick one, in plain words.
 - **After each stage**, one or two lines under "Remember", and any new term in a running glossary (`apiHandlerEffect`: the shared handler that turns exceptions into statuses).

@@ -1,6 +1,7 @@
 ---
 name: system-design
 description: "Designs how a backend feature fits a Cloudflare Workers + Firestore system: module boundaries, request path versus background jobs, idempotency, platform limits, as a design note and ADR. Use when planning a feature or background job that spans endpoints or needs queues, cron jobs, notifications or exports, or when the user asks where something should run, how to keep it from running twice, or for an architecture note or ADR."
+user-invocable: false
 allowed-tools: Read, Glob, Grep, Write, Edit, WebFetch
 ---
 

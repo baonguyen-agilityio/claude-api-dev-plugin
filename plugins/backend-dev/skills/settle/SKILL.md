@@ -1,6 +1,6 @@
 ---
 name: settle
-description: Settle a verified backend ticket after /backend-dev:verify. Commits the change with its ticket record in the repo's format, then pushes the feature branch and opens the merge request from the repo's template, each only on your word.
+description: Settle a proven backend ticket after /backend-dev:prove. Commits the change with its ticket record in the repo's format, then pushes the feature branch and opens the merge request from the repo's template, each only on your word.
 argument-hint: "<ticket id>"
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(git status*), Bash(git diff*), Bash(git log*), Bash(git branch*), Bash(git rev-parse*), Bash(git add *), Bash(git commit *)
@@ -11,7 +11,7 @@ Settle this ticket: "$ARGUMENTS"
 The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`. The flow, the state file and the card: `${CLAUDE_PLUGIN_ROOT}/references/ticket-flow.md`; read it first.
 
 ## Steps
-1. **Read the state.** `.backend-dev/tickets/<id>.md` and `docs/tickets/<id>/plan.md`. Verify not recorded, or a blocking finding still open in `plan.md` Verification: stop and name it, with `/backend-dev:verify <id>` or `/backend-dev:build <id>` as the next command. Make sure the ticket's branch is checked out and holds only this ticket's changes (`git status`, `git diff <base> --stat`).
+1. **Read the state.** `.backend-dev/tickets/<id>.md` and `docs/tickets/<id>/plan.md`. Prove not recorded, or a blocking finding still open in `plan.md` Verification: stop and name it, with `/backend-dev:prove <id>` or `/backend-dev:build <id>` as the next command. Make sure the ticket's branch is checked out and holds only this ticket's changes (`git status`, `git diff <base> --stat`).
 2. **Finish the record.** `intent.md` Status set to ready for review; `plan.md` Verification complete; for a bug, the incident record finished (the incident skill's step 9: Timeline, Prevention, Status).
 3. **Commit** in the profile's format with the ticket id (`[#412] feat(employees): …` where the profile says so), the ticket record folder included in the same commit. No AI attribution in the message, whatever a default elsewhere asks for: no `Co-Authored-By` or "Generated with" line. Check `git log -1 --format=%B` after committing; if such a line is there, `git commit --amend` with the clean message before anything is pushed. Show the commit.
 4. **Push**, only when the developer says so: `git push -u origin <branch>`, the feature branch only, never a protected branch (the guard rules block those anyway).
