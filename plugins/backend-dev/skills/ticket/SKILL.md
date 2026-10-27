@@ -52,8 +52,8 @@ The state file is the developer's own progress and is never committed. What the 
 | File | Answers | Read by | Written |
 |---|---|---|---|
 | `intent.md` | what and why | anyone, the BA and tester included | when the developer accepts the analysis (the first `go`); again only if the goal or acceptance changes |
-| `spec.md` | how it behaves | the reviewer | after each design stage (system-design, data-model, api-contract) and the incident's diagnosis, and at every decision |
-| `plan.md` | how it is built and proven | the developer and the reviewer | before implement; then after the gates, review-and-secure and live-verify |
+| `spec.md` | how it behaves | the reviewer | after each design stage (system-design, data-model, api-contract) and the incident's diagnosis, and at every decision (the answered question then leaves `intent.md` Open questions) |
+| `plan.md` | how it is built and proven | the developer and the reviewer | when implement is the next stage, before the card stops for `go`, so the developer approves the plan; then after the gates, review-and-secure and live-verify |
 
 Write a file whether or not the branch exists yet (uncommitted files move with you when the branch is created). They hold outcomes, not transcripts, each section only when its stage ran, and each written out in full in the file: the chat is gone after the session, so a line such as "see the contract reply" is a hole, not a record. One fact lives in one file; the others link to it (`spec.md#api-contract`) instead of repeating it.
 
@@ -85,6 +85,7 @@ Ticket: <link>  ·  Status: <in progress | ready for review>
 ## API contract      (api-contract: a table of method and path | who may call | statuses | additive or breaking, then each changed request or response field)
 ## Cause             (incident: reproduction, cause, blast radius)
 ```
+No acceptance section in `spec.md`: acceptance lives in `intent.md`, and the request-level checks a stage produces (each status, each field) go to `plan.md` Tests.
 
 `plan.md`:
 ```markdown
@@ -97,6 +98,7 @@ Branch: `<branch>`  ·  Base: `<base>`
 - `<path>`: <what changes and why>
 ## Tests
 - <acceptance line, by its Given> → `<test file>`: <test name>   (every acceptance line in intent.md has one; an incident's failing test first)
+- <request-level check from api-contract or live-verify: request → expected status and body>
 ## Verification      (gates output in one line each; review-and-secure findings and how each was settled; live-verify: each status driven and its result)
 ## Follow-ups        (anything left for another ticket)
 ```
