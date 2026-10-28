@@ -71,6 +71,14 @@ test("a shell command naming the gate file is refused, redirects included; other
   for (const c of ["npm test", "git status", "cat .backend-dev/tickets/412.md"]) assert.equal(sh(c), 0, c);
 });
 
+test("a shell command naming a secret file asks first, redirects included; process.env and other files do not", () => {
+  const sh = (command) => onBash({ tool_input: { command } });
+  for (const c of ["cat < .dev.vars", "echo KEY=x > .dev.vars", "echo x >> apps/api/.env.local", "cat .env", "cp .dev.vars.example .dev.vars", "node -e \"require('fs').readFileSync('.env')\""])
+    assert.match(sh(c).ask ?? "", /secrets/, c);
+  for (const c of ["node -e 'console.log(process.env.HOME)'", "npm test", "cat src/env.ts", "ls environments/"])
+    assert.deepEqual(sh(c), { code: 0 }, c);
+});
+
 test("a bare go approves only after /build \"text\", not after /ticket", () => {
   const dir = repo();
   say(dir, "/backend-dev:ticket 412");
@@ -96,4 +104,7 @@ test("as hooks: the prompt hook writes the gate, the edit hook exits 2 with the 
   assert.equal(r.status, 2);
   assert.match(r.stderr, /not approved/);
   assert.equal(run("edit", "{not json").status, 0);
+  const ask = run("bash", JSON.stringify({ tool_input: { command: "cat < .dev.vars" } }));
+  assert.equal(ask.status, 0);
+  assert.equal(JSON.parse(ask.stdout).hookSpecificOutput.permissionDecision, "ask");
 });

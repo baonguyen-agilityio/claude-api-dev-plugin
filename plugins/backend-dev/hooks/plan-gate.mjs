@@ -16,6 +16,8 @@
 // pasted into a ticket never reaches a commit.
 //   node plan-gate.mjs bash    PreToolUse(Bash): a shell command that names the gate file exits 2. The permission rules
 //                              cannot do this alone: they match `rm`/`cp`/`tee` on the file but not a `> file` redirect.
+//                              A command that names a secret file (`.dev.vars`, `.env*`) asks the developer first, for
+//                              the same reason: the `ask` rules miss `cat < .dev.vars` and `echo x > .dev.vars`.
 // Other shell writes (sed on a source file, a script) are not seen. The hook's own failures never block.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -27,6 +29,8 @@ const SECRETS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /"private_key"\s*:\s*"/, /\bAKIA[0-9A-Z]{16}\b/, /\bgh[pousr]_[A-Za-z0-9]{36,}\b/,
   /\bglpat-[A-Za-z0-9_-]{20,}\b/, /\bxox[abprs]-[A-Za-z0-9-]{10,}\b/, /\bsk-[A-Za-z0-9_-]{20,}\b/, /\bAIza[0-9A-Za-z_-]{35}\b/,
 ];
+// A secret file name as a path segment; `process.env` is not one (a word character before the dot).
+const SECRET_FILE = /(^|[^\w.])\.(dev\.vars|env)([.\w-]*)(?![\w])/;
 const GO = /^\s*(go|ok,?\s*go|approve[d]?|duyệt|lgtm)\s*[.!]?\s*$/i;
 
 const gatePath = (dir) => join(dir, ".backend-dev", "plan-gate.json");
@@ -89,11 +93,15 @@ export function onEdit(input) {
   return { code: 0 };
 }
 
-// Returns { code, message } for a shell command: 2 when it names the gate file.
+// Returns { code, message } for a shell command: 2 when it names the gate file; `ask` when it names a secret file.
 export function onBash(input) {
   const command = typeof input?.tool_input?.command === "string" ? input.tool_input.command : "";
   if (/plan-gate/.test(command)) {
     return { code: 2, message: "Blocked: the plan gate file is written only by the hook that reads what the developer types, never from the shell. Ask the developer to approve the plan, or to remove .backend-dev/plan-gate.json themselves if they are leaving the ticket." };
+  }
+  const secret = command.match(SECRET_FILE);
+  if (secret) {
+    return { code: 0, ask: `This command names ${secret[0].trim()}, a file that holds secrets. Approve only if it neither prints nor changes a secret value.` };
   }
   return { code: 0 };
 }
@@ -103,8 +111,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     const input = JSON.parse(readFileSync(0, "utf8"));
     if (process.argv[2] === "prompt") { onPrompt(input); process.exit(0); }
     if (process.argv[2] === "bash") {
-      const { code, message } = onBash(input);
+      const { code, message, ask } = onBash(input);
       if (message) process.stderr.write(`${message}\n`);
+      if (ask) process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: ask } }));
       process.exit(code);
     }
     const { code, message } = onEdit(input);

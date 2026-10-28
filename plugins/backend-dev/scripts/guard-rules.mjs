@@ -7,6 +7,7 @@
 //   ask:  any Bash command that names a secret file. The Read deny already stops cat, grep, head and cp on the file
 //         (checked in real sessions); an interpreter that opens it (`node -e "...readFileSync('.dev.vars')..."`) is not
 //         recognised as a read, so a person approves those.
+//         The rules miss a redirect (`cat < .dev.vars`); the plugin's Bash hook (hooks/plan-gate.mjs) asks for those.
 // The harness matches a rule against the whole command with * as a wildcard, hence one rule per spelling.
 // A branch may end in * to cover a family: `prod-*` blocks prod-eu and prod-eu-job. The rules then read
 // `git push * prod-*`, so a feature branch that only contains the name (`feat/prod-x`) still pushes.
