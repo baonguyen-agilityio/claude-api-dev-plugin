@@ -14,7 +14,9 @@
 //
 // Record guard: an edit that would write a secret value into `docs/tickets/` or `docs/incidents/` exits 2, so a key
 // pasted into a ticket never reaches a commit.
-// Shell writes (sed, a script) are not seen by either guard. The hook's own failures never block.
+//   node plan-gate.mjs bash    PreToolUse(Bash): a shell command that names the gate file exits 2. The permission rules
+//                              cannot do this alone: they match `rm`/`cp`/`tee` on the file but not a `> file` redirect.
+// Other shell writes (sed on a source file, a script) are not seen. The hook's own failures never block.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -87,10 +89,24 @@ export function onEdit(input) {
   return { code: 0 };
 }
 
+// Returns { code, message } for a shell command: 2 when it names the gate file.
+export function onBash(input) {
+  const command = typeof input?.tool_input?.command === "string" ? input.tool_input.command : "";
+  if (/plan-gate/.test(command)) {
+    return { code: 2, message: "Blocked: the plan gate file is written only by the hook that reads what the developer types, never from the shell. Ask the developer to approve the plan, or to remove .backend-dev/plan-gate.json themselves if they are leaving the ticket." };
+  }
+  return { code: 0 };
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   try {
     const input = JSON.parse(readFileSync(0, "utf8"));
     if (process.argv[2] === "prompt") { onPrompt(input); process.exit(0); }
+    if (process.argv[2] === "bash") {
+      const { code, message } = onBash(input);
+      if (message) process.stderr.write(`${message}\n`);
+      process.exit(code);
+    }
     const { code, message } = onEdit(input);
     if (message) process.stderr.write(`${message}\n`);
     process.exit(code);

@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { onEdit, onPrompt } from "./plan-gate.mjs";
+import { onBash, onEdit, onPrompt } from "./plan-gate.mjs";
 
 // The session running the tests may export its own project dir; these tests pass cwd instead.
 delete process.env.CLAUDE_PROJECT_DIR;
@@ -62,6 +62,13 @@ test("the gate file itself can never be edited through the tools, and ..name fil
   assert.equal(edit(dir, ".backend-dev/plan-gate.json", { content: "{}" }).code, 2, "approved or not");
   say(dir, "/backend-dev:ticket 413");
   assert.equal(edit(dir, "..notes.ts").code, 2, "a file named ..notes.ts is a source file in the project");
+});
+
+test("a shell command naming the gate file is refused, redirects included; other commands pass", () => {
+  const sh = (command) => onBash({ tool_input: { command } }).code;
+  for (const c of [`echo '{"state":"approved"}' > .backend-dev/plan-gate.json`, "printf x >> .backend-dev/plan-gate.json", "rm -f .backend-dev/plan-gate.json", "node -e \"require('fs').writeFileSync('.backend-dev/plan-gate.json','{}')\""])
+    assert.equal(sh(c), 2, c);
+  for (const c of ["npm test", "git status", "cat .backend-dev/tickets/412.md"]) assert.equal(sh(c), 0, c);
 });
 
 test("a bare go approves only after /build \"text\", not after /ticket", () => {
