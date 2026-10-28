@@ -6,5 +6,6 @@ describe("docsHtml", () => {
     const html = docsHtml('/o"x', '<b>"x"&');
     expect(html).toContain("<title>&#60;b&#62;&#34;x&#34;&#38; docs</title>");
     expect(html).toContain('url: "/o\\"x"');
+    expect(docsHtml("/o</script>", "t")).not.toContain("/o</script>");
   });
 });

@@ -36,4 +36,4 @@ export const docsHtml = (specUrl: string, title: string) => `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)} docs</title>
 <link rel="stylesheet" href="${SWAGGER_UI}/swagger-ui.css"></head>
 <body><div id="swagger-ui"></div><script src="${SWAGGER_UI}/swagger-ui-bundle.js"></script>
-<script>SwaggerUIBundle({ url: ${JSON.stringify(specUrl)}, dom_id: "#swagger-ui", persistAuthorization: true });</script></body></html>`;
+<script>SwaggerUIBundle({ url: ${JSON.stringify(specUrl).replace(/</g, "\\u003c")}, dom_id: "#swagger-ui", persistAuthorization: true });</script></body></html>`;
