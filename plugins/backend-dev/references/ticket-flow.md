@@ -24,7 +24,7 @@ Running a command is the developer's go for that phase. A command whose prerequi
 | a deploy, environment, secret or pipeline change | delivery: what changes, in which order, the rollback | delivery: the change in the repo; a deploy only with the developer | live-verify against the environment |
 | a refactor with no contract change | the plan only | implement | review-and-secure |
 
-A security finding or an exposed secret does not wait for phases: `/backend-dev:ticket` says so and points to `/backend-dev:incident` now (the leaked-credential runbook first).
+`incident` is for anything broken or exposed: a 500, a wrong status, an open access check, a leaked key. A bug goes through the phases above with incident inside `plan` and `build`. A leaked secret (a key pasted in chat, committed, or printed in a log) does not wait for phases, because the key stays usable until it is rotated: `/backend-dev:ticket` says so and points to `/backend-dev:incident` now, whose leaked-credential runbook rotates the key first and investigates after.
 
 ## Several tickets at once: one worktree each
 

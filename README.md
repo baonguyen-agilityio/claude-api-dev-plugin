@@ -4,7 +4,11 @@ Claude Code plugin `backend-dev`: a kit for a team building APIs on Cloudflare W
 
 ## Quickstart
 
-**Lead, once per repository**
+Where you start depends on what you have:
+- **An existing repository** (your own skeleton or a running API): a lead sets it up once (below), then developers work tickets.
+- **An empty folder:** ask in plain words, for example "create a new Workers + Firestore API in ./my-api". The kit copies its template with the profile and settings already in place, so no setup step is needed; go straight to tickets.
+
+**Lead, once per existing repository**
 1. Install the plugin (below).
 2. In the repo root: `/backend-dev:kit-setup` (in a monorepo add the API app's path, `/backend-dev:kit-setup apps/api`). It drafts a project profile in `CLAUDE.md` from the repo (commands, layering, error style, git and CI conventions), turns off AI attribution, pre-approves the repo's exact gate commands and lists every fact it could not establish as a question.
 3. `/backend-dev:onboard` writes `docs/onboarding.md` from the repo.
@@ -15,13 +19,13 @@ A ticket goes through five commands, one phase each. Each one stops with a workf
 
 | Command | Phase | Writes |
 |---|---|---|
-| `/backend-dev:ticket 412` | reads the issue, explores the code, settles open questions with you, fixes the acceptance criteria, picks the stages | `docs/tickets/412/intent.md` |
+| `/backend-dev:ticket <ticket URL>` | reads the ticket, explores the code, settles open questions with you, fixes the acceptance criteria, picks the stages | `docs/tickets/412/intent.md` |
 | `/backend-dev:plan 412` | the design stages the ticket needs (api-contract, data-model, system-design, or the diagnosis for a bug), then the plan | `spec.md`, `plan.md` |
 | `/backend-dev:build 412` | branch, the repo's gates on the base first (so failures already there are named), the change and its tests, gates green | code, tests |
 | `/backend-dev:prove 412` | review in a subagent that sees only the code, each finding checked; live verification | `plan.md` Verification |
 | `/backend-dev:settle 412` | commit with the ticket record, push the feature branch and open the MR, each only on your word | the commit, the MR |
 
-`docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. The first command reads GitLab issue #412 (`glab auth login --hostname <host>` once; on a self-managed GitLab choose Token and paste a personal access token with `read_api`, since browser login needs an OAuth application the instance may not have). If the org blocks your token, start Claude Code with `claude --chrome`: the kit then reads the issue page read-only in your own Chrome session. Or paste the text: `/backend-dev:ticket "#412 add a level field…"`.
+`docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. Pass the ticket's full URL: it names the tracker, so nothing is guessed. A GitLab issue is read with `glab`, a GitHub issue with `gh`, any other page (Trello, Jira) read-only in your own Chrome when Claude Code was started with `claude --chrome`. A bare id (`/backend-dev:ticket 412`) is a shortcut for the tracker named in the profile. Or paste the text: `/backend-dev:ticket "#412 add a level field…"`. `glab` is recommended, not required: log in once with `glab auth login --hostname <host>` (on a self-managed GitLab choose Token and paste a personal access token with `read_api`, since browser login needs an OAuth application the instance may not have); without it, tickets are read through Chrome or pasted, but `/backend-dev:review` and the MR step of `/backend-dev:settle` need it.
 
 `/backend-dev:review 87` reviews a teammate's MR !87: reads it and its ticket record, reviews the diff in a fresh context, checks each finding and drafts the comments; it posts only when you say so.
 
@@ -44,12 +48,12 @@ A ticket goes through five commands, one phase each. Each one stops with a workf
 | Quality before the MR | `review-and-secure` | findings with tests, MR notes |
 | Live verification | `live-verify` | curl record of every status, verdict |
 | Delivery and operations | `delivery` | environments, secrets, pipeline, deploy, rollback |
-| Incidents | `incident` | cause, fix, blast radius, proof, postmortem; an incident record committed in `docs/incidents/<date>-<slug>.md` (or the ticket's folder) |
+| Incidents: anything broken or exposed (a 500, a wrong status, an open access check, a leaked key) | `incident` | cause, fix, blast radius, proof, postmortem; an incident record committed in `docs/incidents/<date>-<slug>.md` (or the ticket's folder) |
 
 | Command | Who | What |
 |---|---|---|
 | `/backend-dev:kit-setup [app]` | lead, once per repo | project profile in `CLAUDE.md`, attribution off, gate permissions |
-| `/backend-dev:ticket <id or text> [--learn]` | developer | reads the ticket, settles it, writes the acceptance criteria |
+| `/backend-dev:ticket <ticket URL, id or text> [--learn]` | developer | reads the ticket, settles it, writes the acceptance criteria |
 | `/backend-dev:plan <id>` · `build <id>` · `prove <id>` · `settle <id>` | developer | the ticket's next phases, in that order |
 | `/backend-dev:review <MR>` | reviewer | a teammate's merge request reviewed, comments drafted |
 | `/backend-dev:onboard` | newcomer or lead | `docs/onboarding.md` written or refreshed, machine check |
@@ -95,7 +99,7 @@ In Claude Code 2.1.275 or later:
 /plugin install backend-dev@team-plugins
 ```
 
-Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@team-plugins`. Installed under the marketplace's old name `bao-plugins`: run `claude plugin marketplace remove bao-plugins`, then the two commands above, and change `bao-plugins` to `team-plugins` in any repository's `.claude/settings.json`. Teammates need read access (Reporter) to the GitLab project and an SSH key on that GitLab to install from it.
+Or from a clone: `claude plugin marketplace add ./` then `claude plugin install backend-dev@team-plugins`. Installed under the marketplace's old name `bao-plugins`: run `claude plugin marketplace remove bao-plugins`, then the two commands above, and change `bao-plugins` to `team-plugins` in any repository's `.claude/settings.json`. Teammates need read access (Reporter) to the GitLab project and an SSH key on that GitLab to install from it. Recommended, not required: `glab` (GitLab tickets and merge requests) or `gh` (GitHub issues), each logged in once.
 
 To turn the plugin on for everyone who opens a repository, commit this to its `.claude/settings.json`:
 
