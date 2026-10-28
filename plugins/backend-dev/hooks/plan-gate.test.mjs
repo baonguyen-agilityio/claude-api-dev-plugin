@@ -73,7 +73,7 @@ test("a shell command naming the gate file is refused, redirects included; other
 
 test("a shell command naming a secret file asks first, redirects included; process.env and other files do not", () => {
   const sh = (command) => onBash({ tool_input: { command } });
-  for (const c of ["cat < .dev.vars", "echo KEY=x > .dev.vars", "echo x >> apps/api/.env.local", "cat .env", "cp .dev.vars.example .dev.vars", "node -e \"require('fs').readFileSync('.env')\""])
+  for (const c of ["cat < .dev.vars", "echo KEY=x > .dev.vars", "echo x >> apps/api/.env.local", "cat .env", "cp .dev.vars.example .dev.vars", "cp apps/api/.dev.vars.example apps/api/.dev.vars", "cat < apps/api/.dev.vars", "node -e \"require('fs').readFileSync('.env')\""])
     assert.match(sh(c).ask ?? "", /secrets/, c);
   for (const c of ["node -e 'console.log(process.env.HOME)'", "grep API_KEY .env.example", "git commit -m 'docs: update .dev.vars.sample'", "npm test", "cat src/env.ts", "ls environments/"])
     assert.deepEqual(sh(c), { code: 0 }, c);

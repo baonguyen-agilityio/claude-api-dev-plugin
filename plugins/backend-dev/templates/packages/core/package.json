@@ -13,7 +13,7 @@
     "effect": "catalog:",
     "hono": "catalog:",
     "hono-openapi": "catalog:",
-    "jose": "6.2.13"
+    "jose": "catalog:"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",

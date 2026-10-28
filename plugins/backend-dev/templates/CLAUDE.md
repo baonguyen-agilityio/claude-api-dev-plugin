@@ -13,7 +13,7 @@
 **Auth:** Firebase ID token in `authMiddleware`; role from the `role` claim; ownership checked in the service
 **Tests:** vitest; `makeFakeFirestore()` from `@app/core/testing/fake-firestore` for services, `testApp()` for routes
 **Git:** base `main`; branch `feat/<slug>`; conventional commits; pull request to `main`; tickets: ?: which tracker
-**CI/CD:** ?: provider; environments `dev`, `stag`, `prod` in `wrangler.toml`
+**CI/CD:** ?: provider; environments `dev`, `stag`, `prod` in `apps/api/wrangler.toml`
 **On edit:** none
 **On stop:** none
 **Protected branches:** `main`
