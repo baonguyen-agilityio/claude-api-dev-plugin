@@ -68,7 +68,7 @@ test("a shell command naming the gate file is refused, redirects included; other
   const sh = (command) => onBash({ tool_input: { command } }).code;
   for (const c of [`echo '{"state":"approved"}' > .backend-dev/plan-gate.json`, "printf x >> .backend-dev/plan-gate.json", "rm -f .backend-dev/plan-gate.json", "node -e \"require('fs').writeFileSync('.backend-dev/plan-gate.json','{}')\""])
     assert.equal(sh(c), 2, c);
-  for (const c of ["npm test", "git status", "cat .backend-dev/tickets/412.md"]) assert.equal(sh(c), 0, c);
+  for (const c of ["npm test", "git status", "cat .backend-dev/tickets/412.md", "git add plugins/backend-dev/hooks/plan-gate.mjs", "node --test hooks/plan-gate.test.mjs"]) assert.equal(sh(c), 0, c);
 });
 
 test("a shell command naming a secret file asks first, redirects included; process.env and other files do not", () => {

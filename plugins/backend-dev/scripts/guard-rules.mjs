@@ -30,7 +30,7 @@ const ONCE = [
   "git -C * push", "git -C * push origin", "git -C * push -u origin",
   // The plan gate is written only by the hook that reads what the developer types; Claude's edit tools are refused by
   // the hook itself, and this closes the shell (echo >, rm, sed -i).
-  "*plan-gate*",
+  "*plan-gate.json*",
   "git commit *Co-Authored-By: Claude*", "git commit *Generated with*Claude*",
 ];
 const SECRET_FILES = [".dev.vars", ".env", ".env.local"];

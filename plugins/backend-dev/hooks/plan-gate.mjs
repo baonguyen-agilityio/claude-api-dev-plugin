@@ -20,7 +20,7 @@
 //                              A command that names a secret file (`.dev.vars`, `.env*`) asks the developer first, for
 //                              the same reason: the `ask` rules miss `cat < .dev.vars` and `echo x > .dev.vars`.
 // Other shell writes (sed on a source file, a script) are not seen, nor a name the shell builds (`plan-g*te.json`,
-// `f=.dev; cat $f.vars`). The hook's own failures never block.
+// `f=.dev; cat $f.vars`), nor a symlink to the gate file: every check here reads names, not what they point to. The hook's own failures never block.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -102,7 +102,8 @@ export function onEdit(input) {
 // Returns { code, message } for a shell command: 2 when it names the gate file; `ask` when it names a secret file.
 export function onBash(input) {
   const command = typeof input?.tool_input?.command === "string" ? input.tool_input.command : "";
-  if (/plan-gate/.test(command)) {
+  // The state file only: the hook's own source (plan-gate.mjs) stays usable for git add and node --test.
+  if (/plan-gate\.json/.test(command)) {
     return { code: 2, message: "Blocked: the plan gate file is written only by the hook that reads what the developer types, never from the shell. Ask the developer to approve the plan, or to remove .backend-dev/plan-gate.json themselves if they are leaving the ticket." };
   }
   const secret = [...command.matchAll(SECRET_FILE)].map((m) => m[1]).find((f) => !SAMPLE.test(f));
