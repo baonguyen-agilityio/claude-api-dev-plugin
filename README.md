@@ -98,6 +98,8 @@ Commits and pushes are guarded by the harness, not by a hook: `kit-setup` writes
 
 Design and decisions: [docs/architecture.md](docs/architecture.md).
 
+A repo on another stack (another datastore, runtime or deploy target) still gets the ticket commands, records, plan gate, review, guard rules and hooks. The stage skills keep their stack-neutral steps and take the rest from the repo, never Firestore or Wrangler advice; `kit-setup` writes the repo's **Stack** line, and [references/stacks.md](plugins/backend-dev/references/stacks.md) lists what holds on any stack and how a guide for a new stack is added (one file, no skill changes).
+
 ## Install
 
 In Claude Code 2.1.275 or later:

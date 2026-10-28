@@ -4,6 +4,7 @@
 ## Backend profile
 **Kit:** backend-dev plugin. Use its skills for backend work (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery, incident); a ticket goes `/backend-dev:ticket <id>` → `plan` → `build` → `prove` → `settle`, `/backend-dev:review <MR>` reviews a teammate's MR, `/backend-dev:onboard` maps the project.
 **Repo:** single app; API in `src/`; design note in `docs/architecture.md`
+**Stack:** Cloudflare Workers · Hono · Firestore · Firebase Auth · Wrangler
 **Commands:** install `npm install`; dev `npm run dev`; gates `npm run typecheck && npm test && npm run check`; deploy `npm run deploy:<env>` (only with the user)
 **Layering:** `routes.ts` → `controllers/` → `services/` (Effect programs) → `@/core` `Firestore` tag; modules in `src/modules/<plural>/`, registered in `src/modules/index.ts`
 **Errors:** tagged errors in `src/core/errors.ts`, mapped once in `toErrorResponse`; a `throw` inside a service is a defect
