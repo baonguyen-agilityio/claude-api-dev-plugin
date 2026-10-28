@@ -25,7 +25,9 @@ A ticket goes through five commands, one phase each. Each one stops with a workf
 | `/backend-dev:prove 412` | review in a subagent that sees only the code, each finding checked; live verification | `plan.md` Verification |
 | `/backend-dev:settle 412` | commit with the ticket record, push the feature branch and open the MR, each only on your word | the commit, the MR |
 
-`docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. Pass the ticket's full URL, which names the tracker so nothing is guessed:
+`docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. No ticket yet, only a spec? Paste it: `/backend-dev:build "Expose GET /users for the admin role"` runs ticket and plan in one go, shows the plan and waits for your `go`, then builds; `/backend-dev:plan "<text>"` stops after the plan.
+
+Pass the ticket's full URL, which names the tracker so nothing is guessed:
 - GitLab issue: read with `glab`. GitHub issue: read with `gh`.
 - Any other page (Trello, Jira): read-only in your own Chrome when Claude Code was started with `claude --chrome`.
 - A bare id (`/backend-dev:ticket 412`) is a shortcut for the tracker named in the profile; pasted text works too: `/backend-dev:ticket "#412 add a level field…"`.
@@ -71,6 +73,7 @@ The plugin's hooks act on Claude's own tool calls in any repo where it is enable
 | format on edit | after `Edit`/`Write` | runs the profile's **On edit** format and lint commands on the changed file; lint errors go back to Claude so they are fixed before the commit |
 | gates on stop | at the end of a turn in which Claude edited a file other than Markdown | off until the profile's **On stop** line holds a command (the gates, or a faster part of them); then it runs that command and sends a failure back to Claude, once per turn, so a turn does not end red. Turn it on when the base branch is green |
 | ticket resume | after the context is compacted | points Claude back at the ticket in progress (`.backend-dev/tickets/<id>.md`) and tells it a summary is not the developer's go |
+| plan gate | when you type a ticket command, and before every file edit | `/ticket`, `/plan` and `/build "<text>"` open it; `/build <id>`, or `go` after `/build "<text>"`, approves the plan. Until then Claude cannot edit source files, in any permission mode, auto included. It also refuses to write a secret value into `docs/tickets/` or `docs/incidents/` |
 | checkpoints | after a skill loads, at the end of a turn | one row in `.claude/checkpoints/` |
 
 To let a ticket's stages run after `go` without a prompt per command, start the session in auto mode (`claude --permission-mode auto`), not `bypassPermissions`: the deny rules below and the hooks still apply, and with **On stop** set the gates are checked at every stop.
