@@ -11,6 +11,8 @@ Problem this solves: a ticket says what the user wants, not what the API returns
 
 Before anything else, follow the project profile: the `backend-dev:profile` block in the repo's `CLAUDE.md`. Where it differs from the defaults below (commands, layering, error style, git and CI conventions), the profile wins. No profile: the defaults below are the template's (`${CLAUDE_PLUGIN_ROOT}/references/project-profile.md`); say in the result that `/backend-dev:kit-setup` has not been run.
 
+**Stack.** The steps, gotchas and references below are written for the kit's default stack (Cloudflare Workers, Hono, Firestore, Firebase Auth). When the profile's **Stack** line names another stack, read `${CLAUDE_PLUGIN_ROOT}/references/stacks.md` before step 1: it says which steps hold on any stack and where that stack's guide lives. No guide for it: keep the stack-neutral steps, follow the repo's own architecture note and code for the rest, and say so in the result; never carry Firestore, Wrangler or Firebase advice into a repo that does not use them.
+
 Shapes every endpoint inherits: `references/envelope-and-errors.md`. Who may call what: `references/access-rules.md`. Additive vs breaking, PATCH vs action, versioning, acceptance form: `references/contract-decisions.md`.
 
 ## Procedure

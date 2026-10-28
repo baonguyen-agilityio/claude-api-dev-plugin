@@ -9,11 +9,12 @@ Every repo that uses this kit carries a short profile as a marked block in its `
 ## Backend profile
 **Kit:** backend-dev plugin. Use its skills for backend work (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery, incident); a ticket goes `/backend-dev:ticket <id>` → `plan` → `build` → `prove` → `settle`, `/backend-dev:review <MR>` reviews a teammate's MR, `/backend-dev:onboard` maps the project.
 **Repo:** <single app | monorepo: apps in <path>, shared code in <path>>; API app: <path>
+**Stack:** <runtime> · <framework> · <datastore> · <auth> · <deploy target> (see `references/stacks.md`)
 **Commands:** install `<cmd>`; dev `<cmd>`; gates `<lint or typecheck>` && `<test>` && `<build or dry-run>`; deploy `<cmd per env>` (only with the user)
 **Layering:** <route → controller → service → repository>; a new endpoint touches <files>
 **Errors:** <how a failure is raised and where it becomes a status>; <what counts as a defect>
 **Validation:** <library> at <boundary>
-**Data:** Firestore via <adapter or repository>; indexes in <file>
+**Data:** <datastore> via <adapter or repository>; indexes or migrations in <file>
 **Auth:** <token check>; roles and permissions in <path>
 **Tests:** <runner> in <path>; <what is faked>
 **Git:** base `<branch>`; branch `<pattern>`; commit `<format>` (enforced by <tool>); MR template `<path>`, target `<branch>`; tickets: <GitLab issues in `<host>/<group>/<project>` via glab (often a tracker project, not this code project) | GitHub issues in `<owner>/<repo>` via gh | <other tracker>: paste the URL>
