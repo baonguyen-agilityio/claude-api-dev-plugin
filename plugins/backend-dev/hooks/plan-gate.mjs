@@ -7,7 +7,8 @@
 //                              gate as pending; `/backend-dev:build <id>` approves it; after `/backend-dev:build "<text>"`
 //                              a bare `go` approves it too.
 //   node plan-gate.mjs edit    PreToolUse(Edit|Write|MultiEdit|NotebookEdit): while the gate is pending, an edit outside
-//                              the ticket record (`docs/tickets/`, `docs/incidents/`, `.backend-dev/`) exits 2.
+//                              the ticket record (`docs/tickets/`, `docs/incidents/`, `.backend-dev/`) exits 2. The gate
+//                              file itself is never editable this way, pending or not.
 // The gate is <project>/.backend-dev/plan-gate.json, one per checkout (one ticket per checkout). No gate file: nothing
 // is blocked, so plain requests outside the ticket flow work as before.
 //
@@ -71,7 +72,10 @@ export function onEdit(input) {
   const dir = projectDir(input);
   for (const path of editedPaths(input)) {
     const rel = relative(dir, isAbsolute(path) ? path : resolve(dir, path)).split(sep).join("/");
-    if (rel.startsWith("..") || isAbsolute(rel)) continue;
+    if (rel === ".." || rel.startsWith("../") || isAbsolute(rel)) continue;
+    if (rel === ".backend-dev/plan-gate.json") {
+      return { code: 2, message: "Blocked: .backend-dev/plan-gate.json is written only by the hook that reads what the developer types. Ask the developer to approve the plan (/backend-dev:build <id>, or go after /backend-dev:build \"<text>\")." };
+    }
     const inRecord = RECORD.some((p) => rel.startsWith(p));
     if (inRecord && rel.startsWith("docs/") && SECRETS.some((re) => re.test(writtenText(input)))) {
       return { code: 2, message: `Blocked: this edit would write a secret value into ${rel}. The ticket and incident records name keys and ids only, never a value. If a secret was pasted into the ticket, treat it as a leak: stop and run /backend-dev:incident.` };

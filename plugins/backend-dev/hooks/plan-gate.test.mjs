@@ -53,6 +53,17 @@ test("/build <id> approves; /build \"text\" stays pending until a bare go", () =
   assert.deepEqual(edit(b, "src/app.ts"), { code: 0 });
 });
 
+test("the gate file itself can never be edited through the tools, and ..name files are inside the project", () => {
+  const dir = repo();
+  say(dir, "/backend-dev:ticket 412");
+  for (const p of [".backend-dev/plan-gate.json", join(dir, ".backend-dev", "plan-gate.json")])
+    assert.match(edit(dir, p, { content: '{"state":"approved"}' }).message ?? "", /written only by the hook/, p);
+  say(dir, "/backend-dev:build 412");
+  assert.equal(edit(dir, ".backend-dev/plan-gate.json", { content: "{}" }).code, 2, "approved or not");
+  say(dir, "/backend-dev:ticket 413");
+  assert.equal(edit(dir, "..notes.ts").code, 2, "a file named ..notes.ts is a source file in the project");
+});
+
 test("a bare go approves only after /build \"text\", not after /ticket", () => {
   const dir = repo();
   say(dir, "/backend-dev:ticket 412");
