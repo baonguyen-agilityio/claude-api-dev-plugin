@@ -8,7 +8,7 @@ The kit's skills are written for one default stack. A repo on another stack stil
 
 ## Which stack a repo is on
 
-The profile's **Stack** line: `<runtime> · <framework> · <datastore> · <auth> · <deploy target>`, for example `Cloudflare Workers · Hono · Firestore · Firebase Auth · Wrangler` or `Node 22 · Hono · Postgres (Drizzle) · JWT · Docker on ECS`. `kit-setup` writes it from the repo's dependencies and config. A profile without the line (written before it existed) is on the default stack when the repo has a `wrangler.toml` and reaches Firestore; otherwise treat it as another stack with no guide, state that assumption in the result, carry on, and suggest re-running `/backend-dev:kit-setup`.
+The profile's **Stack** line: `<runtime> · <framework> · <datastore> · <auth> · <deploy target>`, for example `Cloudflare Workers · Hono · Firestore · Firebase Auth · Wrangler` or `Node 22 · Hono · Postgres (Drizzle) · JWT · Docker on ECS`. `kit-setup` writes it from the repo's dependencies and config. A profile without the line (written before it existed) is on the default stack when the repo has a `wrangler.toml` and either a `firestore.indexes.json` or code that calls `firestore.googleapis.com` or imports a Firestore client; otherwise treat it as another stack with no guide, state that assumption in the result, carry on, and suggest re-running `/backend-dev:kit-setup`.
 
 ## On another stack
 
