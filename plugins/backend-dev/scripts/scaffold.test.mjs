@@ -15,7 +15,7 @@ test("a new project gets kit-setup's settings: no attribution, the gate commands
   assert.equal(scaffold(dir).status, 0);
   const s = JSON.parse(readFileSync(join(dir, ".claude", "settings.json"), "utf8"));
   assert.deepEqual(s.attribution, { commit: "", pr: "" });
-  assert.deepEqual(s.permissions.allow, ["Bash(npm install)", "Bash(npm run typecheck)", "Bash(npm test)", "Bash(npm run check)"]);
+  assert.deepEqual(s.permissions.allow, ["Bash(pnpm install)", "Bash(pnpm typecheck)", "Bash(pnpm test)", "Bash(pnpm check)"]);
   const { deny, ask } = guardRules(["main"]);
   assert.deepEqual(s.permissions.deny, deny);
   assert.deepEqual(s.permissions.ask, ask);

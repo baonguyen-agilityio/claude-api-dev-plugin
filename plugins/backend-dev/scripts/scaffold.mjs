@@ -25,9 +25,9 @@ if (!existsSync(join(target, "docs", "architecture.md"))) cpSync(join(SRC, "..",
 const settings = join(target, ".claude", "settings.json");
 if (!existsSync(settings)) {
   const { deny, ask } = guardRules(["main"]);
-  const allow = ["npm install", "npm run typecheck", "npm test", "npm run check"].map((c) => `Bash(${c})`);
+  const allow = ["pnpm install", "pnpm typecheck", "pnpm test", "pnpm check"].map((c) => `Bash(${c})`);
   mkdirSync(dirname(settings), { recursive: true });
   writeFileSync(settings, JSON.stringify({ attribution: { commit: "", pr: "" }, permissions: { allow, deny, ask } }, null, 2) + "\n");
 }
 const n = readdirSync(target).length;
-console.log(`copied the template into ${target} (${n} top-level entries)\nnext: cd ${target} && npm install && cp .dev.vars.example .dev.vars, then rename (wrangler.toml, package.json, src/core/openapi.ts) and run: npm run typecheck && npm test && npm run check`);
+console.log(`copied the template into ${target} (${n} top-level entries)\nnext: cd ${target} && pnpm install && cp apps/api/.dev.vars.example apps/api/.dev.vars, then rename (package.json, apps/api/wrangler.toml, API_INFO in apps/api/src/constants/routes.ts) and run: pnpm typecheck && pnpm test && pnpm check`);

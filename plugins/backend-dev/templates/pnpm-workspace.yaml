@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+# esbuild and workerd fetch their platform binary in a postinstall step; wrangler needs both.
+onlyBuiltDependencies:
+  - esbuild
+  - workerd

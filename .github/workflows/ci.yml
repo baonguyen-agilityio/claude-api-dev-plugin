@@ -30,18 +30,21 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: plugins/backend-dev/templates/package.json
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: plugins/backend-dev/templates/package-lock.json
+          cache: pnpm
+          cache-dependency-path: plugins/backend-dev/templates/pnpm-lock.yaml
       - name: Gates on a clean copy of the template
         run: |
           tmp=$(mktemp -d) && cp -R plugins/backend-dev/templates/. "$tmp" && cd "$tmp"
-          npm ci
-          npm run typecheck && npm test && npm run check
+          pnpm install --frozen-lockfile
+          pnpm typecheck && pnpm test && pnpm check
       - name: Generator adds a module and gates stay green
         run: |
           tmp=$(mktemp -d) && cp -R plugins/backend-dev/templates/. "$tmp"
-          node plugins/backend-dev/scripts/new-module.mjs "$tmp" tags tag
-          cd "$tmp" && npm ci && npm run typecheck && npm test
+          node plugins/backend-dev/scripts/new-module.mjs "$tmp/apps/api" tags tag
+          cd "$tmp" && pnpm install --frozen-lockfile && pnpm typecheck && pnpm test

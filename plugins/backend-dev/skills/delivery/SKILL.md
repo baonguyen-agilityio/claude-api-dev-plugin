@@ -2,7 +2,7 @@
 name: delivery
 description: "Sets up and operates delivery for a Cloudflare Workers + Firestore API: CI gates, environments with their vars, secrets and bindings, wrangler deploy and rollback, smoke tests after a deploy, logs, cost and limits. Use when the API has to be shipped, promoted or restored, when an environment or pipeline is added, or when a secret is created, rotated or removed, even if the user only says push it live."
 user-invocable: false
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npm audit*), Bash(npx wrangler secret list*), Bash(npx wrangler deployments*), Bash(npx wrangler versions list*), Bash(npx wrangler tail*), Bash(git status*), Bash(git log*)
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(pnpm typecheck*), Bash(pnpm test*), Bash(pnpm check*), Bash(pnpm --filter *), Bash(npm audit*), Bash(npx wrangler secret list*), Bash(npx wrangler deployments*), Bash(npx wrangler versions list*), Bash(npx wrangler tail*), Bash(git status*), Bash(git log*)
 ---
 
 # Delivery
@@ -17,8 +17,8 @@ Environments, secrets, commands: `references/environments.md`. Pipeline shape an
 
 ## Procedure
 
-1. **Confirm the target with the user.** Deploying is outward-facing; never pick `stag` or `prod` yourself. A new environment gets a name, a Worker name, its own Firebase project id, its own `CORS_ORIGINS`, its own `ratelimits` namespace, and its own two secrets.
-2. **Gates, output shown:** the profile's gates (template: `npm run typecheck && npm test && npm run check`), then the package manager's audit (`npm audit --omit=dev`, `pnpm audit --prod`); a high or critical runtime advisory blocks `stag` and `prod`.
+1. **Confirm the target with the user.** Deploying is outward-facing; never pick `stag` or `prod` yourself. A new environment gets a name, a Worker name, its own Firebase project id, its own `CORS_ORIGINS`, its own `ratelimits` namespace, and its own two secrets. Wrangler runs in the API app's folder (`cd apps/api` in the template; the profile's API app elsewhere), where its config and local binary are.
+2. **Gates, output shown:** the profile's gates (template: `pnpm typecheck && pnpm test && pnpm check`), then the package manager's audit (`npm audit --omit=dev`, `pnpm audit --prod`); a high or critical runtime advisory blocks `stag` and `prod`.
 3. **Env block complete:** `[env.<name>]` has `name`, `vars.FIREBASE_PROJECT_ID`, `vars.CORS_ORIGINS`, its `[[env.<name>.ratelimits]]` with a unique `namespace_id`; bindings and vars are not inherited from the top level, and a missing limiter is silently no limiting. `npx wrangler secret list --env <name>` shows every secret the `Env` type needs.
 4. **Indexes before code:** `firestore.indexes.json` is deployed to that env's Firebase project with the Firebase CLI and its own credential; the Workers pipeline cannot do it. A query whose index is missing answers 502 after an otherwise green deploy.
 5. **Deploy, then smoke with a real token:** `/health` only proves the Worker boots; one authenticated read through Firestore proves the secrets, the project id and the indexes. A full pass over every declared status is its own job (the live-verify skill); the authenticated read is part of every deploy.

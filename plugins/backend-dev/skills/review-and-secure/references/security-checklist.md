@@ -15,6 +15,6 @@
 | Defects | a `throw` in a service is a 500 with no envelope (`Effect.either` does not catch defects) | rule | code that can throw inside an Effect program: JSON parsing, `new URL`, `encode` of an unknown type |
 | SSRF | outbound URLs fixed in code or config | rule only | any caller-controlled part of a URL |
 | Secrets | `wrangler secret put` per env; `.dev.vars` local; a leaked credential is rotated, not deleted from history | shipped | credentials in tests, fixtures, `api.http`, logs |
-| Supply chain | lockfile committed; `npm ci`; `npm audit --omit=dev` before a release | delivery runs it | a new dependency with a postinstall script |
+| Supply chain | lockfile committed; `npm ci` / `pnpm install --frozen-lockfile`; `npm audit --omit=dev` before a release | delivery runs it | a new dependency with a postinstall script |
 
 Before a merge the Result answers for every endpoint touched: who may call it, which check enforces that, what the caller controls, and the worst a valid-but-hostile caller can do.
