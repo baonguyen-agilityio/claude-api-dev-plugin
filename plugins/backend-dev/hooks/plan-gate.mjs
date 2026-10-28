@@ -5,7 +5,8 @@
 //   node plan-gate.mjs prompt  UserPromptSubmit: reads what the developer typed (never what the model wrote).
 //                              `/backend-dev:ticket …`, `/backend-dev:plan …` and `/backend-dev:build "<text>"` open the
 //                              gate as pending; `/backend-dev:build <id>` approves it; after `/backend-dev:build "<text>"`
-//                              a bare `go` approves it too.
+//                              a bare `go` approves it too. A command with no argument leaves the gate as it is (the
+//                              skill asks which ticket).
 //   node plan-gate.mjs edit    PreToolUse(Edit|Write|MultiEdit|NotebookEdit): while the gate is pending, an edit outside
 //                              the ticket record (`docs/tickets/`, `docs/incidents/`, `.backend-dev/`) exits 2. The gate
 //                              file itself is never editable this way, pending or not.
@@ -18,7 +19,8 @@
 //                              cannot do this alone: they match `rm`/`cp`/`tee` on the file but not a `> file` redirect.
 //                              A command that names a secret file (`.dev.vars`, `.env*`) asks the developer first, for
 //                              the same reason: the `ask` rules miss `cat < .dev.vars` and `echo x > .dev.vars`.
-// Other shell writes (sed on a source file, a script) are not seen. The hook's own failures never block.
+// Other shell writes (sed on a source file, a script) are not seen, nor a name the shell builds (`plan-g*te.json`,
+// `f=.dev; cat $f.vars`). The hook's own failures never block.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,8 +31,10 @@ const SECRETS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /"private_key"\s*:\s*"/, /\bAKIA[0-9A-Z]{16}\b/, /\bgh[pousr]_[A-Za-z0-9]{36,}\b/,
   /\bglpat-[A-Za-z0-9_-]{20,}\b/, /\bxox[abprs]-[A-Za-z0-9-]{10,}\b/, /\bsk-[A-Za-z0-9_-]{20,}\b/, /\bAIza[0-9A-Za-z_-]{35}\b/,
 ];
-// A secret file name as a path segment; `process.env` is not one (a word character before the dot).
-const SECRET_FILE = /(^|[^\w.])\.(dev\.vars|env)([.\w-]*)(?![\w])/;
+// A secret file name as a path segment; `process.env` is not one (a word character before the dot). Samples
+// (`.env.example`, `.dev.vars.sample`) hold no secret, so they pass.
+const SECRET_FILE = /(?:^|[^\w.])(\.(?:dev\.vars|env)[.\w-]*)(?![\w])/g;
+const SAMPLE = /\.(example|sample)$/;
 const GO = /^\s*(go|ok,?\s*go|approve[d]?|duyệt|lgtm)\s*[.!]?\s*$/i;
 
 const gatePath = (dir) => join(dir, ".backend-dev", "plan-gate.json");
@@ -56,6 +60,8 @@ export function onPrompt(input) {
   const dir = projectDir(input);
   const prompt = typeof input?.prompt === "string" ? input.prompt : "";
   const gate = readGate(dir);
+  // No argument: the skill asks which ticket, so the gate stays as it is.
+  if ([argument(prompt, "ticket"), argument(prompt, "plan"), argument(prompt, "build")].includes("")) return;
   if (argument(prompt, "ticket") !== null) return writeGate(dir, { state: "pending", via: "ticket" });
   const plan = argument(prompt, "plan");
   if (plan !== null) return writeGate(dir, { state: "pending", via: isReference(plan) ? "plan" : "plan-text" });
@@ -99,9 +105,9 @@ export function onBash(input) {
   if (/plan-gate/.test(command)) {
     return { code: 2, message: "Blocked: the plan gate file is written only by the hook that reads what the developer types, never from the shell. Ask the developer to approve the plan, or to remove .backend-dev/plan-gate.json themselves if they are leaving the ticket." };
   }
-  const secret = command.match(SECRET_FILE);
+  const secret = [...command.matchAll(SECRET_FILE)].map((m) => m[1]).find((f) => !SAMPLE.test(f));
   if (secret) {
-    return { code: 0, ask: `This command names ${secret[0].trim()}, a file that holds secrets. Approve only if it neither prints nor changes a secret value.` };
+    return { code: 0, ask: `This command names ${secret}, a file that holds secrets. Approve only if it neither prints nor changes a secret value.` };
   }
   return { code: 0 };
 }

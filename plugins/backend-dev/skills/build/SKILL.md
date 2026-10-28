@@ -11,7 +11,7 @@ Build this ticket: "$ARGUMENTS"
 The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`. The flow, the state file, the card, the record templates and learning mode: `${CLAUDE_PLUGIN_ROOT}/references/ticket-flow.md`; read it first.
 
 ## Steps
-**Text instead of a ticket.** When the argument is more than one token, it is the ticket's text: run sections 1–4 of `${CLAUDE_PLUGIN_ROOT}/skills/ticket/SKILL.md` on it, then steps 1–3 of `${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md`, in this conversation; show `plan.md` and **stop**: the developer's bare `go` is the approval, and nothing below runs before it. Blocking questions stop the run earlier, as there. Then continue with step 0 below.
+**No argument:** ask which ticket and stop. **Text instead of a ticket.** When the argument is more than one token, it is the ticket's text: run the sections Read the inputs, Explore, Discuss and settle, and Write and stop of `${CLAUDE_PLUGIN_ROOT}/skills/ticket/SKILL.md` on it, then steps 1–3 of `${CLAUDE_PLUGIN_ROOT}/skills/plan/SKILL.md`, in this conversation; show `plan.md` and **stop**: the developer's bare `go` is the approval, and nothing below runs before it. Blocking questions stop the run earlier, as there. Then continue with step 0 below.
 
 A hook (plan gate) refuses every source edit until the developer approved the plan by typing `/backend-dev:build <id>`, or `go` after `/backend-dev:build "<text>"`. An edit refused for that reason means stop and ask; never work around it.
 

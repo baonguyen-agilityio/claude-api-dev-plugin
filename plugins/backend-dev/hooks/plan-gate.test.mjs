@@ -75,8 +75,17 @@ test("a shell command naming a secret file asks first, redirects included; proce
   const sh = (command) => onBash({ tool_input: { command } });
   for (const c of ["cat < .dev.vars", "echo KEY=x > .dev.vars", "echo x >> apps/api/.env.local", "cat .env", "cp .dev.vars.example .dev.vars", "node -e \"require('fs').readFileSync('.env')\""])
     assert.match(sh(c).ask ?? "", /secrets/, c);
-  for (const c of ["node -e 'console.log(process.env.HOME)'", "npm test", "cat src/env.ts", "ls environments/"])
+  for (const c of ["node -e 'console.log(process.env.HOME)'", "grep API_KEY .env.example", "git commit -m 'docs: update .dev.vars.sample'", "npm test", "cat src/env.ts", "ls environments/"])
     assert.deepEqual(sh(c), { code: 0 }, c);
+});
+
+test("a command with no argument leaves the gate as it is", () => {
+  const dir = repo();
+  for (const p of ["/backend-dev:build", "/backend-dev:plan --learn", "/backend-dev:ticket "]) say(dir, p);
+  assert.equal(existsSync(join(dir, ".backend-dev", "plan-gate.json")), false);
+  say(dir, "/backend-dev:build 412");
+  say(dir, "/backend-dev:plan");
+  assert.equal(gate(dir).state, "approved");
 });
 
 test("a bare go approves only after /build \"text\", not after /ticket", () => {
