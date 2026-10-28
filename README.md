@@ -25,7 +25,11 @@ A ticket goes through five commands, one phase each. Each one stops with a workf
 | `/backend-dev:prove 412` | review in a subagent that sees only the code, each finding checked; live verification | `plan.md` Verification |
 | `/backend-dev:settle 412` | commit with the ticket record, push the feature branch and open the MR, each only on your word | the commit, the MR |
 
-`docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. Pass the ticket's full URL: it names the tracker, so nothing is guessed. A GitLab issue is read with `glab`, a GitHub issue with `gh`, any other page (Trello, Jira) read-only in your own Chrome when Claude Code was started with `claude --chrome`. A bare id (`/backend-dev:ticket 412`) is a shortcut for the tracker named in the profile. Or paste the text: `/backend-dev:ticket "#412 add a level field…"`. `glab` is recommended, not required: log in once with `glab auth login --hostname <host>` (on a self-managed GitLab choose Token and paste a personal access token with `read_api`, since browser login needs an OAuth application the instance may not have); without it, tickets are read through Chrome or pasted, but `/backend-dev:review` and the MR step of `/backend-dev:settle` need it.
+`docs/tickets/412/` is committed with the code and linked from the MR: `intent.md` is readable by the BA and tester, `spec.md` holds the decisions, `plan.md` the changes, a test per acceptance line and the verification. Pass the ticket's full URL, which names the tracker so nothing is guessed:
+- GitLab issue: read with `glab`. GitHub issue: read with `gh`.
+- Any other page (Trello, Jira): read-only in your own Chrome when Claude Code was started with `claude --chrome`.
+- A bare id (`/backend-dev:ticket 412`) is a shortcut for the tracker named in the profile; pasted text works too: `/backend-dev:ticket "#412 add a level field…"`.
+- `glab` and `gh` are recommended, not required. Log in once: `glab auth login --hostname <host>` (on a self-managed GitLab choose Token and paste a personal access token with `read_api`) or `gh auth login`. Without them tickets are read through Chrome or pasted, but `/backend-dev:review` and the MR step of `/backend-dev:settle` need `glab`.
 
 `/backend-dev:review 87` reviews a teammate's MR !87: reads it and its ticket record, reviews the diff in a fresh context, checks each finding and drafts the comments; it posts only when you say so.
 

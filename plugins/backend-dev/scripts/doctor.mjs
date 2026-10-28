@@ -79,6 +79,10 @@ function main() {
     if (!run("glab", ["version"])) out("WARN", "glab", "not installed (recommended): without it /backend-dev:ticket reads a GitLab issue through Chrome (claude --chrome) or pasted text, and /backend-dev:review and the MR step of /backend-dev:settle cannot run");
     else out(run("glab", ["auth", "status"]) !== null ? "OK" : "WARN", "glab", run("glab", ["auth", "status"]) !== null ? "logged in" : "installed but not logged in; run glab auth login --hostname <your GitLab host>");
   }
+  if (/github/i.test(remote) || existsSync(join(root, ".github"))) {
+    if (!run("gh", ["--version"])) out("WARN", "gh", "not installed (recommended): without it /backend-dev:ticket reads a GitHub issue through Chrome (claude --chrome) or pasted text");
+    else out(run("gh", ["auth", "status"]) !== null ? "OK" : "WARN", "gh", run("gh", ["auth", "status"]) !== null ? "logged in" : "installed but not logged in; run gh auth login (GitHub Enterprise: gh auth login --hostname <host>)");
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
