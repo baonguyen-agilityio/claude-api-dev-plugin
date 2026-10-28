@@ -30,4 +30,4 @@ if (!existsSync(settings)) {
   writeFileSync(settings, JSON.stringify({ attribution: { commit: "", pr: "" }, permissions: { allow, deny, ask } }, null, 2) + "\n");
 }
 const n = readdirSync(target).length;
-console.log(`copied the template into ${target} (${n} top-level entries)\nnext: cd ${target} && pnpm install && cp apps/api/.dev.vars.example apps/api/.dev.vars, then rename (package.json, apps/api/wrangler.toml, API_INFO in apps/api/src/constants/routes.ts) and run: pnpm typecheck && pnpm test && pnpm check`);
+console.log(`copied the template into ${target} (${n} top-level entries)\nnext: cd ${target} && pnpm install && cp apps/api/.dev.vars.example apps/api/.dev.vars, then rename (the root package.json name, apps/api/wrangler.toml, API_INFO in apps/api/src/constants/routes.ts; keep the package name "api", the root scripts run pnpm --filter api) and run: pnpm typecheck && pnpm test && pnpm check`);
