@@ -4,6 +4,30 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@cloudflare/workers-types':
+      specifier: 5.20261019.1
+      version: 5.20261019.1
+    '@types/node':
+      specifier: 22.20.5
+      version: 22.20.5
+    effect:
+      specifier: 3.22.3
+      version: 3.22.3
+    hono:
+      specifier: 4.13.13
+      version: 4.13.13
+    hono-openapi:
+      specifier: 1.5.0
+      version: 1.5.0
+    typescript:
+      specifier: 5.9.3
+      version: 5.9.3
+    vitest:
+      specifier: 3.2.4
+      version: 3.2.4
+
 importers:
 
   .: {}
@@ -14,29 +38,29 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
       effect:
-        specifier: 3.22.3
+        specifier: 'catalog:'
         version: 3.22.3
       hono:
-        specifier: 4.13.13
+        specifier: 'catalog:'
         version: 4.13.13
       hono-openapi:
-        specifier: 1.5.0
+        specifier: 'catalog:'
         version: 1.5.0(effect@3.22.3)(hono@4.13.13)
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: 5.20261019.1
+        specifier: 'catalog:'
         version: 5.20261019.1
       '@types/node':
-        specifier: 22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/node@22.20.5))
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vitest:
-        specifier: 3.2.4
+        specifier: 'catalog:'
         version: 3.2.4(@types/node@22.20.5)
       wrangler:
         specifier: 4.151.3
@@ -45,29 +69,29 @@ importers:
   packages/core:
     dependencies:
       effect:
-        specifier: 3.22.3
+        specifier: 'catalog:'
         version: 3.22.3
       hono:
-        specifier: 4.13.13
+        specifier: 'catalog:'
         version: 4.13.13
       hono-openapi:
-        specifier: 1.5.0
+        specifier: 'catalog:'
         version: 1.5.0(effect@3.22.3)(hono@4.13.13)
       jose:
         specifier: 6.2.13
         version: 6.2.13
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: 5.20261019.1
+        specifier: 'catalog:'
         version: 5.20261019.1
       '@types/node':
-        specifier: 22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vitest:
-        specifier: 3.2.4
+        specifier: 'catalog:'
         version: 3.2.4(@types/node@22.20.5)
 
 packages:
