@@ -16,7 +16,7 @@ Every repo that uses this kit carries a short profile as a marked block in its `
 **Data:** Firestore via <adapter or repository>; indexes in <file>
 **Auth:** <token check>; roles and permissions in <path>
 **Tests:** <runner> in <path>; <what is faked>
-**Git:** base `<branch>`; branch `<pattern>`; commit `<format>` (enforced by <tool>); MR template `<path>`, target `<branch>`; tickets: <GitLab issues in `<host>/<group>/<project>` via glab (often a tracker project, not this code project) | other>
+**Git:** base `<branch>`; branch `<pattern>`; commit `<format>` (enforced by <tool>); MR template `<path>`, target `<branch>`; tickets: <GitLab issues in `<host>/<group>/<project>` via glab (often a tracker project, not this code project) | GitHub issues in `<owner>/<repo>` via gh | <other tracker>: paste the URL>
 **CI/CD:** <provider and files>; environments <list>
 **On edit:** format `<cmd with {file}>`; lint `<cmd with {file}>`; files `<.ext .ext>` | none
 **On stop:** `<gates command>` | none
