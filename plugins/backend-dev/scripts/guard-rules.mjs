@@ -2,10 +2,12 @@
 // Prints the permission rules kit-setup writes into a repo's .claude/settings.json:
 //   deny: pushes to protected branches, a push that names no branch (its target comes from git config, which no rule
 //         can see, so on a protected branch or one tracking it the push would reach it), skipping the repo's git
-//         hooks, force pushes, AI attribution, and the Read and Edit tools on secret files;
+//         hooks, force pushes, AI attribution, any shell command on the plan gate file, and the Read and Edit tools on
+//         secret files;
 //   ask:  any Bash command that names a secret file. The Read deny already stops cat, grep, head and cp on the file
 //         (checked in real sessions); an interpreter that opens it (`node -e "...readFileSync('.dev.vars')..."`) is not
 //         recognised as a read, so a person approves those.
+//         The rules miss a redirect (`cat < .dev.vars`); the plugin's Bash hook (hooks/plan-gate.mjs) asks for those.
 // The harness matches a rule against the whole command with * as a wildcard, hence one rule per spelling.
 // A branch may end in * to cover a family: `prod-*` blocks prod-eu and prod-eu-job. The rules then read
 // `git push * prod-*`, so a feature branch that only contains the name (`feat/prod-x`) still pushes.
@@ -26,6 +28,9 @@ const ONCE = [
   "git push", "git push origin", "git push -u", "git push -u origin", "git push origin -u", "git push --set-upstream",
   "git push --set-upstream origin", "git push --force-with-lease", "git push origin --force-with-lease",
   "git -C * push", "git -C * push origin", "git -C * push -u origin",
+  // The plan gate is written only by the hook that reads what the developer types; Claude's edit tools are refused by
+  // the hook itself, and this closes the shell (echo >, rm, sed -i).
+  "*plan-gate.json*",
   "git commit *Co-Authored-By: Claude*", "git commit *Generated with*Claude*",
 ];
 const SECRET_FILES = [".dev.vars", ".env", ".env.local"];

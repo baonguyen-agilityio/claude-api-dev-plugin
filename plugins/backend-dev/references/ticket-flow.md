@@ -12,7 +12,22 @@ A ticket goes through five commands, one phase each. Each command reads what the
 
 `/backend-dev:review <MR>` reviews somebody else's merge request and is not part of a ticket's run.
 
-Running a command is the developer's go for that phase. A command whose prerequisite is missing says which command to run first and stops. A command run again on a finished phase says so and offers to redo it.
+Running a command is the developer's go for that phase. A command whose prerequisite is missing says which command to run first and stops. A command run again on a finished phase says so and offers to redo it; `build` run again after `prove` fixes the blocking findings on the same branch.
+
+## Shortcut: the ticket's text instead of its id
+
+One token (`412`, `#412`, a URL) refers to a ticket; anything longer is the ticket's text. `plan` and `build` accept text and run the phases before them in the same conversation:
+- `/backend-dev:plan "<text>"`: ticket, then plan; stops after the plan as usual.
+- `/backend-dev:build "<text>"`: ticket, then plan, then **stops once** with `plan.md`; the developer's bare `go` approves it and the build runs. Then `prove` and `settle` as usual.
+- `prove` and `settle` need a built ticket, so they take an id only.
+
+Blocking questions still stop the run, and the ticket record is written in full, so the merge request explains the change as it would for a tracker ticket (with a note that no ticket is on the board yet).
+
+## Plan gate
+
+No source file changes before the developer approved the plan. A hook enforces it, not the model: it reads what the developer types. `/backend-dev:ticket`, `/backend-dev:plan` and `/backend-dev:build "<text>"` open the gate; `/backend-dev:build <id>`, or a bare `go` after `/backend-dev:build "<text>"`, approves it. While it is open, an edit outside the ticket record (`docs/tickets/`, `docs/incidents/`, `.backend-dev/`) is refused, whatever the permission mode, auto mode included. The gate lives in `.backend-dev/plan-gate.json`, one per checkout; a developer who leaves the ticket for unrelated work removes that file. After settle the gate stays approved, so nothing is blocked; the next `/backend-dev:ticket`, `/backend-dev:plan` or `/backend-dev:build "<text>"` opens it again, and source edits wait for that ticket's approval. A command with no argument leaves the gate as it is; the skill asks which ticket. Edits made through the shell (sed, a script) are not seen by the hook.
+
+The gate file can be written only by that hook: the hook refuses Claude's edit tools on it and any shell command that names it (redirects included, which the permission rules cannot match), and the guard rules `kit-setup` writes deny the same commands as a second line. A name the shell builds (`plan-g*te.json`, a variable) or a symlink to the file gets past both; the skills forbid working around the gate. The same hook refuses, best effort (common private-key and token formats), to write a secret value into `docs/tickets/` or `docs/incidents/`.
 
 ## What each phase runs, by kind of ticket
 
@@ -43,7 +58,7 @@ Then `/backend-dev:ticket 412` in that session. Claude Code copies the files lis
 
 ## State file
 
-The ticket's progress lives in `.backend-dev/tickets/<id>.md` at the repo root (pasted text without an id: `<short-slug>.md`). The folder ignores itself: create `.backend-dev/.gitignore` containing `*` the first time, so nothing there is ever committed (Claude Code protects `.claude/`, so the state does not go there). It holds what a new session needs: the restated ticket, the worktree when there is one, the chosen stages with their reasons, the status of each phase, the branch, the decisions taken (question → answer), the last gate result and the card's **Next** line. Every command reads it first and updates it before it stops. If the working tree disagrees with it (branch missing, files already changed or reverted), trust the tree and say what differs.
+The ticket's progress lives in `.backend-dev/tickets/<id>.md` at the repo root (pasted text without an id: `<short-slug>.md`). The folder ignores itself: create `.backend-dev/.gitignore` containing `*` the first time, so nothing there is ever committed (Claude Code protects `.claude/`, so the state does not go there). It holds what a new session needs: a **Source** line (the URL or tracker and id with the ticket's `updated_at`, or the pasted text's first 200 characters), the restated ticket, the worktree when there is one, the chosen stages with their reasons, the status of each phase, the branch, the decisions taken (question → answer), the last gate result and the card's **Next** line. Every command reads it first and updates it before it stops. If the working tree disagrees with it (branch missing, files already changed or reverted), trust the tree and say what differs.
 
 ## Workflow card
 
