@@ -98,6 +98,8 @@ Commits and pushes are guarded by the harness, not by a hook: `kit-setup` writes
 
 Design and decisions: [docs/architecture.md](docs/architecture.md).
 
+Since 0.7.0 the template is a pnpm monorepo. A project made from the earlier single-app template keeps its layout and keeps working: the skills follow its profile (its own commands and paths), not the template's.
+
 A repo on another stack (another datastore, runtime or deploy target) still gets the ticket commands, records, plan gate, review, guard rules and hooks. The stage skills keep their stack-neutral steps and take the rest from the repo, never Firestore or Wrangler advice; `kit-setup` writes the repo's **Stack** line, and [references/stacks.md](plugins/backend-dev/references/stacks.md) lists what holds on any stack and how a guide for a new stack is added (one file, no skill changes).
 
 ## Install
@@ -136,7 +138,7 @@ Agent: `backend-dev:backend-dev`, only when asked by name or for an end-to-end r
 - Smoke prompts on a machine with its own user-level skills: `claude -p "<prompt>" --model sonnet --setting-sources project --plugin-dir plugins/backend-dev --permission-mode acceptEdits --allowedTools "Bash(ls *)" "Bash(cat *)" Read Glob Grep Skill Write Edit --output-format stream-json --verbose`, then grep for `"name":"Skill"`. Without `--setting-sources project` the user's other skills compete and the plugin's rarely fire.
 - Evals run once per release, not per edit: trigger suite `claude plugin eval plugins/backend-dev --trust-plugin --ablation none --tag train --runs 2 -j 4 --model sonnet --max-cost-usd 8`, then `--tag validation` once on queries never used to edit a description (a case passes at a trigger rate ≥ 0.5); outcome suite `--tag outcome --ablation with-without --runs 2 --scaffold --allow-tools Bash Write Edit --max-cost-usd 6`. Commit the dated results folders. Re-run only the failed cases after a fix.
 - Any change to `docs/architecture.md`: copy it to `plugins/backend-dev/references/architecture.md` (the lint fails otherwise) and re-check the template against the changed sections.
-- Any change to `templates/`: CI runs the gates on a clean copy and the generator; run them locally first (`pnpm typecheck && pnpm test && pnpm check` in `plugins/backend-dev/templates`).
+- Any change to `templates/`: CI runs the gates on a clean copy and the generator; run them locally first on a copy, as CI does: `(tmp=$(mktemp -d) && cp -R plugins/backend-dev/templates/. "$tmp" && cd "$tmp" && pnpm install --frozen-lockfile && pnpm typecheck && pnpm test && pnpm check)` (a subshell, so your shell stays where it was; the system clears the temp folder).
 - Token footprint (`claude --plugin-dir plugins/backend-dev plugin details backend-dev`): about 1,200 tokens always-on for the eight descriptions and the agent, 1.5k–2.4k per skill when it fires.
 
 ## Layout

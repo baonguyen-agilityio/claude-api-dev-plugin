@@ -5,7 +5,7 @@
 **Kit:** backend-dev plugin. Use its skills for backend work (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery, incident); a ticket goes `/backend-dev:ticket <id>` → `plan` → `build` → `prove` → `settle`, `/backend-dev:review <MR>` reviews a teammate's MR, `/backend-dev:onboard` maps the project.
 **Repo:** monorepo (pnpm workspaces): apps in `apps/`, shared code in `packages/core` (`@app/core`, consumed as source, no build step); API app: `apps/api`; design note in `docs/architecture.md`
 **Stack:** Cloudflare Workers · Hono · Firestore · Firebase Auth · Wrangler
-**Commands:** install `pnpm install`; dev `pnpm dev`; gates `pnpm typecheck && pnpm test && pnpm check`; deploy `pnpm deploy:<env>` (only with the user); one package: `pnpm --filter api <script>`, `pnpm --filter @app/core <script>`
+**Commands:** install `pnpm install`; dev `pnpm dev`; gates `pnpm typecheck && pnpm test && pnpm check`; deploy `pnpm deploy:<env>` (only with the user); one package: `pnpm --filter api <script>`, `pnpm --filter @app/core <script>` (the root scripts rely on those two names; rename the root package only)
 **Layering:** `routes.ts` → `controllers/` → `services/` (Effect programs) → `@app/core/firestore` `Firestore` tag; modules in `apps/api/src/modules/<plural>/`, registered in `apps/api/src/modules/index.ts`; code two apps would share goes to `packages/core`
 **Errors:** tagged errors in `packages/core/src/errors.ts`, mapped once in `toErrorResponse`; a `throw` inside a service is a defect
 **Validation:** Effect Schema; body decoded in the service, query and path through `validate()`
