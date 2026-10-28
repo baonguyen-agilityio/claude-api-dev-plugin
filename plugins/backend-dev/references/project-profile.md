@@ -9,7 +9,7 @@ Every repo that uses this kit carries a short profile as a marked block in its `
 ## Backend profile
 **Kit:** backend-dev plugin. Use its skills for backend work (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery, incident); a ticket goes `/backend-dev:ticket <id>` → `plan` → `build` → `prove` → `settle`, `/backend-dev:review <MR>` reviews a teammate's MR, `/backend-dev:onboard` maps the project.
 **Repo:** <single app | monorepo: apps in <path>, shared code in <path>>; API app: <path>
-**Stack:** <runtime> · <framework> · <datastore> · <auth> · <deploy target> (see `references/stacks.md`)
+**Stack:** <runtime> · <framework> · <datastore> · <auth> · <deploy target>; in a monorepo whose apps differ, one entry per app: `<app paths>: <stack>; <app paths>: <stack>` (see `references/stacks.md`)
 **Commands:** install `<cmd>`; dev `<cmd>`; gates `<lint or typecheck>` && `<test>` && `<build or dry-run>`; deploy `<cmd per env>` (only with the user)
 **Layering:** <route → controller → service → repository>; a new endpoint touches <files>
 **Errors:** <how a failure is raised and where it becomes a status>; <what counts as a defect>
