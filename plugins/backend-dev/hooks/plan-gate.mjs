@@ -104,7 +104,7 @@ export function onBash(input) {
   const command = typeof input?.tool_input?.command === "string" ? input.tool_input.command : "";
   // The state file only: the hook's own source (plan-gate.mjs) stays usable for git add and node --test.
   if (/plan-gate\.json/.test(command)) {
-    return { code: 2, message: "Blocked: the plan gate file is written only by the hook that reads what the developer types, never from the shell. Ask the developer to approve the plan, or to remove .backend-dev/plan-gate.json themselves if they are leaving the ticket." };
+    return { code: 2, message: "Blocked: the shell never touches the plan gate file, not even to read it; only the hook that reads what the developer types writes it. Ask the developer to approve the plan, or to remove .backend-dev/plan-gate.json themselves if they are leaving the ticket." };
   }
   const secret = [...command.matchAll(SECRET_FILE)].map((m) => m[1]).find((f) => !SAMPLE.test(f));
   if (secret) {
