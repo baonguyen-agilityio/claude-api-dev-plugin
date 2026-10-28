@@ -40,16 +40,16 @@ Used when a repo has no profile block, and written into `CLAUDE.md` by the scaff
 
 | Field | Template value |
 |---|---|
-| Repo | single app; API in `src/` |
-| Commands | install `npm install`; dev `npm run dev`; gates `npm run typecheck && npm test && npm run check` (`check` is `wrangler deploy --dry-run`); deploy `npm run deploy:<env>` |
-| Layering | `routes.ts` → `controllers/` → `services/` (Effect programs) → `@/core` `Firestore` tag; modules in `src/modules/<plural>/`, registered in `src/modules/index.ts` |
-| Errors | tagged errors (`core/errors.ts`) mapped once in `toErrorResponse`; a `throw` inside a service is a defect (bare 500) |
+| Repo | monorepo (pnpm workspaces): API app `apps/api`, shared code `packages/core` (`@app/core`) |
+| Commands | install `pnpm install`; dev `pnpm dev`; gates `pnpm typecheck && pnpm test && pnpm check` (`check` is `wrangler deploy --dry-run` in `apps/api`); deploy `pnpm deploy:<env>` |
+| Layering | `routes.ts` → `controllers/` → `services/` (Effect programs) → `@app/core/firestore` `Firestore` tag; modules in `apps/api/src/modules/<plural>/`, registered in `apps/api/src/modules/index.ts` |
+| Errors | tagged errors (`packages/core/src/errors.ts`) mapped once in `toErrorResponse`; a `throw` inside a service is a defect (bare 500) |
 | Validation | Effect Schema: body decoded in the service, query and path through `validate()` |
-| Data | Firestore REST adapter `core/firestore.ts`; indexes in `firestore.indexes.json` |
+| Data | Firestore REST adapter `packages/core/src/firestore.ts`; indexes in `apps/api/firestore.indexes.json` |
 | Auth | Firebase ID token in `authMiddleware`; role from the `role` claim; ownership in the service |
-| Tests | vitest; `makeFakeFirestore()` for services, `testApp()` for routes |
+| Tests | vitest; `makeFakeFirestore()` (`@app/core/testing/fake-firestore`) for services, `testApp()` for routes |
 | Git | base `main`; `feat/<slug>`; conventional commits; pull request to `main` |
-| CI/CD | GitHub Actions; envs `dev`, `stag`, `prod` in `wrangler.toml` |
-| On edit | none: the template has no formatter or linter; `npm run typecheck` runs in the gates |
-| On stop | none; to turn it on, `npm run typecheck && npm test` |
+| CI/CD | GitHub Actions; envs `dev`, `stag`, `prod` in `apps/api/wrangler.toml` |
+| On edit | none: the template has no formatter or linter; `pnpm typecheck` runs in the gates |
+| On stop | none; to turn it on, `pnpm typecheck && pnpm test` |
 | Protected branches | `main` |

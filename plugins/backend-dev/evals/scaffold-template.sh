@@ -4,4 +4,4 @@
 set -euo pipefail
 PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cp -R "$PLUGIN_ROOT/templates/." .
-cp .dev.vars.example .dev.vars
+cp apps/api/.dev.vars.example apps/api/.dev.vars

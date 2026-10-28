@@ -7,7 +7,7 @@
 | `CORS_ORIGINS` (var) | `http://localhost:3000` | app origin per env (never `*`) | | | |
 | `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` (secrets) | `.dev.vars` | `wrangler secret put --env <env>` per env | | | |
 | `API_LIMITER` (binding) | top-level `[[ratelimits]]` | `[[env.<env>.ratelimits]]` with its own `namespace_id` | | | |
-| Deploys | `npm run dev` | on merge to main | on demand | with approval | with approval |
+| Deploys | `pnpm dev` | on merge to main | on demand | with approval | with approval |
 
 What is a var, a secret, a binding:
 - **var**: not sensitive, differs per env, visible in `wrangler.toml` (project id, origins).
@@ -28,13 +28,13 @@ simple = { limit = 60, period = 60 }
 
 One-time per Firebase project: service account key (Console → Project settings → Service accounts), `roles/datastore.user`, Firestore in Native mode, `npx firebase deploy --only firestore:indexes --project <id>`.
 
-Commands:
+Commands (from the repo root; the `npx wrangler` lines from `apps/api`):
 ```bash
-npm run typecheck && npm test && npm run check && npm audit --omit=dev
+pnpm typecheck && pnpm test && pnpm check && pnpm audit --prod
 npx wrangler secret put FIREBASE_CLIENT_EMAIL --env <env>
 npx wrangler secret put FIREBASE_PRIVATE_KEY --env <env>      # paste the private_key value as-is, \n sequences included
 npx wrangler secret list --env <env>
-npm run deploy:<env>
+pnpm deploy:<env>
 curl -s https://<env>-<name>.<account>.workers.dev/api/v1/health
 npx wrangler tail --env <env>
 npx wrangler deployments list --env <env>

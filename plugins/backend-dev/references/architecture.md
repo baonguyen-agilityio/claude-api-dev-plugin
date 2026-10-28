@@ -2,7 +2,7 @@
 
 This is the source of truth for the template in `plugins/backend-dev/templates/` and for the rules the skills follow. A mismatch between this document and the code is a bug in one of them; fix that one.
 
-Scope of the template: one Worker, one repo, Firestore as the only datastore, Firebase ID tokens for callers; no Durable Objects, Queues or D1. An existing repo, a monorepo included, keeps its own conventions: its project profile (the `backend-dev:profile` block in its `CLAUDE.md`) wins where the two differ.
+Scope of the template: a pnpm monorepo with one Worker app (`apps/api`) and one shared package (`packages/core`, imported as `@app/core` from source, no build step), Firestore as the only datastore, Firebase ID tokens for callers; no Durable Objects, Queues or D1. An existing repo, a monorepo included, keeps its own conventions: its project profile (the `backend-dev:profile` block in its `CLAUDE.md`) wins where the two differ.
 
 ## 1. Request pipeline
 
@@ -47,7 +47,7 @@ flowchart TB
 | `routes.ts` | path → `describeRoute` → guards → `validate` → handler | computes anything |
 | `index.ts` | `export const <plural>Module = { path, routes }` | — |
 
-Imports flow one way: routes → controllers → services → schemas/models → `@/core`. A module never imports another module; shared things go to `core/`. Modules register in `src/modules/index.ts`; an unregistered module typechecks and 404s.
+Imports flow one way: routes → controllers → services → schemas/models → `@app/core`. A module never imports another module; what a second app would also need goes to `packages/core`, the rest stays in the app. Modules register in `apps/api/src/modules/index.ts`; an unregistered module typechecks and 404s.
 
 ## 3. Data access
 
@@ -134,7 +134,7 @@ Any other transition fails with `409 CONFLICT`. Only `pending` requests may be e
 
 Firestore accepts range filters on several fields, but the range fields must lead the `orderBy` and every filter shape needs its own composite. The API offers one range field per list (`from`), so a list with a date range is ordered by `from`, not `createdAt`; the response documents which order applies. An overlap query (`from <= b AND to >= a`) is possible at the price of a second range in the index; add it only with its index.
 
-Indexes live in `firestore.indexes.json` in the template and are deployed with `firebase deploy --only firestore:indexes` (or created from the console link Firestore prints on the first failing query). A query that needs an index the file does not declare is a bug.
+Indexes live in `apps/api/firestore.indexes.json` in the template and are deployed with `firebase deploy --only firestore:indexes` (or created from the console link Firestore prints on the first failing query). A query that needs an index the file does not declare is a bug.
 
 Pagination contract: `?limit=1..100` (default 20) and an opaque `cursor`. The response's `meta.pagination.cursor` is absent on the last page. A tampered cursor answers `400 BAD_REQUEST "Invalid cursor"`.
 

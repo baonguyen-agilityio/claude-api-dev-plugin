@@ -2,7 +2,7 @@
 name: review-and-secure
 description: "Reviews a change to a Cloudflare Workers + Firestore API before the merge request: contract against code, access control per endpoint, input handling, error leakage, reads per request, CORS and headers, secrets and tests, and writes the findings with the MR notes. Use when a change should be checked, hardened or made ready for review, even if the user only asks whether it is ok to merge."
 user-invocable: false
-allowed-tools: Read, Glob, Grep, Bash(npx @redocly/cli lint *), Bash(oasdiff breaking *), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(npm audit*), Bash(git diff*), Bash(git status*), Bash(git log*)
+allowed-tools: Read, Glob, Grep, Bash(npx @redocly/cli lint *), Bash(oasdiff breaking *), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*), Bash(pnpm typecheck*), Bash(pnpm test*), Bash(pnpm check*), Bash(pnpm --filter *), Bash(npm audit*), Bash(git diff*), Bash(git status*), Bash(git log*)
 ---
 
 # Review and secure
@@ -17,7 +17,7 @@ Risk table with the template's status: `references/security-checklist.md`. Reads
 
 ## Procedure
 
-1. **Establish the diff and run what you may.** `git diff <base>` or the module named; the profile's gates (template: `npm run typecheck && npm test && npm run check`) when the dependencies are installed and the mode allows. When they cannot run, the Result says "gates not run" instead of inferring green.
+1. **Establish the diff and run what you may.** `git diff <base>` or the module named; the profile's gates (template: `pnpm typecheck && pnpm test && pnpm check`) when the dependencies are installed and the mode allows. When they cannot run, the Result says "gates not run" instead of inferring green.
 2. **Contract against code.** When the spec is generated, run the machine checks first: `npx @redocly/cli lint <spec>` and `oasdiff breaking <base spec> <head spec>`; a breaking finding without named consumers or a deprecation plan is blocking. Then for each endpoint in the diff: does `describeRoute` list every status the service can return; is the response shape the one the contract promised; is any existing field renamed, removed or retyped (breaking) without a consumer named.
 3. **Access per endpoint, both checks.** Role on the route (`requireRole`), ownership in the service, and the 403/404 choice per resource. A fetched `current` that is never compared with the caller is a missing check; a `Forbidden` import with no use is the same finding. A gap in one module is checked in every sibling module.
 4. **Input.** DTOs hold writable fields only; `{ ...data, ownerId: user.uid }` has the server field after the spread; `limit` is capped at `MAX_LIMIT`; query filter fields come from the model's allow-list; the body limit is in the chain.

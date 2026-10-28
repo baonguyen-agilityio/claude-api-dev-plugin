@@ -45,7 +45,7 @@ const decide = (status: "approved" | "rejected") => (admin: AuthUser, id: string
 A list with filters: build `where: Where[]` from the query, pick `orderBy` (the range field leads, else `createdAt desc`), `db.query(COLLECTION, { where, orderBy, limit, cursor })`, return `page(docs, limit, nextCursor)`. Each (where, orderBy) shape has a composite in `firestore.indexes.json`.
 
 ## When the contract asks for If-Match or an Idempotency-Key
-- **ETag / If-Match:** the adapter returns the Firestore document's `updateTime` with the entity; the controller sends it as `ETag`; the service passes the request's `If-Match` value to `update(col, id, data, { ifUpdateTime })`, which adds `currentDocument.updateTime=<value>` to the `PATCH`. Firestore rejects a stale value (verify the exact REST status on a dev project); map it to a `PreconditionFailed` tagged error → 412. Add the error to `core/errors.ts`, `AppError` and `toErrorResponse`, and an adapter test for the query string.
+- **ETag / If-Match:** the adapter returns the Firestore document's `updateTime` with the entity; the controller sends it as `ETag`; the service passes the request's `If-Match` value to `update(col, id, data, { ifUpdateTime })`, which adds `currentDocument.updateTime=<value>` to the `PATCH`. Firestore rejects a stale value (verify the exact REST status on a dev project); map it to a `PreconditionFailed` tagged error → 412. Add the error to `packages/core/src/errors.ts`, `AppError` and `toErrorResponse`, and an adapter test for the query string.
 - **Idempotency-Key:** derive the document id from the caller's uid and the key and create with `currentDocument.exists=false`; on `ALREADY_EXISTS`, read the document: same body → return it with 201, different body → `Conflict`. A route test sends the same key twice and asserts one record.
 
 ## Controller: pick the status, nothing else
@@ -63,12 +63,12 @@ export const timeOffRequestController = (run: Run) => ({
 .get("/", describeRoute({ tags, summary: "List (own; admins see all)", responses: { 200: pageResponse("Requests", TimeOffRequest), ...badRequest, ...commonResponses } }), validate("query", TimeOffRequestListQuery), ctl.list)
 .post("/:id/approve", describeRoute({ tags, summary: "Approve (admin only)", responses: { 200: entity("Approved"), ...forbidden, ...notFound, ...conflict, ...commonResponses } }), requireRole("admin"), ctl.approve)
 ```
-`index.ts`: `export const timeOffRequestsModule: Module = { path: "/timeOffRequests", routes: timeOffRequestRoutes };` and the registry `src/modules/index.ts`.
+`index.ts`: `export const timeOffRequestsModule: Module = { path: "/timeOffRequests", routes: timeOffRequestRoutes };` and the registry `apps/api/src/modules/index.ts`.
 
 ## Errors: a new failure is a new tagged error, mapped once
-`core/errors.ts`: `export class Conflict extends Data.TaggedError("Conflict")<{ message: string }> {}` → add to `AppError` and `toErrorResponse` in `core/run.ts`; the switch is exhaustive, so a missing case fails typecheck.
+`packages/core/src/errors.ts`: `export class Conflict extends Data.TaggedError("Conflict")<{ message: string }> {}` → add to `AppError` and `toErrorResponse` in `packages/core/src/run.ts`; the switch is exhaustive, so a missing case fails typecheck.
 
 ## Tests
 Route (`testApp().request(path, { method, body, as: "other" | "admin" })`): the 403/404 case first, then 400 (`message` matches `/^field:/`), 409 with `{ code: "CONFLICT" }`, 201 with the entity, a body carrying `status`/`ownerId` ignored, a `+07:00` date truncated to the UTC day.
 Service (`run(fake, program)` / `fail(fake, program)` with `makeFakeFirestore()`): each tagged error by `_tag`, and `fake.store.size` unchanged after a failure.
-Adapter (`src/core/tests/firestore.test.ts`): the exact REST request (`updateMask`, `currentDocument`) and the status → error mapping, with a stubbed `fetch`.
+Adapter (`packages/core/src/tests/firestore.test.ts`): the exact REST request (`updateMask`, `currentDocument`) and the status → error mapping, with a stubbed `fetch`.

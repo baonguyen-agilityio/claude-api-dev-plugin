@@ -1,0 +1,30 @@
+{
+  "name": "api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "typecheck": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "check": "wrangler deploy --dry-run --outdir dist --env=\"\"",
+    "deploy:dev": "wrangler deploy --env dev",
+    "deploy:stag": "wrangler deploy --env stag",
+    "deploy:prod": "wrangler deploy --env prod"
+  },
+  "dependencies": {
+    "@app/core": "workspace:*",
+    "effect": "catalog:",
+    "hono": "catalog:",
+    "hono-openapi": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "4.151.3"
+  }
+}

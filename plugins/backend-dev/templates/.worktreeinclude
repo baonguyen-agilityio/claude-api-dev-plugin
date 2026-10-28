@@ -1,1 +1,3 @@
+# Gitignore syntax: a name without a slash matches at any depth, so this copies apps/api/.dev.vars
+# (and any later app's) into a new `claude -w` worktree.
 .dev.vars

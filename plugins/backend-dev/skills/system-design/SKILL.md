@@ -18,7 +18,7 @@ Decide the shape of the work before anyone writes an endpoint. The output is a d
 ## Procedure
 
 1. **Restate the requirement as actors and flows.** One line per flow: who triggers it, what must be true afterwards, how soon. Latency expectations decide the primitive later ("the employee gets an email" within minutes is not the same as "before the response").
-2. **Draw the module boundaries.** Which existing module owns the data; whether the feature needs a new module or new services inside one. Modules never import each other; shared things go to `core/` (a mailer, a storage client) behind a tag with a fake for tests, like `Firestore`.
+2. **Draw the module boundaries.** Which existing module owns the data; whether the feature needs a new module or new services inside one. Modules never import each other; shared things go to `packages/core` (template) or the repo's shared package (a mailer, a storage client) behind a tag with a fake for tests, like `Firestore`.
 3. **Split the request path from everything else.** The request path does one atomic write and returns. Anything that calls another system, loops over many documents, or waits on a clock leaves it. Pick the primitive from the table in `references/workers-primitives.md`:
    - per-event side effect (email, webhook) → Queue producer in the write, Queue consumer elsewhere;
    - schedule (monthly export, nightly cleanup) → Cron Trigger, which enqueues when it fans out;

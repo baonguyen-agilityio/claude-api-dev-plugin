@@ -2,7 +2,7 @@
 name: live-verify
 description: "Proves a Cloudflare Workers + Firestore API works by calling it for real: obtains Firebase ID tokens for a user and an admin, drives every declared status with curl against wrangler dev or a deployed environment, diffs responses against the OpenAPI spec, checks headers and logs, and reports VERIFIED, PARTIAL or UNVERIFIED. Use when someone wants proof that an endpoint, change or deployment works, even when the tests are green."
 user-invocable: false
-allowed-tools: Read, Glob, Grep, Bash(curl *), Bash(jq *), Bash(npm run dev*), Bash(npx wrangler dev*), Bash(npx wrangler tail*), Bash(node * set-claim.mjs *), Bash(base64 *), Bash(cut *)
+allowed-tools: Read, Glob, Grep, Bash(curl *), Bash(jq *), Bash(npm run dev*), Bash(pnpm dev*), Bash(npx wrangler dev*), Bash(npx wrangler tail*), Bash(node * set-claim.mjs *), Bash(base64 *), Bash(cut *)
 ---
 
 # Live verify
@@ -17,7 +17,7 @@ Tokens and claims: `references/token-flow.md`. Statuses to drive and what each p
 
 ## Procedure
 
-1. **Pick the target and read its config.** `wrangler dev` with `.dev.vars` (the `FIREBASE_PROJECT_ID` there wins over `[vars]`; the kit's settings keep `.dev.vars` closed to Claude because it holds secrets, so ask the developer which project it names, or use `[vars]` when the developer says `.dev.vars` does not override it), or `https://<env>-<name>.<account>.workers.dev/api/v1`. The token must come from the same Firebase project as that target's `FIREBASE_PROJECT_ID`; a token from another project is a 401 that looks like a bug.
+1. **Pick the target and read its config.** `wrangler dev` with `.dev.vars` (the `FIREBASE_PROJECT_ID` there wins over `[vars]`; the kit's settings keep `.dev.vars` closed to Claude because it holds secrets, so ask the developer which project it names, or use `[vars]` when the developer says `.dev.vars` does not override it), or `https://<env>-<name>.<account>.workers.dev/api/v1`. The token must come from the same Firebase project as that target's `FIREBASE_PROJECT_ID`; a token from another project is a 401 that looks like a bug. Wrangler runs in the API app's folder (`cd apps/api` in the template; the profile's API app elsewhere), where its config and local binary are.
 2. **Obtain tokens the way a client does:** Firebase Auth REST `signUp`/`signInWithPassword` with the project's web API key for a test user and a test admin; set `role=admin` with the Admin SDK from `scripts/set-claim.mjs` before minting the admin token (a claim set after the token was issued is not in it). Decode the payload and check `aud`, `iss`, `role` before blaming the API. No token: protected routes are UNVERIFIED, say so; never add a route to `PUBLIC_ROUTES` to get past auth.
 3. **Start or reach the API** and prove the baseline. Port 8787 taken (`curl -s localhost:8787/health` answers before you started anything, or `wrangler dev` reports the address in use; often another worktree's run): start on the next free port (`npx wrangler dev --port 8788`) and drive that one. Then `/health` 200, a protected route without a token 401.
 4. **Drive every declared status for the endpoint under test,** in the order of the table: 401, the 403/404 rule as the wrong user, 400 on a bad body and a bad cursor, 404 on a missing id, the happy path with the fields the contract promised, the 409 on the second transition, the server-owned field ignored. Always print the status with the body (`-w '\nHTTP %{http_code}\n'`).
