@@ -18,7 +18,7 @@ The profile's **Stack** line: `<runtime> · <framework> · <datastore> · <auth>
 
 The stage skills pre-approve npm and pnpm commands only; on a repo whose gates use another tool (yarn, bun, gradle, make), each gate run asks for approval in default mode, so a lead who wants it silent adds those commands to the repo's `.claude/settings.json` allow list.
 
-Not affected by the stack: the five ticket commands, the ticket and incident records, the plan gate, `review`, the guard rules and the hooks; they read their commands from the profile.
+Not affected by the stack: the five ticket commands, the ticket and incident records, the plan gate, `review`, the guard rules and the hooks; they read their commands from the profile. The release gate recognises `wrangler`, `firebase deploy` and `deploy:<env>` package scripts; another deploy tool ships unseen by it until the repo names its deploys as `deploy:<env>` scripts.
 
 ## Stack-neutral and default-only, per skill
 

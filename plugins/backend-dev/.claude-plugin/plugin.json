@@ -1,7 +1,7 @@
 {
   "name": "backend-dev",
   "version": "0.7.0",
-  "description": "Team kit for APIs on Cloudflare Workers + Firestore (Hono, Effect, Firebase auth, vitest), on an existing repo or monorepo or a new one from its template. /backend-dev:kit-setup writes the repo's project profile; a ticket goes /backend-dev:ticket, plan, build, prove, settle; /backend-dev:review reviews a teammate's merge request; incident handles what broke or leaked; onboard maps the repo for newcomers. Stage skills (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery) run inside those commands or when asked in plain words.",
+  "description": "Team kit for APIs on Cloudflare Workers + Firestore (Hono, Effect, Firebase auth, vitest), on an existing repo or monorepo or a new one from its template. /backend-dev:kit-setup writes the repo's project profile; a ticket goes /backend-dev:ticket, plan, build, prove, settle; /backend-dev:review reviews a teammate's merge request; /backend-dev:release checks a release and, for production, records your approval, which a hook requires before any deploy; incident handles what broke or leaked; onboard maps the repo for newcomers. Stage skills (system-design, data-model, api-contract, implement, review-and-secure, live-verify, delivery) run inside those commands or when asked in plain words.",
   "author": {
     "name": "bao.nguyen"
   },
