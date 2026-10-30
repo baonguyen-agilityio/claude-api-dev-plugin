@@ -1,14 +1,14 @@
 ---
 name: release
-description: Release check for a Workers + Firestore API before it ships to an environment. Runs the delivery checklist without deploying (gates, audit, env block, secrets, indexes, rollback path) and reports GO or NO-GO for the checked-out commit. For production, a GO waits for you to type go, which the release gate records as your approval of that commit; a go after a NO-GO approves nothing.
+description: Release check for a Workers + Firestore API before it ships to an environment. Checks first: the delivery checklist (gates, audit, env block, secrets, indexes, rollback path) and GO or NO-GO for the checked-out commit. After your go it deploys through the release gate, then smoke-tests; for production, your go is the gate's approval of that commit, and a go after a NO-GO approves nothing.
 argument-hint: "<env: dev | stag | prod | …>"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Skill, Bash(git status*), Bash(git rev-parse*), Bash(git log*), Bash(git fetch*), Bash(git branch*), Bash(npx wrangler secret list*), Bash(npx wrangler deployments*), Bash(npx wrangler versions list*), Bash(npm audit*), Bash(pnpm audit*)
+allowed-tools: Read, Glob, Grep, Skill, Bash(git status*), Bash(git rev-parse*), Bash(git log*), Bash(git fetch*), Bash(git branch*), Bash(npx wrangler secret list*), Bash(npx wrangler deployments*), Bash(npx wrangler versions list*), Bash(npm audit*), Bash(pnpm audit*), Bash(pnpm typecheck*), Bash(pnpm test*), Bash(pnpm check*), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*)
 ---
 
 Check this release: "$ARGUMENTS"
 
-The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`: the deploy command per environment, the gates, the protected branches. Steps 1 to 4 deploy nothing and change no file. Step 5 deploys only after the developer's go; its deploy command, smoke and log commands are left out of `allowed-tools` on purpose, so each one goes through the normal permission prompt as well as the gate. The release gate (`hooks/release-gate.mjs`) decides every deploy, rollback and secret change in any permission mode: a production deploy only from a commit the developer approved here; a production rollback or secret change, and any other environment, after asking.
+The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`: the deploy command per environment, the gates, the protected branches. Steps 1 to 4 deploy nothing and change no file. The gates run without a prompt when they are the template's commands; a repo whose gates differ gets a prompt per command. Step 5 deploys only after the developer's go; its deploy command, smoke and log commands are left out of `allowed-tools` on purpose, so each one goes through the normal permission prompt as well as the gate. The release gate (`hooks/release-gate.mjs`) decides every deploy, rollback and secret change in any permission mode: a production deploy only from a commit the developer approved here; a production rollback or secret change, and any other environment, after asking.
 
 ## Steps
 1. **One environment.** No argument, or more than one token: ask which environment, and stop. An environment the profile and the deploy config (`[env.<name>]` in `wrangler.toml`, a `deploy:<name>` script) do not know: say so and stop.

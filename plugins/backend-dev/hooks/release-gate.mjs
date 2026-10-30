@@ -22,7 +22,10 @@
 //   node release-gate.mjs edit    PreToolUse(Edit|Write|MultiEdit): the gate file is never edited by a tool.
 // An allowed release still goes through the normal permission prompt; the gate only adds a condition. A refusal's
 // reason reaches Claude, so it names the route for Claude to pass on; an ask's reason is shown to the person.
-// In a non-interactive run nobody answers an ask, so Claude Code denies it. Limits: names, not what they point to
+// In a non-interactive run nobody answers an ask, so Claude Code denies it. Production is an environment named prod or
+// production, alone or as a prefix (`prod-eu`); a repo whose production is `live` or `prd` gets asks, not refusals, until
+// its environments follow that name. The approval rests on a release report in the transcript: a model that wrote a false
+// GO could ask for a go, so the developer reads the report before typing it. Other limits: names, not what they point to
 // (a script that calls wrangler, an alias, a symlinked gate file) are not seen. The hook's own failures never block.
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
