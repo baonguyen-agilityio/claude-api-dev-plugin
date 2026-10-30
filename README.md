@@ -35,13 +35,15 @@ Pass the ticket's full URL, which names the tracker so nothing is guessed:
 
 `/backend-dev:review 87` reviews a teammate's MR !87: reads it and its ticket record, reviews the diff in a fresh context, checks each finding and drafts the comments; it posts only when you say so.
 
+`/backend-dev:release prod` checks a release before it ships: the delivery checklist without deploying (gates, audit, env block, secrets, indexes, rollback path), and whether a protected branch contains the commit. It reports GO or NO-GO; for production a GO waits for you to type `go`, which approves that commit. Every deploy goes through the release gate below.
+
 **Several tickets at once**: one git worktree per ticket, so their branches and edits never mix. Start the session with `claude -w 412` (it creates `.claude/worktrees/412`, or reopens it later) and run the ticket's commands there. `kit-setup` writes `.worktreeinclude` so Claude Code copies the app's `.dev.vars` into each new worktree without anyone reading it; install the dependencies once per worktree. `/backend-dev:ticket` stops and gives you that command when the checkout already holds another ticket; `settle` prints the cleanup once the MR is merged.
 
 **Newcomer, first day**
 1. Read `docs/onboarding.md`; ask anything (`where do I start?`, `how does a request reach Firestore here?`): the `onboard` skill answers from the repo and checks your machine (`node <plugin>/scripts/doctor.mjs . <app path>`: versions, dependencies, env keys present, glab login; never prints values).
 2. First tickets: add `--learn` to `ticket`, `plan`, `build` and `prove` (`/backend-dev:ticket <id> --learn`): the same work, with each stage, each decision and the terms explained on the way.
 
-**Using a skill on its own**: say the job in plain words ("add a level filter to employees"); Claude picks the skill. The menu shows only the commands people type (`kit-setup`, `onboard`, `ticket`, `plan`, `build`, `prove`, `settle`, `review`, `incident`); the stage skills below stay out of it and are run by those commands or by Claude.
+**Using a skill on its own**: say the job in plain words ("add a level filter to employees"); Claude picks the skill. The menu shows only the commands people type (`kit-setup`, `onboard`, `ticket`, `plan`, `build`, `prove`, `settle`, `review`, `release`, `incident`); the stage skills below stay out of it and are run by those commands or by Claude.
 
 ## Skills and commands
 
@@ -62,6 +64,7 @@ Pass the ticket's full URL, which names the tracker so nothing is guessed:
 | `/backend-dev:ticket <ticket URL, id or text> [--learn]` | developer | reads the ticket, settles it, writes the acceptance criteria |
 | `/backend-dev:plan <id>` · `build <id>` · `prove <id>` · `settle <id>` | developer | the ticket's next phases, in that order |
 | `/backend-dev:review <MR>` | reviewer | a teammate's merge request reviewed, comments drafted |
+| `/backend-dev:release <env>` | whoever ships | GO or NO-GO for the checked-out commit; for production, your `go` is the approval |
 | `/backend-dev:onboard` | newcomer or lead | `docs/onboarding.md` written or refreshed, machine check |
 
 ## Hooks
@@ -74,6 +77,7 @@ The plugin's hooks act on Claude's own tool calls in any repo where it is enable
 | gates on stop | at the end of a turn in which Claude edited a file other than Markdown | off until the profile's **On stop** line holds a command (the gates, or a faster part of them); then it runs that command and sends a failure back to Claude, once per turn, so a turn does not end red. Turn it on when the base branch is green |
 | ticket resume | after the context is compacted | points Claude back at the ticket in progress (`.backend-dev/tickets/<id>.md`) and tells it a summary is not the developer's go |
 | plan gate | when you type a ticket command, and before every file edit | `/ticket`, `/plan` and `/build "<text>"` open it; `/build <id>`, or `go` after `/build "<text>"`, approves the plan. Until then Claude cannot edit source files, in any permission mode, auto included. It also refuses, best effort (common key and token formats), to write a secret value into `docs/tickets/` or `docs/incidents/`. Left a ticket after `/plan`? Approve it with `/build <id>` or delete `.backend-dev/plan-gate.json` yourself; until then source edits stay blocked in that checkout |
+| release gate | when you type `/release`, and before every shell command | A command that ships (`wrangler deploy` other than `--dry-run`, `versions deploy`, `rollback`, `secret put`/`delete`/`bulk`, a `deploy:<env>` script, `firebase deploy`) is decided by its environment, in any permission mode, bypass included. Production: refused unless you typed `go` after a GO from `/backend-dev:release prod` for the checked-out commit, within the hour, with a clean working tree; the refusal says how to get approval. Any other environment: asks you, naming the commit it ships. No environment named: refused. Claude cannot write the approval (`.backend-dev/release-gate.json`) with a tool or the shell. Not seen: a script or alias that calls wrangler under another name |
 | secret files | before every shell command | A command that names `.dev.vars` or `.env*` (redirects such as `cat < .dev.vars` included) waits for you to approve it, even when Bash is allowed. Samples (`.env.example`, `.sample`) pass the hook; the `ask` rules `kit-setup` writes still ask about them |
 | checkpoints | after a skill loads, at the end of a turn | one row in `.claude/checkpoints/` |
 
@@ -143,5 +147,5 @@ Agent: `backend-dev:backend-dev`, only when asked by name or for an end-to-end r
 
 ## Layout
 
-- `plugins/backend-dev/` — the plugin: `skills/` (sixteen: seven commands that only run when typed, `kit-setup`, `ticket`, `plan`, `build`, `prove`, `settle`, `review`; `onboard` and `incident`, typed or started by Claude; seven stage skills kept out of the menu, started by the commands or by Claude), `references/` (project profile format, ticket flow, architecture note), `scripts/` (scaffold, new-module, doctor, guard-rules), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
+- `plugins/backend-dev/` — the plugin: `skills/` (seventeen: eight commands that only run when typed, `kit-setup`, `ticket`, `plan`, `build`, `prove`, `settle`, `review`, `release`; `onboard` and `incident`, typed or started by Claude; seven stage skills kept out of the menu, started by the commands or by Claude), `references/` (project profile format, ticket flow, architecture note), `scripts/` (scaffold, new-module, doctor, guard-rules), `templates/` (new API), `agents/`, `hooks/`, `rules/`, `evals/`
 - `docs/` — architecture and decisions the plugin and template follow
