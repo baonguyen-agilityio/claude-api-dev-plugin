@@ -144,12 +144,13 @@ export function onBash(input, now = Date.now()) {
   const sha = head(dir);
   const short = sha ? sha.slice(0, 7) : "an unknown commit";
   const asks = [];
+  const changes = [];
   for (const { what, env, change } of found) {
     if (!env) {
       return { code: 2, message: `Blocked: \`${what}\` names no environment, so it would ship the top-level config. Name the environment (--env <name>, or the deploy:<env> script) and run it again.` };
     }
     if (PROD.test(env) && change) {
-      asks.push(`${env} (\`${what}\`: no commit ships; approve only if this rollback or secret change is yours to make)`);
+      changes.push(`\`${what}\``);
       continue;
     }
     if (PROD.test(env)) {
@@ -164,10 +165,15 @@ export function onBash(input, now = Date.now()) {
     }
     asks.push(env);
   }
+  const lines = [];
   if (asks.length) {
     const dirty = clean(dir) ? "" : " The working tree has uncommitted changes, which ship with it.";
-    return { code: 0, ask: `This ships ${short} to ${[...new Set(asks)].join(", ")}.${dirty} Approve only if you own this release.` };
+    lines.push(`This ships ${short} to ${[...new Set(asks)].join(", ")}.${dirty} Approve only if you own this release.`);
   }
+  if (changes.length) {
+    lines.push(`This changes production without shipping a commit: ${changes.join(", ")}. Approve only if this rollback or secret change is yours to make; a rollback restores code only, not secrets, indexes or data.`);
+  }
+  if (lines.length) return { code: 0, ask: lines.join(" ") };
   return { code: 0 };
 }
 

@@ -118,7 +118,8 @@ test("rollback and secret changes on production ask instead of waiting on a rele
   for (const cmd of ["npx wrangler rollback --env prod", "echo k | npx wrangler@4 secret put FIREBASE_PRIVATE_KEY --env prod"]) {
     const r = run(dir, cmd);
     assert.equal(r.code, 0, cmd);
-    assert.match(r.ask, /no commit ships/, cmd);
+    assert.match(r.ask, /changes production without shipping a commit/, cmd);
+    assert.doesNotMatch(r.ask, /This ships/, cmd);
   }
   assert.equal(run(dir, "npx wrangler versions deploy --env prod").code, 2, "versions deploy ships a version: it needs the approval");
 });
