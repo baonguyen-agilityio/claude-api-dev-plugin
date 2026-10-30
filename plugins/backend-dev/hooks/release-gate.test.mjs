@@ -51,6 +51,7 @@ test("finds every command that ships, with its environment", () => {
   assert.deepEqual(env("./node_modules/.bin/wrangler deploy -e stag"), ["stag"]);
   assert.deepEqual(env("wrangler deploy --dry-run=false --env prod"), ["prod"]);
   assert.deepEqual(env("wrangler deploy --env prod # --dry-run"), ["prod"]);
+  assert.deepEqual(env(`wrangler deploy --message "fix #2" --env prod`), ["prod"]);
   for (const safe of ["wrangler deploy --dry-run --env prod", "npx wrangler@4 deploy --dry-run --outdir dist --env=\"\"", "wrangler deployments list --env prod", "wrangler versions list --env prod", "wrangler secret list --env prod", "wrangler deployments list", "wrangler tail --env prod", "pnpm test", "git log --grep deploy:prod"])
     assert.deepEqual(releases(safe), [], safe);
 });
@@ -122,6 +123,23 @@ test("rollback and secret changes on production ask instead of waiting on a rele
     assert.doesNotMatch(r.ask, /This ships/, cmd);
   }
   assert.equal(run(dir, "npx wrangler versions deploy --env prod").code, 2, "versions deploy ships a version: it needs the approval");
+});
+
+test("an approval holds for its own environment, the short /release form counts, and a late go approves nothing", () => {
+  const t = 1_000_000;
+  const a = repo();
+  say(a, "/backend-dev:release prod-eu", t);
+  onPrompt({ cwd: a, prompt: "go", transcript_path: transcript(a, "GO", `## Release prod-eu: ${git(a, "rev-parse", "--short=7", "HEAD")}`) }, t);
+  assert.deepEqual(run(a, "wrangler deploy --env prod-eu", t + 1000), { code: 0 });
+  assert.match(run(a, "wrangler deploy --env prod", t + 1000).message, /the approval is for prod-eu, this command targets prod/);
+  const b = repo();
+  say(b, "/release prod", t);
+  say(b, "go", t);
+  assert.deepEqual(run(b, "pnpm deploy:prod", t + 1000), { code: 0 }, "the short form records the request");
+  const c = repo();
+  say(c, "/backend-dev:release prod", t);
+  say(c, "go", t + 61 * 60 * 1000);
+  assert.equal(run(c, "pnpm deploy:prod", t + 62 * 60 * 1000).code, 2, "a go more than an hour after the request");
 });
 
 test("go without a pending release, or after a non-production release, approves nothing", () => {
