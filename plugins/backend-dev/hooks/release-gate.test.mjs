@@ -21,13 +21,13 @@ function repo() {
 }
 const commit = (dir) => { writeFileSync(join(dir, "app.ts"), `export const x = ${Math.random()};\n`); git(dir, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "next"); };
 // A transcript whose last release report carries this verdict, as Claude Code writes it (one JSON object per line).
-function transcript(verdict) {
+function transcript(dir, verdict, heading = `## Release prod: ${git(dir, "rev-parse", "--short=7", "HEAD")}`) {
   const path = join(mkdtempSync(join(tmpdir(), "transcript-")), "t.jsonl"); // outside the repo, which must stay clean
   const line = (role, text) => JSON.stringify({ type: role, message: { role, content: [{ type: "text", text }] } });
-  writeFileSync(path, [line("user", "/backend-dev:release prod"), line("assistant", `## Release prod\n**Verdict:** ${verdict}`)].join("\n") + "\n");
+  writeFileSync(path, [line("user", "/backend-dev:release prod"), line("assistant", `${heading}\n**Verdict:** ${verdict}`)].join("\n") + "\n");
   return path;
 }
-const say = (dir, prompt, now, verdict = "GO") => onPrompt({ cwd: dir, prompt, transcript_path: transcript(verdict) }, now);
+const say = (dir, prompt, now, verdict = "GO") => onPrompt({ cwd: dir, prompt, transcript_path: transcript(dir, verdict) }, now);
 const run = (dir, command, now) => onBash({ cwd: dir, tool_input: { command } }, now);
 const approve = (dir, now) => { say(dir, "/backend-dev:release prod", now); say(dir, "go", now); };
 
@@ -44,7 +44,14 @@ test("finds every command that ships, with its environment", () => {
   assert.deepEqual(env("wrangler versions deploy --env prod"), ["prod"]);
   assert.deepEqual(env("echo k | wrangler secret put FIREBASE_KEY --env prod"), ["prod"]);
   assert.deepEqual(env("firebase deploy --only firestore:indexes --project acme-prod"), ["prod"]);
-  for (const safe of ["wrangler deploy --dry-run --env prod", "wrangler secret list --env prod", "wrangler deployments list", "wrangler tail --env prod", "pnpm test", "git log --grep deploy:prod"])
+  assert.deepEqual(env("npx wrangler@4 deploy --env prod"), ["prod"]);
+  assert.deepEqual(env("npx wrangler@latest rollback --env prod"), ["prod"]);
+  assert.deepEqual(env("npx wrangler --config wrangler.toml deploy --env prod"), ["prod"]);
+  assert.deepEqual(env("npx wrangler -c w.toml secret put K --env prod"), ["prod"]);
+  assert.deepEqual(env("./node_modules/.bin/wrangler deploy -e stag"), ["stag"]);
+  assert.deepEqual(env("wrangler deploy --dry-run=false --env prod"), ["prod"]);
+  assert.deepEqual(env("wrangler deploy --env prod # --dry-run"), ["prod"]);
+  for (const safe of ["wrangler deploy --dry-run --env prod", "npx wrangler@4 deploy --dry-run --outdir dist --env=\"\"", "wrangler deployments list --env prod", "wrangler versions list --env prod", "wrangler secret list --env prod", "wrangler deployments list", "wrangler tail --env prod", "pnpm test", "git log --grep deploy:prod"])
     assert.deepEqual(releases(safe), [], safe);
 });
 
@@ -96,6 +103,26 @@ test("go after a NO-GO, or with no report in the transcript, approves nothing an
   assert.equal(run(dir, "pnpm deploy:prod").code, 2);
 });
 
+test("go after a GO for another environment or commit, or after the unfilled template, approves nothing", () => {
+  const dir = repo();
+  const sha = git(dir, "rev-parse", "--short=7", "HEAD");
+  for (const [verdict, heading] of [["GO", `## Release stag: ${sha}`], ["GO", "## Release prod: 0000000"], ["<GO, or NO-GO: each failed check and its fix>", `## Release prod: ${sha}`]]) {
+    say(dir, "/backend-dev:release prod");
+    onPrompt({ cwd: dir, prompt: "go", transcript_path: transcript(dir, verdict, heading) });
+    assert.equal(run(dir, "pnpm deploy:prod").code, 2, heading + " " + verdict);
+  }
+});
+
+test("rollback and secret changes on production ask instead of waiting on a release check", () => {
+  const dir = repo();
+  for (const cmd of ["npx wrangler rollback --env prod", "echo k | npx wrangler@4 secret put FIREBASE_PRIVATE_KEY --env prod"]) {
+    const r = run(dir, cmd);
+    assert.equal(r.code, 0, cmd);
+    assert.match(r.ask, /no commit ships/, cmd);
+  }
+  assert.equal(run(dir, "npx wrangler versions deploy --env prod").code, 2, "versions deploy ships a version: it needs the approval");
+});
+
 test("go without a pending release, or after a non-production release, approves nothing", () => {
   const dir = repo();
   say(dir, "go");
@@ -125,6 +152,6 @@ test("as a hook process: a refusal exits 2 with the reason, an ask prints the de
   assert.equal(JSON.parse(ask.stdout).hookSpecificOutput.permissionDecision, "ask");
   assert.equal(hook("bash", "not json").status, 0);
   hook("prompt", JSON.stringify({ prompt: "/backend-dev:release prod" }));
-  hook("prompt", JSON.stringify({ prompt: "go", transcript_path: transcript("GO") }));
+  hook("prompt", JSON.stringify({ prompt: "go", transcript_path: transcript(dir, "GO") }));
   assert.equal(hook("bash", JSON.stringify({ tool_input: { command: "pnpm deploy:prod" } })).status, 0);
 });

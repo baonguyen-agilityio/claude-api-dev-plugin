@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep, Skill, Bash(git status*), Bash(git rev-parse*),
 
 Check this release: "$ARGUMENTS"
 
-The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`: the deploy command per environment, the gates, the protected branches. This command deploys nothing and changes no file. The release gate (`hooks/release-gate.mjs`) decides every deploy, rollback and secret change in any permission mode: production only from a commit the developer approved here, any other environment after asking.
+The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`: the deploy command per environment, the gates, the protected branches. This command deploys nothing and changes no file. The release gate (`hooks/release-gate.mjs`) decides every deploy, rollback and secret change in any permission mode: a production deploy only from a commit the developer approved here; a production rollback or secret change, and any other environment, after asking.
 
 ## Steps
 1. **One environment.** No argument, or more than one token: ask which environment, and stop. An environment the profile and the deploy config (`[env.<name>]` in `wrangler.toml`, a `deploy:<name>` script) do not know: say so and stop.
@@ -23,6 +23,6 @@ The repo's conventions are in the `backend-dev:profile` block of `CLAUDE.md`: th
 **Ships:** <commits since the last deploy | unknown> · working tree <clean | changes listed>
 **Reviewed:** <the protected branch that contains it | none>
 **Checks:** gates <pass | fail | not run> · audit <…> · env block <…> · secrets <…> · indexes <…> · rollback <path, and what it does not undo>
-**Verdict:** GO | NO-GO: <each failed check and its fix>
+**Verdict:** <one of GO, or NO-GO with each failed check and its fix>
 **Next:** <prod GO: type `go` to approve <short sha> for production, then I run `<deploy command>` | other env GO: say deploy and I run `<deploy command>` (the gate asks you) | NO-GO: the fixes, then `/backend-dev:release <env>` again>
 ```

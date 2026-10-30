@@ -3,13 +3,19 @@
 //   node release-gate.mjs prompt  UserPromptSubmit: reads what the developer typed (never what the model wrote).
 //                                 `/backend-dev:release prod` marks the current commit as waiting; a bare `go` after it
 //                                 approves that commit for production, but only when the last release report in the
-//                                 transcript says `**Verdict:** GO`: a go typed after a NO-GO approves nothing. Other
+//                                 transcript is for that environment and commit and says `**Verdict:** GO`: a go typed
+//                                 after a NO-GO, or after a report for something else, approves nothing. Other
 //                                 environments record nothing.
 //   node release-gate.mjs bash    PreToolUse(Bash): a command that ships (`wrangler deploy` without --dry-run,
-//                                 `wrangler versions deploy`, `wrangler rollback`, `wrangler secret put|delete|bulk`,
-//                                 a `deploy:<env>` package script, `firebase deploy`) is decided by its environment:
-//                                   production: allowed only with an approval for the checked-out commit, the working
-//                                     tree clean and the approval under an hour old; otherwise refused with the route.
+//                                 `wrangler versions deploy`, a `deploy:<env>` package script, `firebase deploy`) or
+//                                 changes a running environment (`wrangler rollback`, `wrangler secret put|delete|bulk`)
+//                                 is decided by its environment. `wrangler` may carry a version (`npx wrangler@4`) and
+//                                 options before the subcommand (`--config x.toml deploy`).
+//                                   production, shipping: allowed only with an approval for the checked-out commit,
+//                                     the working tree clean and the approval under an hour old (any number of deploys
+//                                     within it); otherwise refused with the route.
+//                                   production, rollback or secret: asked. They ship no commit and are the first
+//                                     response to an incident, so they must not wait on a release check.
 //                                   any other named environment: asked, with the commit it ships.
 //                                   no environment named: refused, since the top-level config is not an environment.
 //                                 A command that names the gate file is refused too.
@@ -59,13 +65,15 @@ export function onPrompt(input, now = Date.now()) {
   }
   if (gate.pending && GO.test(prompt)) {
     const { pending, ...rest } = gate;
-    if (pending.sha && lastVerdict(input?.transcript_path) === "GO") writeGate(dir, { ...rest, approved: { env: pending.env, sha: pending.sha, at: now } });
+    if (pending.sha && lastVerdict(input?.transcript_path, pending.env, pending.sha) === "GO") writeGate(dir, { ...rest, approved: { env: pending.env, sha: pending.sha, at: now } });
     else writeGate(dir, rest); // the go answered a NO-GO or nothing: the request is spent
   }
 }
 
-// The verdict of the last release report Claude showed: "GO", "NO-GO" or null.
-export function lastVerdict(transcriptPath) {
+// The verdict of the last release report Claude showed: "GO", "NO-GO" or null. A report for another environment or
+// commit (its heading `## Release <env>: <short sha>`) counts as no verdict.
+export function lastVerdict(transcriptPath, env, sha) {
+  const heading = new RegExp(`## Release ${String(env).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}: ${String(sha).slice(0, 7)}\\b`);
   let verdict = null;
   try {
     for (const line of readFileSync(transcriptPath, "utf8").split("\n")) {
@@ -74,21 +82,42 @@ export function lastVerdict(transcriptPath) {
       if (msg?.role !== "assistant" || !Array.isArray(msg.content)) continue;
       for (const block of msg.content) {
         const m = block?.type === "text" && block.text.match(/\*\*Verdict:\*\*\s*(NO-GO|GO)\b/g);
-        if (m) verdict = m.at(-1).includes("NO-GO") ? "NO-GO" : "GO";
+        if (m) verdict = !heading.test(block.text) ? null : m.at(-1).includes("NO-GO") ? "NO-GO" : "GO";
       }
     }
   } catch { /* no transcript: no verdict */ }
   return verdict;
 }
 
-// Each shell segment that ships, with the environment it names ("" when none).
+// wrangler options that take the next word as their value, so that word is not the subcommand.
+const VALUE_OPTIONS = new Set(["--config", "-c", "--env", "-e", "--cwd", "--name", "--env-file"]);
+
+// The wrangler subcommand of a shell segment: "ship", "change" (rollback, secret), or null.
+function wranglerAction(words) {
+  const at = words.findIndex((w) => /^(?:\S*\/)?wrangler(?:@\S+)?$/.test(w));
+  if (at < 0) return null;
+  const rest = [];
+  for (let i = at + 1; i < words.length; i++) {
+    if (words[i].startsWith("-")) { if (VALUE_OPTIONS.has(words[i])) i++; continue; }
+    rest.push(words[i]);
+  }
+  const [cmd, sub] = rest;
+  if (words.some((w) => w === "--dry-run" || w === "--dry-run=true")) return null;
+  if (cmd === "deploy" || (cmd === "versions" && sub === "deploy")) return "ship";
+  if (cmd === "rollback" || (cmd === "secret" && ["put", "delete", "bulk"].includes(sub))) return "change";
+  return null;
+}
+
+// Each shell segment that ships or changes an environment, with the environment it names ("" when none).
 export function releases(command) {
   const out = [];
   for (const seg of command.split(/&&|\|\||[;|\n]/)) {
-    const s = seg.trim();
+    const s = seg.replace(/(^|\s)#.*$/, "").trim(); // a trailing comment is not part of the command
+    const words = s.split(/\s+/).map((w) => w.replace(/^["']|["']$/g, ""));
     const envFlag = s.match(/(?:^|\s)(?:--env|-e)(?:=|\s+)["']?([\w.-]+)/)?.[1] ?? "";
-    if (/\bwrangler\s+(deploy|versions\s+deploy|rollback|secret\s+(put|delete|bulk))\b/.test(s) && !/--dry-run\b/.test(s)) {
-      out.push({ what: s, env: envFlag });
+    const action = wranglerAction(words);
+    if (action) {
+      out.push({ what: s, env: envFlag, change: action === "change" });
       continue;
     }
     const script = s.match(/\b(?:pnpm|npm|yarn|bun)\b.*?\b(?:run\s+)?deploy:([\w.-]+)/);
@@ -115,9 +144,13 @@ export function onBash(input, now = Date.now()) {
   const sha = head(dir);
   const short = sha ? sha.slice(0, 7) : "an unknown commit";
   const asks = [];
-  for (const { what, env } of found) {
+  for (const { what, env, change } of found) {
     if (!env) {
       return { code: 2, message: `Blocked: \`${what}\` names no environment, so it would ship the top-level config. Name the environment (--env <name>, or the deploy:<env> script) and run it again.` };
+    }
+    if (PROD.test(env) && change) {
+      asks.push(`${env} (\`${what}\`: no commit ships; approve only if this rollback or secret change is yours to make)`);
+      continue;
     }
     if (PROD.test(env)) {
       const ok = readGate(dir).approved;
