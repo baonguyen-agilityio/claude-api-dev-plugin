@@ -1,6 +1,6 @@
 ---
 name: release
-description: Release check for a Workers + Firestore API before it ships to an environment. Checks first: the delivery checklist (gates, audit, env block, secrets, indexes, rollback path) and GO or NO-GO for the checked-out commit. After your go it deploys through the release gate, then smoke-tests; for production, your go is the gate's approval of that commit, and a go after a NO-GO approves nothing.
+description: "Release check for a Workers + Firestore API before it ships to an environment. Checks first: the delivery checklist (gates, audit, env block, secrets, indexes, rollback path) and GO or NO-GO for the checked-out commit. After your go it deploys through the release gate, then smoke-tests; for production, your go is the gate's approval of that commit, and a go after a NO-GO approves nothing."
 argument-hint: "<env: dev | stag | prod | …>"
 disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Skill, Bash(git status*), Bash(git rev-parse*), Bash(git log*), Bash(git fetch*), Bash(git branch*), Bash(npx wrangler secret list*), Bash(npx wrangler deployments*), Bash(npx wrangler versions list*), Bash(npm audit*), Bash(pnpm audit*), Bash(pnpm typecheck*), Bash(pnpm test*), Bash(pnpm check*), Bash(npm run typecheck*), Bash(npm test*), Bash(npm run check*)
